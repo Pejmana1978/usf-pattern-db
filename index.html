@@ -1,229 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"> 
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>USF Pattern Database</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f0f;--bg2:#181818;--bg3:#222;--bg4:#2a2a2a;
-  --border:#333;--border2:#444;--text:#f0f0f0;--text2:#aaa;--text3:#666;
-  --accent:#c8a96e;--accent2:#a8844e;--accent-bg:rgba(200,169,110,0.08);--accent-border:rgba(200,169,110,0.25);
-  --green:#4caf7d;--green-bg:rgba(76,175,125,0.1);
-  --red:#e05252;--red-bg:rgba(224,82,82,0.1);
-  --blue:#5b8fff;--blue-bg:rgba(91,143,255,0.1);
-  --radius:8px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --navy:#17183B;
+  --navy2:#1f2048;
+  --navy-light:rgba(23,24,59,0.06);
+  --navy-lighter:rgba(23,24,59,0.03);
+  --gold:#C9B27E;
+  --gold2:#b89d68;
+  --gold-bg:rgba(201,178,126,0.1);
+  --gold-border:rgba(201,178,126,0.3);
+  --red:#AF0129;
+  --red-bg:rgba(175,1,41,0.06);
+  --red-border:rgba(175,1,41,0.2);
+  --light-blue:#AAC5D1;
+  --light-blue-bg:rgba(170,197,209,0.15);
+  --bg:#ffffff;
+  --bg2:#f8f7f5;
+  --bg3:#f2f0ec;
+  --border:#e8e4dc;
+  --border2:#d8d2c8;
+  --text:var(--navy);
+  --text2:rgba(23,24,59,0.65);
+  --text3:rgba(23,24,59,0.4);
+  --green:#1a7a4a;
+  --green-bg:rgba(26,122,74,0.07);
+  --green-border:rgba(26,122,74,0.2);
+  --radius:8px;
+  --font:'DM Sans',sans-serif;
+  --shadow:0 1px 3px rgba(23,24,59,0.08), 0 1px 2px rgba(23,24,59,0.05);
+  --shadow-md:0 4px 12px rgba(23,24,59,0.1), 0 2px 4px rgba(23,24,59,0.06);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
-.app{display:grid;grid-template-columns:270px 1fr;height:100vh;overflow:hidden}
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-.main{display:flex;flex-direction:column;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:100vh;font-size:14px;line-height:1.5}
+.app{display:grid;grid-template-columns:268px 1fr;height:100vh;overflow:hidden}
 
-/* Sidebar */
-.sidebar-header{padding:16px;border-bottom:1px solid var(--border);flex-shrink:0}
-.logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#000}
-.logo-text{font-size:13px;font-weight:600}
-.logo-sub{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:0.05em;text-transform:uppercase}
+/* ── SIDEBAR ── */
+.sidebar{background:var(--navy);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.logo-icon{width:32px;height:32px;flex-shrink:0}
+.logo-text{font-size:13px;font-weight:600;color:#fff;letter-spacing:0.01em;line-height:1.2}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
 .search-box{position:relative}
-.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px 7px 30px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color 0.2s}
-.search-box input:focus{border-color:var(--accent-border)}
-.search-box input::placeholder{color:var(--text3)}
-.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.search-box input{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:8px 10px 8px 32px;color:#fff;font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s}
+.search-box input:focus{background:rgba(255,255,255,0.1);border-color:rgba(201,178,126,0.4)}
+.search-box input::placeholder{color:rgba(255,255,255,0.3)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.3);font-size:14px;pointer-events:none}
+
 .brand-list{flex:1;overflow-y:auto;padding:8px 0}
-.brand-list::-webkit-scrollbar{width:4px}
-.brand-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.brand-list::-webkit-scrollbar{width:3px}
+.brand-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px}
+
 .brand-header{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;user-select:none;transition:background 0.15s}
-.brand-header:hover{background:var(--bg3)}
-.brand-header.open{background:var(--accent-bg)}
-.brand-chevron{font-size:10px;color:var(--text3);transition:transform 0.2s}
-.brand-chevron.open{transform:rotate(90deg)}
-.brand-name{font-size:13px;font-weight:500;flex:1}
-.brand-count{font-size:11px;color:var(--text3);font-family:var(--mono);background:var(--bg3);padding:1px 6px;border-radius:10px}
-.pattern-list{display:none;padding:0 0 4px}
+.brand-header:hover{background:rgba(255,255,255,0.05)}
+.brand-header.open{background:rgba(201,178,126,0.12)}
+.brand-chevron{font-size:9px;color:rgba(255,255,255,0.3);transition:transform 0.2s;flex-shrink:0}
+.brand-chevron.open{transform:rotate(90deg);color:var(--gold)}
+.brand-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.85);flex:1}
+.brand-count{font-size:10px;color:rgba(255,255,255,0.35);background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:10px;font-weight:500}
+
+.pattern-list{display:none;padding-bottom:4px}
 .pattern-list.open{display:block}
-.pattern-item{padding:6px 16px 6px 34px;cursor:pointer;font-size:12.5px;color:var(--text2);transition:all 0.15s;border-left:2px solid transparent}
-.pattern-item:hover{color:var(--text);background:var(--bg3)}
-.pattern-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg)}
-.pattern-item-name{font-weight:500;margin-bottom:2px}
-.badge-row{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
-.badge{font-size:10px;padding:1px 5px;border-radius:3px;font-family:var(--mono)}
-.badge.has{background:var(--green-bg);color:var(--green)}
-.badge.warn{background:var(--accent-bg);color:var(--accent)}
-.badge.miss{background:var(--red-bg);color:var(--red)}
-.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
-.btn-add{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:8px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s}
-.btn-add:hover{background:var(--accent2)}
+.pattern-item{padding:7px 16px 7px 36px;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,0.55);transition:all 0.15s;border-left:2px solid transparent;margin-left:0}
+.pattern-item:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.04)}
+.pattern-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,178,126,0.1)}
+.pattern-item-name{font-weight:500;margin-bottom:3px;line-height:1.3}
+.badge-row{display:flex;gap:3px;flex-wrap:wrap}
+.badge{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:500}
+.badge.has{background:rgba(26,122,74,0.2);color:#5cb88a}
+.badge.warn{background:rgba(201,178,126,0.2);color:var(--gold)}
+.badge.miss{background:rgba(175,1,41,0.2);color:#e05252}
+
+.sidebar-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.08);flex-shrink:0}
+.btn-add{width:100%;background:var(--gold);color:var(--navy);border:none;border-radius:var(--radius);padding:9px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s;letter-spacing:0.01em}
+.btn-add:hover{background:var(--gold2)}
 .btn-add:disabled{opacity:0.5;cursor:not-allowed}
 
-/* Main */
-.main-header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;min-height:54px}
-.breadcrumb{font-size:12px;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* ── MAIN ── */
+.main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.main-header{padding:0 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;min-height:52px;background:var(--bg)}
+.breadcrumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .breadcrumb .sep{color:var(--border2)}
+.breadcrumb .current{color:var(--navy);font-weight:500}
 .header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.hdr-status{font-size:12px;color:var(--text3)}
+.hdr-status.saved{color:var(--green)}
+.hdr-status.saving{color:var(--gold2)}
+
 .btn{padding:6px 14px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
 .btn-ghost:hover{border-color:var(--border2);color:var(--text)}
-.btn-primary{background:var(--accent);color:#000}
-.btn-primary:hover{background:var(--accent2)}
-.btn-danger{background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
-.btn-danger:hover{background:var(--red);color:#fff}
-.btn-sm{padding:4px 10px;font-size:12px}
-.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy2)}
+.btn-danger{background:transparent;border:1px solid var(--red-border);color:var(--red)}
+.btn-danger:hover{background:var(--red-bg)}
+.btn-gold{background:var(--gold);color:var(--navy);font-weight:600}
+.btn-gold:hover{background:var(--gold2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn:disabled{opacity:0.45;cursor:not-allowed}
 
-/* Content */
 .content{flex:1;overflow-y:auto;padding:24px}
-.content::-webkit-scrollbar{width:4px}
-.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:12px;text-align:center}
-.empty-icon{font-size:48px;opacity:0.3}
-.empty-title{font-size:16px;font-weight:500;color:var(--text2)}
-.empty-sub{font-size:13px;max-width:280px;line-height:1.6}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:14px;text-align:center}
+.empty-icon{font-size:52px;opacity:0.2}
+.empty-title{font-size:17px;font-weight:600;color:var(--text2)}
+.empty-sub{font-size:13px;max-width:260px;line-height:1.7;color:var(--text3)}
+
+/* ── PATTERN DETAIL ── */
+.pattern-title-area{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.pattern-title{font-size:22px;font-weight:600;color:var(--navy);letter-spacing:-0.02em;line-height:1.2}
+.pattern-sub{font-size:14px;color:var(--text2);margin-top:4px}
 
 /* Stats */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
-.stat-value{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--accent)}
-.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;transition:border-color 0.15s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-value{font-size:24px;font-weight:600;color:var(--navy);letter-spacing:-0.02em}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em}
 .progress-wrap{margin-bottom:20px}
-.progress-meta{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;color:var(--text3)}
-.progress-bar{background:var(--bg3);border-radius:10px;height:4px;overflow:hidden}
-.progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width 0.4s}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px}
+.progress-meta span:first-child{color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.04em;font-size:11px}
+.progress-meta span:last-child{color:var(--gold2);font-weight:600}
+.progress-bar{background:var(--bg3);border-radius:10px;height:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);border-radius:10px;transition:width 0.4s}
 
 /* Tabs */
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
-.tab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
 .tab:hover{color:var(--text2)}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab.active{color:var(--navy);border-bottom-color:var(--gold)}
 
 /* Sections */
-.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
-.section-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-.section-title{font-size:13px;font-weight:600}
+.section{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;box-shadow:var(--shadow)}
+.section-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.section-icon{font-size:14px;flex-shrink:0}
+.section-title{font-size:12px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:0.05em}
 .section-body{padding:16px}
 
-/* Inputs */
+/* Form */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group{display:flex;flex-direction:column;gap:5px}
 .form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
-.form-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color 0.2s}
-.form-input:focus{border-color:var(--accent-border)}
+.form-input{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 11px;color:var(--navy);font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s}
+.form-input:focus{border-color:var(--gold-border);background:var(--bg);box-shadow:0 0 0 3px var(--gold-bg)}
 .form-input::placeholder{color:var(--text3)}
-.form-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
-textarea.form-input{resize:vertical;min-height:100px;line-height:1.6}
+.form-select{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 11px;color:var(--navy);font-family:var(--font);font-size:13px;outline:none}
+textarea.form-input{resize:vertical;min-height:110px;line-height:1.65}
 
 /* Tags */
 .tag-list{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.tag{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 10px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px}
-.tag .remove{cursor:pointer;color:var(--text3);font-size:10px;line-height:1;padding:1px}
+.tag{background:var(--navy-light);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:12px;color:var(--navy);display:flex;align-items:center;gap:6px;font-weight:500}
+.tag .remove{cursor:pointer;color:var(--text3);font-size:10px;line-height:1;transition:color 0.15s}
 .tag .remove:hover{color:var(--red)}
-.tag-input{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;width:130px;transition:border-color 0.2s}
-.tag-input:focus{border-color:var(--accent-border)}
+.tag-input{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:4px 8px;color:var(--navy);font-family:var(--font);font-size:12px;outline:none;width:130px;transition:border-color 0.2s}
+.tag-input:focus{border-color:var(--gold-border)}
 
 /* Colors table */
 .colors-table{width:100%;border-collapse:collapse}
-.colors-table th{text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding:6px 10px;border-bottom:1px solid var(--border)}
-.colors-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.colors-table th{text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.colors-table td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
 .colors-table tr:last-child td{border-bottom:none}
-.colors-table tr:hover td{background:rgba(255,255,255,0.02)}
-.color-cell{display:flex;align-items:center;gap:8px}
-.color-swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);flex-shrink:0}
-.trim-code{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px}
+.colors-table tr:hover td{background:var(--navy-lighter)}
+.color-cell{display:flex;align-items:center;gap:9px}
+.color-swatch{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
+.trim-code{font-size:11px;color:var(--text2);background:var(--bg3);padding:2px 7px;border-radius:4px;font-weight:500;border:1px solid var(--border)}
 .year-note{font-size:11px;color:var(--text3)}
-.btn-icon{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px 6px;border-radius:4px;transition:all 0.15s;font-size:13px;line-height:1}
+.btn-icon{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px 7px;border-radius:4px;transition:all 0.15s;font-size:13px;line-height:1}
 .btn-icon:hover{background:var(--red-bg);color:var(--red)}
 
 /* Positions */
 .positions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.position-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all 0.15s;position:relative}
-.position-card:hover{border-color:var(--border2)}
+.position-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:13px;cursor:pointer;transition:all 0.15s;position:relative}
+.position-card:hover{border-color:var(--border2);background:var(--bg3)}
 .position-card.has{border-color:var(--green);background:var(--green-bg)}
-.position-name{font-size:12px;font-weight:600;margin-bottom:2px}
-.position-status{font-size:11px;font-family:var(--mono)}
+.position-name{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:2px}
+.position-status{font-size:11px;font-weight:500}
 .position-card.has .position-status{color:var(--green)}
 .position-card:not(.has) .position-status{color:var(--text3)}
-.position-check{position:absolute;top:8px;right:8px;font-size:12px;color:var(--green)}
+.position-check{position:absolute;top:9px;right:9px;font-size:12px;color:var(--green);font-weight:600}
 
 /* Materials */
 .materials-row{display:flex;gap:8px;flex-wrap:wrap}
-.mat-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 14px;font-size:12px;cursor:pointer;transition:all 0.15s;font-family:var(--font);color:var(--text2)}
-.mat-btn:hover{border-color:var(--border2);color:var(--text)}
-.mat-btn.on{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+.mat-btn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 16px;font-size:13px;cursor:pointer;transition:all 0.15s;font-family:var(--font);color:var(--text2);font-weight:500}
+.mat-btn:hover{border-color:var(--border2);color:var(--navy)}
+.mat-btn.on{background:var(--gold-bg);border-color:var(--gold-border);color:var(--navy);font-weight:600}
+
+/* ── PHOTOS ── */
+.photo-drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg2)}
+.photo-drop-zone:hover,.photo-drop-zone.dragover{border-color:var(--gold);background:var(--gold-bg)}
+.drop-icon{font-size:32px;opacity:0.25;margin-bottom:10px}
+.drop-text{font-size:13px;color:var(--text2);font-weight:500}
+.drop-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:14px}
+.photo-thumb{aspect-ratio:4/3;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;box-shadow:var(--shadow)}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-thumb-overlay{position:absolute;inset:0;background:rgba(23,24,59,0.6);display:none;align-items:center;justify-content:center;gap:8px}
+.photo-thumb:hover .photo-thumb-overlay{display:flex}
+.photo-caption-bar{position:absolute;bottom:0;left:0;right:0;padding:5px 7px;background:rgba(23,24,59,0.75);font-size:10px;color:#fff;line-height:1.3}
+.photo-del-btn{background:rgba(175,1,41,0.85);border:none;border-radius:4px;color:#fff;cursor:pointer;padding:4px 8px;font-size:11px;font-family:var(--font)}
+
+/* Research editor */
+.rich-toolbar{display:flex;gap:4px;padding:8px 10px;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;background:var(--bg2);flex-wrap:wrap}
+.rich-btn{background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--text2);transition:all 0.15s;line-height:1.4}
+.rich-btn:hover{background:var(--bg3);border-color:var(--border);color:var(--navy)}
+.rich-btn.active{background:var(--navy-light);border-color:var(--border);color:var(--navy);font-weight:600}
+.rich-sep{width:1px;background:var(--border);margin:0 3px;align-self:stretch}
+.rich-editor{border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:12px;min-height:160px;outline:none;font-family:var(--font);font-size:13px;line-height:1.7;color:var(--navy);background:var(--bg)}
+.rich-editor:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
+.rich-editor img{max-width:100%;border-radius:4px;margin:6px 0;border:1px solid var(--border)}
+.rich-editor b,.rich-editor strong{font-weight:600}
+.rich-editor p{margin-bottom:8px}
 
 /* PDFs */
 .pdf-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.pdf-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)}
-.pdf-name{font-size:13px;flex:1}
-.pdf-meta{font-size:11px;color:var(--text3);font-family:var(--mono)}
-.drop-zone{border:1px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all 0.15s}
-.drop-zone:hover{border-color:var(--accent-border);background:var(--accent-bg)}
-.drop-zone-icon{font-size:28px;opacity:0.3;margin-bottom:8px}
-.drop-zone-text{font-size:13px;color:var(--text3)}
-.drop-zone-sub{font-size:11px;color:var(--text3);margin-top:4px}
-
-/* Photos */
-.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
-.photo-thumb{aspect-ratio:4/3;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer}
-.photo-thumb img{width:100%;height:100%;object-fit:cover}
-.photo-thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center}
-.photo-thumb:hover .photo-thumb-overlay{display:flex}
-.photo-add{aspect-ratio:4/3;background:var(--bg3);border:1px dashed var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;gap:4px}
-.photo-add:hover{border-color:var(--accent-border);background:var(--accent-bg)}
-.photo-add-icon{font-size:22px;opacity:0.3}
-.photo-add-label{font-size:10px;color:var(--text3)}
-
-/* Save bar */
-.save-bar{padding:10px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg2);flex-shrink:0}
-.save-status{font-size:12px;color:var(--text3)}
-.save-status.saved{color:var(--green)}
-.save-status.saving{color:var(--accent)}
+.pdf-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);transition:border-color 0.15s}
+.pdf-item:hover{border-color:var(--border2)}
+.pdf-name{font-size:13px;flex:1;color:var(--navy);font-weight:500}
+.pdf-meta{font-size:11px;color:var(--text3)}
 
 /* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:500px;max-height:85vh;overflow-y:auto;padding:24px}
+.modal-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.5);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)}
+.modal{background:var(--bg);border:1px solid var(--border);border-radius:12px;width:500px;max-height:88vh;overflow-y:auto;padding:24px;box-shadow:var(--shadow-md)}
 .modal::-webkit-scrollbar{width:4px}
 .modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.modal-title{font-size:17px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:20px;color:var(--navy)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
 /* Toast */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 20px rgba(0,0,0,0.4);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:200;max-width:300px}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:#fff;box-shadow:var(--shadow-md);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:200;max-width:300px;font-weight:500}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.ok{border-color:var(--green);color:var(--green)}
-.toast.err{border-color:var(--red);color:var(--red)}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
 
 /* Loading */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
-.loading-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+.loading-spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:var(--text3);font-family:var(--mono)}
+.loading-text{font-size:13px;color:var(--text3);font-weight:500}
+.loading-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.loading-logo-text{font-size:16px;font-weight:600;color:var(--navy)}
 
-.pattern-title{font-size:20px;font-weight:600;letter-spacing:-0.02em}
-.pattern-sub{font-size:13px;color:var(--text2);margin-top:3px}
-
-input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);cursor:pointer;padding:2px}
+input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);cursor:pointer;padding:3px}
 </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loading-overlay">
+  <div class="loading-logo">
+    <svg width="28" height="28" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
+    <span class="loading-logo-text">United Seat Factory</span>
+  </div>
   <div class="loading-spinner"></div>
   <div class="loading-text">Connecting to database...</div>
 </div>
 
 <div class="app">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="logo">
-        <div class="logo-icon">U</div>
+        <svg class="logo-icon" viewBox="0 0 100 100" fill="none"><rect width="100" height="100" rx="10" fill="#C9B27E" fill-opacity="0.15"/><path d="M18 26h64v9H18zM26 39h48v24H26zM30 67h40v9H30z" fill="#C9B27E"/></svg>
         <div>
           <div class="logo-text">United Seat Factory</div>
-          <div class="logo-sub">Pattern Research DB</div>
+          <div class="logo-sub">Pattern Database</div>
         </div>
       </div>
       <div class="search-box">
@@ -232,19 +279,18 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
       </div>
     </div>
     <div class="brand-list" id="brand-list">
-      <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading...</div>
+      <div style="padding:20px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px">Loading...</div>
     </div>
     <div class="sidebar-footer">
       <button class="btn-add" id="add-btn" onclick="openAddModal()">+ Add Pattern</button>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main">
-    <div class="main-header" id="main-header">
-      <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
+    <div class="main-header">
+      <div class="breadcrumb" id="breadcrumb"><span>Select a pattern to begin</span></div>
       <div class="header-actions" id="header-actions" style="display:none">
-        <span class="save-status" id="hdr-status"></span>
+        <span class="hdr-status" id="hdr-status"></span>
         <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Delete</button>
         <button class="btn btn-primary btn-sm" id="save-btn" onclick="saveAll()">Save changes</button>
       </div>
@@ -253,7 +299,7 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
       <div class="empty-state">
         <div class="empty-icon">🪑</div>
         <div class="empty-title">No pattern selected</div>
-        <div class="empty-sub">Choose a pattern from the sidebar, or add a new one to get started.</div>
+        <div class="empty-sub">Choose a pattern from the sidebar or add a new one to get started.</div>
       </div>
     </div>
   </div>
@@ -262,7 +308,7 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
 <!-- ADD PATTERN MODAL -->
 <div class="modal-overlay" id="add-modal" style="display:none" onclick="if(event.target===this)closeAddModal()">
   <div class="modal">
-    <div class="modal-title">➕ Add new pattern</div>
+    <div class="modal-title">Add new pattern</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Car Brand *</label>
@@ -294,7 +340,7 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
 <!-- ADD COLOR MODAL -->
 <div class="modal-overlay" id="color-modal" style="display:none" onclick="if(event.target===this)closeColorModal()">
   <div class="modal">
-    <div class="modal-title">🎨 Add color</div>
+    <div class="modal-title">Add color</div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Color Name *</label>
@@ -307,7 +353,7 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Approximate hex color</label>
+        <label class="form-label">Approximate color</label>
         <input type="color" id="c-hex" value="#2c2c2c">
       </div>
       <div class="form-group">
@@ -322,45 +368,16 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
   </div>
 </div>
 
-<!-- PHOTO MODAL -->
-<div class="modal-overlay" id="photo-modal" style="display:none" onclick="if(event.target===this)closePhotoModal()">
-  <div class="modal">
-    <div class="modal-title" id="photo-modal-title">📸 Add photo</div>
-    <div class="form-group" style="margin-bottom:12px">
-      <label class="form-label">Photo URL</label>
-      <input class="form-input" id="ph-url" placeholder="https://... (paste image URL)">
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">In Phase 2 we'll add direct upload. For now paste a URL from Google Drive, Dropbox, or imgur.</div>
-    </div>
-    <div class="form-group" style="margin-bottom:12px">
-      <label class="form-label">Type</label>
-      <select class="form-select form-input" id="ph-type">
-        <option value="reference">Reference / Example color</option>
-        <option value="before_after">Before & After (customer)</option>
-        <option value="factory">Factory photo</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Caption (optional)</label>
-      <input class="form-input" id="ph-caption" placeholder="e.g. Black vinyl perforated — customer install">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closePhotoModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="addPhoto()">Add Photo</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
+<input type="file" id="file-input" style="display:none" accept="image/*" multiple onchange="handleFileInput(event)">
 
 <script>
-// ── CONFIG ───────────────────────────────────────────────────
-const SUPA_URL = 'https://doommgfawoqiptgqadwd.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
+const SUPA_URL='https://doommgfawoqiptgqadwd.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
+const {createClient}=supabase;
+const db=createClient(SUPA_URL,SUPA_KEY);
 
-const { createClient } = supabase;
-const db = createClient(SUPA_URL, SUPA_KEY);
-
-const POSITIONS = [
+const POSITIONS=[
   {id:'driver_bottom',label:'Driver Bottom'},
   {id:'passenger_bottom',label:'Passenger Bottom'},
   {id:'front_top_driver',label:'Front Top (Driver)'},
@@ -372,217 +389,113 @@ const POSITIONS = [
   {id:'foam_driver',label:'Foam (Driver)'},
   {id:'foam_passenger',label:'Foam (Passenger)'},
 ];
-const MATERIALS = ['Vinyl','Vinyl Perforated','Leather','Cloth'];
+const MATERIALS=['Vinyl','Vinyl Perforated','Leather','Cloth'];
 
-let patterns = [];
-let currentId = null;
-let activeTab = 'research';
-let unsaved = false;
-let saving = false;
+let patterns=[],currentId=null,activeTab='research',unsaved=false,saving=false;
+let currentPhotoType='product'; // for file input context
 
-// ── INIT ─────────────────────────────────────────────────────
-async function init() {
-  await setupTables();
+async function init(){
+  await checkTables();
   await loadPatterns();
-  document.getElementById('loading-overlay').style.display = 'none';
+  document.getElementById('loading-overlay').style.display='none';
 }
 
-async function setupTables() {
-  // Create tables via raw SQL using the REST API approach
-  // We'll use Supabase's rpc or just try inserting and catch errors
-  // Instead we'll use the management approach - create tables if they don't exist
-  // by attempting a select and handling gracefully
-  try {
-    // Try to create tables by calling a setup function
-    // Since we can't run DDL directly, we'll use the Supabase SQL editor approach
-    // For now, check if table exists
-    const { error } = await db.from('patterns').select('id').limit(1);
-    if (error && error.code === '42P01') {
-      // Table doesn't exist - show setup instructions
-      document.getElementById('loading-overlay').innerHTML = `
-        <div style="text-align:center;max-width:500px;padding:24px">
-          <div style="font-size:32px;margin-bottom:16px">🗄️</div>
-          <div style="font-size:18px;font-weight:600;margin-bottom:12px;color:#f0f0f0">One-time database setup needed</div>
-          <div style="font-size:13px;color:#aaa;line-height:1.7;margin-bottom:20px">
-            Go to your Supabase project → <strong style="color:#c8a96e">SQL Editor</strong> → paste the SQL below → click Run
-          </div>
-          <textarea readonly style="width:100%;height:260px;background:#222;border:1px solid #333;border-radius:8px;padding:12px;color:#c8a96e;font-family:monospace;font-size:11px;resize:none;text-align:left">${getSetupSQL()}</textarea>
-          <div style="margin-top:16px">
-            <button onclick="init()" style="background:#c8a96e;color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">I've run the SQL — reload</button>
-          </div>
-        </div>`;
-      return;
-    }
-  } catch(e) {}
+async function checkTables(){
+  const {error}=await db.from('patterns').select('id').limit(1);
+  if(error&&error.code==='42P01'){
+    document.getElementById('loading-overlay').innerHTML=`
+    <div style="text-align:center;max-width:520px;padding:24px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--navy)">One-time database setup needed</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.7">Go to Supabase → <strong>SQL Editor</strong> → paste and run this SQL</div>
+      <textarea readonly style="width:100%;height:240px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--navy);font-family:monospace;font-size:11px;resize:none">${getSQL()}</textarea>
+      <button onclick="location.reload()" style="margin-top:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Reload after running SQL</button>
+    </div>`;
+  }
 }
 
-function getSetupSQL() {
-  return `-- USF Pattern Database Setup
-CREATE TABLE IF NOT EXISTS patterns (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  brand text NOT NULL,
-  model text NOT NULL,
-  years text NOT NULL,
-  trim text,
-  research text DEFAULT '',
-  notes text DEFAULT '',
-  submodels jsonb DEFAULT '[]',
-  materials jsonb DEFAULT '[]',
-  positions jsonb DEFAULT '{}',
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
+function getSQL(){return`CREATE TABLE IF NOT EXISTS patterns (id uuid DEFAULT gen_random_uuid() PRIMARY KEY,brand text NOT NULL,model text NOT NULL,years text NOT NULL,trim text,research text DEFAULT '',notes text DEFAULT '',submodels jsonb DEFAULT '[]',materials jsonb DEFAULT '[]',positions jsonb DEFAULT '{}',created_at timestamptz DEFAULT now(),updated_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS pattern_colors (id uuid DEFAULT gen_random_uuid() PRIMARY KEY,pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,name text NOT NULL,code text,hex text DEFAULT '#888888',year_note text,sort_order int DEFAULT 0,created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS pattern_pdfs (id uuid DEFAULT gen_random_uuid() PRIMARY KEY,pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,name text NOT NULL,url text,size_label text,created_at timestamptz DEFAULT now());
+CREATE TABLE IF NOT EXISTS pattern_photos (id uuid DEFAULT gen_random_uuid() PRIMARY KEY,pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,url text NOT NULL,type text DEFAULT 'product',caption text,created_at timestamptz DEFAULT now());`;}
 
-CREATE TABLE IF NOT EXISTS pattern_colors (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  code text,
-  hex text DEFAULT '#888888',
-  year_note text,
-  sort_order int DEFAULT 0,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS pattern_pdfs (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  url text,
-  size_label text,
-  created_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS pattern_photos (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
-  url text NOT NULL,
-  type text DEFAULT 'reference',
-  caption text,
-  created_at timestamptz DEFAULT now()
-);`;
-}
-
-// ── LOAD ─────────────────────────────────────────────────────
-async function loadPatterns() {
-  const { data: pats, error } = await db.from('patterns').select('*').order('brand').order('model').order('years');
-  if (error) { toast('Error loading patterns: ' + error.message, 'err'); return; }
-
-  const { data: colors } = await db.from('pattern_colors').select('*').order('sort_order');
-  const { data: pdfs } = await db.from('pattern_pdfs').select('*').order('created_at');
-  const { data: photos } = await db.from('pattern_photos').select('*').order('created_at');
-
-  patterns = (pats || []).map(p => ({
-    ...p,
-    submodels: p.submodels || [],
-    materials: p.materials || [],
-    positions: p.positions || {},
-    colors: (colors || []).filter(c => c.pattern_id === p.id),
-    pdfs: (pdfs || []).filter(f => f.pattern_id === p.id),
-    photos: (photos || []).filter(ph => ph.pattern_id === p.id),
-  }));
-
+async function loadPatterns(){
+  const {data:pats,error}=await db.from('patterns').select('*').order('brand').order('model').order('years');
+  if(error){toast('Error loading: '+error.message,'err');return;}
+  const {data:colors}=await db.from('pattern_colors').select('*').order('sort_order');
+  const {data:pdfs}=await db.from('pattern_pdfs').select('*').order('created_at');
+  const {data:photos}=await db.from('pattern_photos').select('*').order('created_at');
+  patterns=(pats||[]).map(p=>({...p,submodels:p.submodels||[],materials:p.materials||[],positions:p.positions||{},colors:(colors||[]).filter(c=>c.pattern_id===p.id),pdfs:(pdfs||[]).filter(f=>f.pattern_id===p.id),photos:(photos||[]).filter(ph=>ph.pattern_id===p.id)}));
   buildSidebar();
-  updateBrandDatalist();
+  updateBrandDl();
 }
 
-// ── SIDEBAR ───────────────────────────────────────────────────
-let sidebarFilter = '';
-function filterSidebar(v) { sidebarFilter = v.toLowerCase(); buildSidebar(); }
+let sbFilter='';
+function filterSidebar(v){sbFilter=v.toLowerCase();buildSidebar();}
 
-function buildSidebar() {
-  const grouped = {};
-  patterns.forEach(p => {
-    const key = p.brand;
-    if (!grouped[key]) grouped[key] = [];
-    const q = sidebarFilter;
-    if (!q || p.brand.toLowerCase().includes(q) || p.model.toLowerCase().includes(q) || p.years.includes(q) || (p.trim||'').toLowerCase().includes(q)) {
-      grouped[key].push(p);
-    }
+function buildSidebar(){
+  const grouped={};
+  patterns.forEach(p=>{
+    if(!grouped[p.brand])grouped[p.brand]=[];
+    const q=sbFilter;
+    if(!q||p.brand.toLowerCase().includes(q)||p.model.toLowerCase().includes(q)||p.years.includes(q)||(p.trim||'').toLowerCase().includes(q))
+      grouped[p.brand].push(p);
   });
-
-  let html = '';
-  Object.keys(grouped).sort().forEach(brand => {
-    const list = grouped[brand];
-    if (!list.length) return;
-    const isOpen = list.some(p => p.id === currentId) || sidebarFilter;
-    html += `<div>
-      <div class="brand-header ${isOpen?'open':''}" onclick="toggleBrand(this,'bl-${brand.replace(/[^a-z0-9]/gi,'_')}')">
-        <span class="brand-chevron ${isOpen?'open':''}">▶</span>
-        <span class="brand-name">${brand}</span>
-        <span class="brand-count">${list.length}</span>
-      </div>
-      <div class="pattern-list ${isOpen?'open':''}" id="bl-${brand.replace(/[^a-z0-9]/gi,'_')}">`;
-    list.forEach(p => {
-      const hasPos = Object.values(p.positions).filter(Boolean).length;
-      const colorCount = p.colors.length;
-      html += `<div class="pattern-item ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')">
-        <div class="pattern-item-name">${p.model} ${p.years}${p.trim?' <span style="color:var(--text3);font-weight:400">· '+p.trim+'</span>':''}</div>
+  let html='';
+  Object.keys(grouped).sort().forEach(brand=>{
+    const list=grouped[brand];if(!list.length)return;
+    const isOpen=list.some(p=>p.id===currentId)||!!sbFilter;
+    const bid='bl-'+brand.replace(/[^a-z0-9]/gi,'_');
+    html+=`<div><div class="brand-header ${isOpen?'open':''}" onclick="toggleBrand(this,'${bid}')">
+      <span class="brand-chevron ${isOpen?'open':''}">▶</span>
+      <span class="brand-name">${brand}</span>
+      <span class="brand-count">${list.length}</span>
+    </div><div class="pattern-list ${isOpen?'open':''}" id="${bid}">`;
+    list.forEach(p=>{
+      const hasPos=Object.values(p.positions).filter(Boolean).length;
+      html+=`<div class="pattern-item ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')">
+        <div class="pattern-item-name">${p.model} ${p.years}${p.trim?' · '+p.trim:''}</div>
         <div class="badge-row">
-          <span class="badge ${hasPos>0?'has':'miss'}">${hasPos}/${POSITIONS.length} pos</span>
-          <span class="badge ${colorCount>0?'has':'miss'}">${colorCount} colors</span>
+          <span class="badge ${hasPos>0?'has':'miss'}">${hasPos}/${POSITIONS.length}</span>
+          <span class="badge ${p.colors.length>0?'has':'miss'}">${p.colors.length} colors</span>
           ${p.pdfs.length?`<span class="badge warn">${p.pdfs.length} PDF</span>`:''}
         </div>
       </div>`;
     });
-    html += '</div></div>';
+    html+='</div></div>';
   });
-
-  document.getElementById('brand-list').innerHTML = html || '<div style="padding:16px;color:var(--text3);font-size:13px">No patterns found</div>';
+  document.getElementById('brand-list').innerHTML=html||'<div style="padding:16px;color:rgba(255,255,255,0.3);font-size:13px">No patterns found</div>';
 }
 
-function toggleBrand(el, listId) {
-  const list = document.getElementById(listId);
-  const chev = el.querySelector('.brand-chevron');
-  list.classList.toggle('open');
-  chev.classList.toggle('open');
-  el.classList.toggle('open');
+function toggleBrand(el,id){
+  const list=document.getElementById(id);
+  const ch=el.querySelector('.brand-chevron');
+  list.classList.toggle('open');ch.classList.toggle('open');el.classList.toggle('open');
+}
+function updateBrandDl(){
+  document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
 }
 
-function updateBrandDatalist() {
-  const brands = [...new Set(patterns.map(p => p.brand))].sort();
-  document.getElementById('brand-dl').innerHTML = brands.map(b => `<option value="${b}">`).join('');
-}
-
-// ── SELECT PATTERN ────────────────────────────────────────────
-function selectPattern(id) {
-  currentId = id;
-  activeTab = 'research';
-  unsaved = false;
-  buildSidebar();
-  renderPattern();
-  document.getElementById('header-actions').style.display = 'flex';
+function selectPattern(id){
+  currentId=id;activeTab='research';unsaved=false;
+  buildSidebar();renderPattern();
+  document.getElementById('header-actions').style.display='flex';
   setStatus('');
 }
+function getP(){return patterns.find(p=>p.id===currentId);}
+function setStatus(msg,cls=''){const el=document.getElementById('hdr-status');if(el){el.textContent=msg;el.className='hdr-status '+cls;}}
+function markDirty(){unsaved=true;setStatus('Unsaved changes');}
 
-function getP() { return patterns.find(p => p.id === currentId); }
+function renderPattern(){
+  const p=getP();if(!p)return;
+  document.getElementById('breadcrumb').innerHTML=`<span>${p.brand}</span><span class="sep">›</span><span>${p.model}</span><span class="sep">›</span><span class="current">${p.years}${p.trim?' · '+p.trim:''}</span>`;
+  const hasPos=Object.values(p.positions).filter(Boolean).length;
+  const pct=Math.round((hasPos/POSITIONS.length)*100);
+  const productPhotos=p.photos.filter(ph=>ph.type==='product');
+  const baPhotos=p.photos.filter(ph=>ph.type==='before_after');
+  const tabList=['research','colors','positions','materials','photos','before & after','pdfs'];
 
-function setStatus(msg, cls='') {
-  const el = document.getElementById('hdr-status');
-  if (el) { el.textContent = msg; el.className = 'save-status ' + cls; }
-}
-
-function markDirty() {
-  unsaved = true;
-  setStatus('Unsaved changes');
-}
-
-// ── RENDER ────────────────────────────────────────────────────
-function renderPattern() {
-  const p = getP();
-  if (!p) return;
-
-  // Breadcrumb
-  document.getElementById('breadcrumb').innerHTML =
-    `<span style="color:var(--text3)">${p.brand}</span><span class="sep">›</span><span>${p.model}</span><span class="sep">›</span><span style="color:var(--accent)">${p.years}${p.trim?' · '+p.trim:''}</span>`;
-
-  const hasPos = Object.values(p.positions).filter(Boolean).length;
-  const pct = Math.round((hasPos / POSITIONS.length) * 100);
-
-  const tabList = ['research','colors','positions','materials','photos','pdfs'];
-
-  let inner = `
-  <div style="margin-bottom:16px">
+  let inner=`
+  <div class="pattern-title-area">
     <div class="pattern-title">${p.brand} ${p.model}</div>
     <div class="pattern-sub">${p.years}${p.trim?' · '+p.trim:''}</div>
   </div>
@@ -593,22 +506,31 @@ function renderPattern() {
     <div class="stat-card"><div class="stat-value">${p.pdfs.length}</div><div class="stat-label">PDFs</div></div>
   </div>
   <div class="progress-wrap">
-    <div class="progress-meta"><span>Completeness</span><span style="color:var(--accent);font-family:var(--mono)">${pct}%</span></div>
+    <div class="progress-meta"><span>Completeness</span><span>${pct}%</span></div>
     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
   </div>
-  <div class="tabs">${tabList.map(t=>`<div class="tab ${activeTab===t?'active':''}" onclick="switchTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('')}</div>`;
+  <div class="tabs">${tabList.map(t=>{const key=t.replace(' & ','_');return`<div class="tab ${activeTab===key?'active':''}" onclick="switchTab('${key}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`}).join('')}</div>`;
 
-  // Tab content
-  if (activeTab === 'research') {
-    inner += `
+  if(activeTab==='research'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>📋</span><span class="section-title">Research summary</span></div>
-      <div class="section-body">
-        <textarea class="form-input" id="ta-research" style="min-height:140px" placeholder="Paste research notes — trim codes, year differences, OEM notes, fitment details..." oninput="markDirty()">${esc(p.research||'')}</textarea>
+      <div class="section-header"><span class="section-icon">📋</span><span class="section-title">Research summary</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">Supports text + inline images</span></div>
+      <div class="section-body" style="padding:0">
+        <div class="rich-toolbar">
+          <button class="rich-btn" onclick="fmt('bold')" title="Bold"><b>B</b></button>
+          <button class="rich-btn" onclick="fmt('italic')" title="Italic"><i>I</i></button>
+          <button class="rich-btn" onclick="fmt('underline')" title="Underline"><u>U</u></button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="fmt('insertUnorderedList')" title="Bullet list">• List</button>
+          <button class="rich-btn" onclick="fmt('insertOrderedList')" title="Numbered list">1. List</button>
+          <div class="rich-sep"></div>
+          <button class="rich-btn" onclick="insertResearchImage()" title="Insert image">📷 Image</button>
+        </div>
+        <div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()" onpaste="handlePaste(event)">${p.research||'<p>Add research notes here...</p>'}</div>
       </div>
     </div>
     <div class="section">
-      <div class="section-header"><span>🚗</span><span class="section-title">Submodels / Trims</span></div>
+      <div class="section-header"><span class="section-icon">🚗</span><span class="section-title">Submodels / Trims</span></div>
       <div class="section-body">
         <div class="tag-list">
           ${(p.submodels||[]).map((s,i)=>`<div class="tag">${esc(s)}<span class="remove" onclick="removeSubmodel(${i})">✕</span></div>`).join('')}
@@ -617,21 +539,19 @@ function renderPattern() {
       </div>
     </div>
     <div class="section">
-      <div class="section-header"><span>📝</span><span class="section-title">Additional notes</span></div>
+      <div class="section-header"><span class="section-icon">📝</span><span class="section-title">Additional notes</span></div>
       <div class="section-body">
         <textarea class="form-input" id="ta-notes" style="min-height:70px" placeholder="Fitment warnings, installation notes, caveats..." oninput="markDirty()">${esc(p.notes||'')}</textarea>
       </div>
     </div>`;
   }
 
-  else if (activeTab === 'colors') {
-    inner += `
+  else if(activeTab==='colors'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>🎨</span><span class="section-title">Colors</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add color</button>
-      </div>
+      <div class="section-header"><span class="section-icon">🎨</span><span class="section-title">Colors</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add color</button></div>
       <div class="section-body" style="padding:0">
-        ${p.colors.length ? `<table class="colors-table">
+        ${p.colors.length?`<table class="colors-table">
           <thead><tr><th>Color</th><th>Trim code</th><th>Year note</th><th></th></tr></thead>
           <tbody>${p.colors.map((c,i)=>`<tr>
             <td><div class="color-cell"><div class="color-swatch" style="background:${c.hex||'#888'}"></div>${esc(c.name)}</div></td>
@@ -639,341 +559,334 @@ function renderPattern() {
             <td><span class="year-note">${c.year_note||'All years'}</span></td>
             <td><button class="btn-icon" onclick="removeColor('${c.id}')">✕</button></td>
           </tr>`).join('')}</tbody>
-        </table>` : `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No colors yet. Click "+ Add color" to start.</div>`}
+        </table>`:`<div style="padding:28px;text-align:center;color:var(--text3);font-size:13px">No colors yet. Click "+ Add color" to start.</div>`}
       </div>
     </div>`;
   }
 
-  else if (activeTab === 'positions') {
-    inner += `
+  else if(activeTab==='positions'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>🪑</span><span class="section-title">Available positions</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--text3)">Click to toggle · saves immediately</span>
-      </div>
+      <div class="section-header"><span class="section-icon">🪑</span><span class="section-title">Available positions</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">Click to toggle · saves immediately</span></div>
       <div class="section-body">
         <div class="positions-grid">
-          ${POSITIONS.map(pos=>{
-            const has = p.positions[pos.id];
-            return `<div class="position-card ${has?'has':''}" onclick="togglePosition('${pos.id}')">
-              ${has?'<div class="position-check">✓</div>':''}
-              <div class="position-name">${pos.label}</div>
-              <div class="position-status">${has?'Available':'Not yet'}</div>
-            </div>`;
-          }).join('')}
+          ${POSITIONS.map(pos=>{const has=p.positions[pos.id];return`<div class="position-card ${has?'has':''}" onclick="togglePosition('${pos.id}')">
+            ${has?'<div class="position-check">✓</div>':''}
+            <div class="position-name">${pos.label}</div>
+            <div class="position-status">${has?'Available':'Not yet'}</div>
+          </div>`;}).join('')}
         </div>
       </div>
     </div>`;
   }
 
-  else if (activeTab === 'materials') {
-    inner += `
+  else if(activeTab==='materials'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>🧵</span><span class="section-title">Materials</span></div>
+      <div class="section-header"><span class="section-icon">🧵</span><span class="section-title">Materials</span></div>
       <div class="section-body">
-        <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Toggle which materials you produce for this pattern.</p>
-        <div class="materials-row">
-          ${MATERIALS.map(m=>`<button class="mat-btn ${(p.materials||[]).includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}
-        </div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Toggle which materials you produce for this pattern. Saves immediately.</p>
+        <div class="materials-row">${MATERIALS.map(m=>`<button class="mat-btn ${(p.materials||[]).includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}</div>
       </div>
     </div>`;
   }
 
-  else if (activeTab === 'photos') {
-    inner += `
+  else if(activeTab==='photos'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>📸</span><span class="section-title">Photos</span>
-        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPhotoModal()">+ Add photo</button>
-      </div>
+      <div class="section-header"><span class="section-icon">📸</span><span class="section-title">Product photos</span></div>
       <div class="section-body">
-        <div class="photo-grid">
-          ${p.photos.map(ph=>`<div class="photo-thumb">
-            <img src="${ph.url}" onerror="this.style.display='none'" alt="${esc(ph.caption||'')}">
-            <div class="photo-thumb-overlay">
-              <button class="btn-icon" style="color:#fff" onclick="removePhoto('${ph.id}')">✕</button>
-            </div>
-          </div>`).join('')}
-          <div class="photo-add" onclick="openPhotoModal()">
-            <div class="photo-add-icon">+</div>
-            <div class="photo-add-label">Add photo</div>
-          </div>
+        <div class="photo-drop-zone" id="product-drop" ondragover="onDragOver(event,'product-drop')" ondragleave="onDragLeave('product-drop')" ondrop="onDrop(event,'product')" onclick="triggerFileInput('product')">
+          <div class="drop-icon">📷</div>
+          <div class="drop-text">Drag & drop photos here</div>
+          <div class="drop-sub">or click to browse · JPG, PNG, WEBP</div>
         </div>
-        <p style="font-size:11px;color:var(--text3);margin-top:12px">Paste image URLs. Direct upload via Supabase Storage coming in Phase 2.</p>
+        ${productPhotos.length?`<div class="photo-grid">${productPhotos.map(ph=>`<div class="photo-thumb">
+          <img src="${ph.url}" onerror="this.parentElement.style.display='none'" alt="">
+          ${ph.caption?`<div class="photo-caption-bar">${esc(ph.caption)}</div>`:''}
+          <div class="photo-thumb-overlay"><button class="photo-del-btn" onclick="removePhoto('${ph.id}',event)">Remove</button></div>
+        </div>`).join('')}</div>`:''}
       </div>
     </div>`;
   }
 
-  else if (activeTab === 'pdfs') {
-    inner += `
+  else if(activeTab==='before_after'){
+    inner+=`
     <div class="section">
-      <div class="section-header"><span>📄</span><span class="section-title">PDF brochures & research docs</span></div>
+      <div class="section-header"><span class="section-icon">🔄</span><span class="section-title">Before & after photos</span></div>
       <div class="section-body">
-        ${p.pdfs.length ? `<div class="pdf-list">${p.pdfs.map(f=>`<div class="pdf-item">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Customer installation photos — before and after. These are valuable for marketing and quality reference.</p>
+        <div class="photo-drop-zone" id="ba-drop" ondragover="onDragOver(event,'ba-drop')" ondragleave="onDragLeave('ba-drop')" ondrop="onDrop(event,'before_after')" onclick="triggerFileInput('before_after')">
+          <div class="drop-icon">🔄</div>
+          <div class="drop-text">Drag & drop before/after photos</div>
+          <div class="drop-sub">or click to browse</div>
+        </div>
+        ${baPhotos.length?`<div class="photo-grid">${baPhotos.map(ph=>`<div class="photo-thumb">
+          <img src="${ph.url}" onerror="this.parentElement.style.display='none'" alt="">
+          ${ph.caption?`<div class="photo-caption-bar">${esc(ph.caption)}</div>`:''}
+          <div class="photo-thumb-overlay"><button class="photo-del-btn" onclick="removePhoto('${ph.id}',event)">Remove</button></div>
+        </div>`).join('')}</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  else if(activeTab==='pdfs'){
+    inner+=`
+    <div class="section">
+      <div class="section-header"><span class="section-icon">📄</span><span class="section-title">PDF brochures & research docs</span></div>
+      <div class="section-body">
+        ${p.pdfs.length?`<div class="pdf-list">${p.pdfs.map(f=>`<div class="pdf-item">
           <span style="font-size:18px">📄</span>
           <span class="pdf-name">${esc(f.name)}</span>
           ${f.size_label?`<span class="pdf-meta">${esc(f.size_label)}</span>`:''}
-          ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none">Open ↗</a>`:''}
+          ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:12px;text-decoration:none;font-weight:500">Open ↗</a>`:''}
           <button class="btn-icon" onclick="removePdf('${f.id}')">✕</button>
-        </div>`).join('')}</div>` : ''}
-        <div class="drop-zone" onclick="openPdfInput()">
-          <div class="drop-zone-icon">📄</div>
-          <div class="drop-zone-text">Add PDF reference</div>
-          <div class="drop-zone-sub">Enter name + URL of a Google Drive or Dropbox PDF</div>
+        </div>`).join('')}</div>`:''}
+        <div class="photo-drop-zone" style="margin-top:${p.pdfs.length?12:0}px" onclick="openPdfInput()">
+          <div class="drop-icon">📄</div>
+          <div class="drop-text">Add PDF reference</div>
+          <div class="drop-sub">Enter name + Google Drive / Dropbox URL</div>
         </div>
-        <input type="file" id="pdf-file-input" style="display:none" accept=".pdf" onchange="handlePdfFile(event)">
       </div>
     </div>`;
   }
 
-  document.getElementById('content').innerHTML = inner;
+  document.getElementById('content').innerHTML=inner;
 }
 
-function switchTab(t) {
-  collectText();
-  activeTab = t;
-  renderPattern();
+function switchTab(t){collectText();activeTab=t;renderPattern();}
+
+function collectText(){
+  const p=getP();if(!p)return;
+  const r=document.getElementById('rich-editor');
+  const n=document.getElementById('ta-notes');
+  if(r)p.research=r.innerHTML;
+  if(n)p.notes=n.value;
 }
 
-function collectText() {
-  const p = getP();
-  if (!p) return;
-  const r = document.getElementById('ta-research');
-  const n = document.getElementById('ta-notes');
-  if (r) p.research = r.value;
-  if (n) p.notes = n.value;
-}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ── RICH EDITOR ──
+function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('rich-editor').focus();markDirty();}
 
-// ── POSITIONS ─────────────────────────────────────────────────
-async function togglePosition(posId) {
-  const p = getP();
-  p.positions[posId] = !p.positions[posId];
-  // Save positions immediately
-  const { error } = await db.from('patterns').update({ positions: p.positions, updated_at: new Date().toISOString() }).eq('id', p.id);
-  if (error) { toast('Error saving: ' + error.message, 'err'); return; }
-  toast('Position updated ✓');
-  buildSidebar();
-  renderPattern();
-}
-
-// ── MATERIALS ─────────────────────────────────────────────────
-async function toggleMaterial(mat) {
-  const p = getP();
-  const idx = (p.materials||[]).indexOf(mat);
-  if (idx > -1) p.materials.splice(idx, 1);
-  else p.materials.push(mat);
-  const { error } = await db.from('patterns').update({ materials: p.materials, updated_at: new Date().toISOString() }).eq('id', p.id);
-  if (error) { toast('Error saving: ' + error.message, 'err'); return; }
-  toast('Materials updated ✓');
-  renderPattern();
-}
-
-// ── SUBMODELS ─────────────────────────────────────────────────
-function addSubmodelKey(e) {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    const val = e.target.value.trim().replace(/,$/,'');
-    if (!val) return;
-    const p = getP();
-    p.submodels.push(val);
-    e.target.value = '';
-    markDirty();
-    renderPattern();
+function handlePaste(e){
+  const items=e.clipboardData.items;
+  for(const item of items){
+    if(item.type.startsWith('image/')){
+      e.preventDefault();
+      const blob=item.getAsFile();
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        document.execCommand('insertImage',false,ev.target.result);
+        markDirty();
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }
   }
 }
-function removeSubmodel(i) {
-  const p = getP();
-  p.submodels.splice(i,1);
-  markDirty();
-  renderPattern();
+
+function insertResearchImage(){
+  currentPhotoType='research-inline';
+  document.getElementById('file-input').accept='image/*';
+  document.getElementById('file-input').multiple=false;
+  document.getElementById('file-input').click();
 }
 
-// ── SAVE ALL ──────────────────────────────────────────────────
-async function saveAll() {
-  if (saving) return;
+// ── DRAG & DROP PHOTOS ──
+function onDragOver(e,id){e.preventDefault();document.getElementById(id).classList.add('dragover');}
+function onDragLeave(id){document.getElementById(id).classList.remove('dragover');}
+function onDrop(e,type){
+  e.preventDefault();
+  const id=type==='product'?'product-drop':'ba-drop';
+  document.getElementById(id).classList.remove('dragover');
+  const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));
+  if(files.length)uploadPhotos(files,type);
+}
+
+function triggerFileInput(type){
+  currentPhotoType=type;
+  document.getElementById('file-input').accept='image/*';
+  document.getElementById('file-input').multiple=true;
+  document.getElementById('file-input').click();
+}
+
+function handleFileInput(e){
+  const files=Array.from(e.target.files);
+  e.target.value='';
+  if(!files.length)return;
+  if(currentPhotoType==='research-inline'){
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const ed=document.getElementById('rich-editor');
+      if(ed){ed.focus();document.execCommand('insertImage',false,ev.target.result);markDirty();}
+    };
+    reader.readAsDataURL(files[0]);
+  } else {
+    uploadPhotos(files.filter(f=>f.type.startsWith('image/')),currentPhotoType);
+  }
+}
+
+async function uploadPhotos(files,type){
+  const p=getP();if(!p)return;
+  toast('Uploading '+files.length+' photo(s)...','');
+  for(const file of files){
+    const reader=new FileReader();
+    await new Promise(resolve=>{
+      reader.onload=async ev=>{
+        // Store as base64 data URL (no external storage needed for now)
+        const url=ev.target.result;
+        const {data,error}=await db.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();
+        if(!error&&data)p.photos.push(data);
+        resolve();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  renderPattern();
+  toast(files.length+' photo(s) added ✓');
+}
+
+async function removePhoto(id,e){
+  if(e)e.stopPropagation();
+  if(!confirm('Remove this photo?'))return;
+  const p=getP();
+  const {error}=await db.from('pattern_photos').delete().eq('id',id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.photos=p.photos.filter(ph=>ph.id!==id);
+  renderPattern();toast('Photo removed');
+}
+
+// ── POSITIONS ──
+async function togglePosition(posId){
+  const p=getP();p.positions[posId]=!p.positions[posId];
+  const {error}=await db.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  toast('Saved ✓');buildSidebar();renderPattern();
+}
+
+// ── MATERIALS ──
+async function toggleMaterial(mat){
+  const p=getP();const idx=(p.materials||[]).indexOf(mat);
+  if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);
+  const {error}=await db.from('patterns').update({materials:p.materials,updated_at:new Date().toISOString()}).eq('id',p.id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  toast('Saved ✓');renderPattern();
+}
+
+// ── SUBMODELS ──
+function addSubmodelKey(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const val=e.target.value.trim().replace(/,$/,'');
+    if(!val)return;
+    const p=getP();p.submodels.push(val);e.target.value='';
+    markDirty();renderPattern();
+  }
+}
+function removeSubmodel(i){const p=getP();p.submodels.splice(i,1);markDirty();renderPattern();}
+
+// ── SAVE ──
+async function saveAll(){
+  if(saving)return;
   collectText();
-  const p = getP();
-  if (!p) return;
-  saving = true;
-  setStatus('Saving...', 'saving');
-  const btn = document.getElementById('save-btn');
-  if (btn) btn.disabled = true;
+  const p=getP();if(!p)return;
+  saving=true;setStatus('Saving...','saving');
+  const btn=document.getElementById('save-btn');if(btn)btn.disabled=true;
+  const {error}=await db.from('patterns').update({research:p.research,notes:p.notes,submodels:p.submodels,updated_at:new Date().toISOString()}).eq('id',p.id);
+  saving=false;if(btn)btn.disabled=false;
+  if(error){toast('Save failed: '+error.message,'err');setStatus('Save failed');return;}
+  unsaved=false;setStatus('Saved ✓','saved');buildSidebar();toast('Pattern saved ✓');
+}
 
-  const { error } = await db.from('patterns').update({
-    research: p.research,
-    notes: p.notes,
-    submodels: p.submodels,
-    updated_at: new Date().toISOString()
-  }).eq('id', p.id);
+// ── COLORS ──
+function openColorModal(){document.getElementById('color-modal').style.display='flex';}
+function closeColorModal(){document.getElementById('color-modal').style.display='none';}
+async function addColor(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){alert('Color name required.');return;}
+  const code=document.getElementById('c-code').value.trim();
+  const hex=document.getElementById('c-hex').value;
+  const year_note=document.getElementById('c-years').value.trim();
+  const p=getP();
+  const {data,error}=await db.from('pattern_colors').insert({pattern_id:p.id,name,code,hex,year_note,sort_order:p.colors.length}).select().single();
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.colors.push(data);closeColorModal();
+  ['c-name','c-code','c-years'].forEach(id=>document.getElementById(id).value='');
+  buildSidebar();renderPattern();toast('Color added ✓');
+}
+async function removeColor(id){
+  if(!confirm('Remove this color?'))return;
+  const p=getP();
+  const {error}=await db.from('pattern_colors').delete().eq('id',id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.colors=p.colors.filter(c=>c.id!==id);buildSidebar();renderPattern();toast('Color removed');
+}
 
-  saving = false;
-  if (btn) btn.disabled = false;
-  if (error) { toast('Save failed: ' + error.message, 'err'); setStatus('Save failed', ''); return; }
-  unsaved = false;
-  setStatus('Saved ✓', 'saved');
+// ── PDFS ──
+function openPdfInput(){
+  const name=prompt('PDF name (e.g. "Lexus RX330 OEM Color Guide.pdf"):');
+  if(!name)return;
+  const url=prompt('Google Drive or Dropbox link (optional — press Enter to skip):');
+  savePdf(name.trim(),url?url.trim():null,null);
+}
+async function savePdf(name,url,size_label){
+  const p=getP();
+  const {data,error}=await db.from('pattern_pdfs').insert({pattern_id:p.id,name,url,size_label}).select().single();
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.pdfs.push(data);buildSidebar();renderPattern();toast('PDF added ✓');
+}
+async function removePdf(id){
+  if(!confirm('Remove this PDF?'))return;
+  const p=getP();
+  const {error}=await db.from('pattern_pdfs').delete().eq('id',id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.pdfs=p.pdfs.filter(f=>f.id!==id);buildSidebar();renderPattern();toast('PDF removed');
+}
+
+// ── ADD PATTERN ──
+function openAddModal(){document.getElementById('add-modal').style.display='flex';}
+function closeAddModal(){document.getElementById('add-modal').style.display='none';}
+async function addPattern(){
+  const brand=document.getElementById('nm-brand').value.trim();
+  const model=document.getElementById('nm-model').value.trim();
+  const years=document.getElementById('nm-years').value.trim();
+  const trim=document.getElementById('nm-trim').value.trim();
+  if(!brand||!model||!years){alert('Brand, Model and Year Range are required.');return;}
+  const btn=document.getElementById('add-confirm-btn');
+  btn.disabled=true;btn.textContent='Adding...';
+  const defPos={};POSITIONS.forEach(p=>defPos[p.id]=false);
+  const {data,error}=await db.from('patterns').insert({brand,model,years,trim,research:'',notes:'',submodels:[],materials:[],positions:defPos}).select().single();
+  btn.disabled=false;btn.textContent='Add Pattern';
+  if(error){toast('Error: '+error.message,'err');return;}
+  const full={...data,colors:[],pdfs:[],photos:[],submodels:[],materials:[],positions:defPos};
+  patterns.push(full);patterns.sort((a,b)=>a.brand.localeCompare(b.brand)||a.model.localeCompare(b.model));
+  updateBrandDl();closeAddModal();
+  ['nm-brand','nm-model','nm-years','nm-trim'].forEach(id=>document.getElementById(id).value='');
+  selectPattern(data.id);toast('Pattern added ✓');
+}
+
+// ── DELETE ──
+async function confirmDelete(){
+  const p=getP();
+  if(!confirm(`Delete "${p.brand} ${p.model} ${p.years}"?\n\nThis will permanently delete all colors, PDFs and photos for this pattern. This cannot be undone.`))return;
+  const {error}=await db.from('patterns').delete().eq('id',p.id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  patterns=patterns.filter(x=>x.id!==p.id);currentId=null;
   buildSidebar();
-  toast('Pattern saved ✓');
-}
-
-// ── COLORS ────────────────────────────────────────────────────
-function openColorModal() { document.getElementById('color-modal').style.display='flex'; }
-function closeColorModal() { document.getElementById('color-modal').style.display='none'; }
-
-async function addColor() {
-  const name = document.getElementById('c-name').value.trim();
-  if (!name) { alert('Color name required.'); return; }
-  const code = document.getElementById('c-code').value.trim();
-  const hex = document.getElementById('c-hex').value;
-  const year_note = document.getElementById('c-years').value.trim();
-  const p = getP();
-
-  const { data, error } = await db.from('pattern_colors').insert({
-    pattern_id: p.id, name, code, hex, year_note, sort_order: p.colors.length
-  }).select().single();
-
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.colors.push(data);
-  closeColorModal();
-  ['c-name','c-code','c-years'].forEach(id => document.getElementById(id).value = '');
-  buildSidebar();
-  renderPattern();
-  toast('Color added ✓');
-}
-
-async function removeColor(id) {
-  if (!confirm('Remove this color?')) return;
-  const p = getP();
-  const { error } = await db.from('pattern_colors').delete().eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.colors = p.colors.filter(c => c.id !== id);
-  buildSidebar();
-  renderPattern();
-  toast('Color removed');
-}
-
-// ── PHOTOS ────────────────────────────────────────────────────
-function openPhotoModal() { document.getElementById('photo-modal').style.display='flex'; }
-function closePhotoModal() { document.getElementById('photo-modal').style.display='none'; }
-
-async function addPhoto() {
-  const url = document.getElementById('ph-url').value.trim();
-  if (!url) { alert('Photo URL required.'); return; }
-  const type = document.getElementById('ph-type').value;
-  const caption = document.getElementById('ph-caption').value.trim();
-  const p = getP();
-  const { data, error } = await db.from('pattern_photos').insert({ pattern_id: p.id, url, type, caption }).select().single();
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.photos.push(data);
-  closePhotoModal();
-  ['ph-url','ph-caption'].forEach(id => document.getElementById(id).value = '');
-  renderPattern();
-  toast('Photo added ✓');
-}
-
-async function removePhoto(id) {
-  if (!confirm('Remove this photo?')) return;
-  const p = getP();
-  const { error } = await db.from('pattern_photos').delete().eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.photos = p.photos.filter(ph => ph.id !== id);
-  renderPattern();
-  toast('Photo removed');
-}
-
-// ── PDFS ──────────────────────────────────────────────────────
-function openPdfInput() {
-  const name = prompt('PDF name (e.g. "Lexus RX330 Color Guide 2004-2009.pdf"):');
-  if (!name) return;
-  const url = prompt('Google Drive or Dropbox URL (optional, press Enter to skip):');
-  savePdf(name.trim(), url ? url.trim() : null, null);
-}
-
-async function savePdf(name, url, size_label) {
-  const p = getP();
-  const { data, error } = await db.from('pattern_pdfs').insert({ pattern_id: p.id, name, url, size_label }).select().single();
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.pdfs.push(data);
-  buildSidebar();
-  renderPattern();
-  toast('PDF added ✓');
-}
-
-async function removePdf(id) {
-  if (!confirm('Remove this PDF record?')) return;
-  const p = getP();
-  const { error } = await db.from('pattern_pdfs').delete().eq('id', id);
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  p.pdfs = p.pdfs.filter(f => f.id !== id);
-  buildSidebar();
-  renderPattern();
-  toast('PDF removed');
-}
-
-// ── ADD PATTERN ───────────────────────────────────────────────
-function openAddModal() { document.getElementById('add-modal').style.display='flex'; }
-function closeAddModal() { document.getElementById('add-modal').style.display='none'; }
-
-async function addPattern() {
-  const brand = document.getElementById('nm-brand').value.trim();
-  const model = document.getElementById('nm-model').value.trim();
-  const years = document.getElementById('nm-years').value.trim();
-  const trim = document.getElementById('nm-trim').value.trim();
-  if (!brand || !model || !years) { alert('Brand, Model and Year Range are required.'); return; }
-
-  const btn = document.getElementById('add-confirm-btn');
-  btn.disabled = true; btn.textContent = 'Adding...';
-
-  const defaultPos = {};
-  POSITIONS.forEach(p => defaultPos[p.id] = false);
-
-  const { data, error } = await db.from('patterns').insert({
-    brand, model, years, trim,
-    research: '', notes: '',
-    submodels: [], materials: [],
-    positions: defaultPos
-  }).select().single();
-
-  btn.disabled = false; btn.textContent = 'Add Pattern';
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-
-  const full = { ...data, colors: [], pdfs: [], photos: [], submodels: [], materials: [], positions: defaultPos };
-  patterns.push(full);
-  patterns.sort((a,b) => a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model));
-  updateBrandDatalist();
-  closeAddModal();
-  ['nm-brand','nm-model','nm-years','nm-trim'].forEach(id => document.getElementById(id).value = '');
-  selectPattern(data.id);
-  toast('Pattern added ✓');
-}
-
-// ── DELETE PATTERN ────────────────────────────────────────────
-async function confirmDelete() {
-  const p = getP();
-  if (!confirm(`Delete "${p.brand} ${p.model} ${p.years}"? This will also delete all colors, PDFs and photos for this pattern. This cannot be undone.`)) return;
-  const { error } = await db.from('patterns').delete().eq('id', p.id);
-  if (error) { toast('Error: ' + error.message, 'err'); return; }
-  patterns = patterns.filter(x => x.id !== p.id);
-  currentId = null;
-  buildSidebar();
-  document.getElementById('content').innerHTML = `<div class="empty-state"><div class="empty-icon">🪑</div><div class="empty-title">Pattern deleted</div><div class="empty-sub">Select another pattern or add a new one.</div></div>`;
-  document.getElementById('header-actions').style.display = 'none';
-  document.getElementById('breadcrumb').innerHTML = '<span>Select a pattern</span>';
+  document.getElementById('content').innerHTML=`<div class="empty-state"><div class="empty-icon">🪑</div><div class="empty-title">Pattern deleted</div><div class="empty-sub">Select another pattern or add a new one.</div></div>`;
+  document.getElementById('header-actions').style.display='none';
+  document.getElementById('breadcrumb').innerHTML='<span>Select a pattern to begin</span>';
   toast('Pattern deleted');
 }
 
-// ── TOAST ─────────────────────────────────────────────────────
-function toast(msg, type='ok') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast ' + type;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 2800);
+// ── TOAST ──
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast '+type;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// ── START ─────────────────────────────────────────────────────
 init();
 </script>
 </body>
