@@ -100,7 +100,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .var-btn{padding:9px 22px;border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s;user-select:none}
 .var-btn:hover{border-color:var(--navy);color:var(--navy)}
 .var-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(23,24,59,0.25)}
-.var-drop-hint{font-size:13px;color:var(--text3);white-space:nowrap;font-style:italic}
+.var-drop-hint{display:none}
+.var-photo-placeholder{position:relative;width:52px;height:52px;border-radius:8px;flex-shrink:0;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;overflow:hidden}
+.var-photo-placeholder:hover{border-color:var(--gold);background:var(--gold-bg)}
+.var-photo-placeholder-ico{font-size:16px;opacity:0.22}
+.var-photo-placeholder-hov{position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:12px;color:#fff}
+.var-photo-placeholder:hover .var-photo-placeholder-hov{display:flex}
 .var-photo{position:relative;width:var(--thumb);height:var(--thumb);border-radius:8px;overflow:hidden;flex-shrink:0;cursor:pointer;box-shadow:var(--shadow)}
 .var-photo img{width:100%;height:100%;object-fit:cover;display:block}
 .var-photo-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;z-index:2}
@@ -133,13 +138,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .color-name{font-size:14px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .color-code{font-size:13px;color:var(--navy);background:var(--bg3);padding:3px 8px;border-radius:4px;border:1px solid var(--border);white-space:nowrap}
 .color-years{font-size:13px;color:var(--text2);white-space:nowrap;min-width:80px}
-.color-photo{position:relative;width:var(--thumb);height:var(--thumb);border-radius:8px;overflow:hidden;flex-shrink:0;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:border-color 0.15s}
+.color-photo{position:relative;width:52px;height:52px;border-radius:8px;overflow:hidden;flex-shrink:0;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:border-color 0.15s}
 .color-photo:hover{border-color:var(--gold)}
+.color-photo.filled{width:var(--thumb);height:var(--thumb);border-style:solid;border-color:var(--border)}
 .color-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.color-photo-ico{font-size:22px;opacity:0.2}
-.color-photo-hov{position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff;text-align:center}
+.color-photo-ico{font-size:16px;opacity:0.22}
+.color-photo-hov{position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:12px;color:#fff;text-align:center}
 .color-photo:hover .color-photo-hov{display:flex}
-.color-photo.filled{border-style:solid;border-color:var(--border)}
 .color-photo-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;z-index:2}
 .color-photo-x:hover{background:var(--red)}
 .color-photo:hover .color-photo-x{display:flex}
@@ -239,6 +244,8 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
       <div class="hdr-actions" id="hdr-actions" style="display:none">
         <span class="hdr-status" id="hdr-status"></span>
+        <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">↩ Undo</button>
+        <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">↪ Redo</button>
         <button class="btn btn-danger btn-sm" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
         <button class="btn btn-navy btn-sm" onclick="saveAll()">Save changes</button>
       </div>
@@ -358,7 +365,7 @@ function buildSidebar(){
   document.getElementById('brand-list').innerHTML=html||'<div style="padding:16px;color:rgba(23,24,59,0.35);font-size:13px">No patterns found</div>';
 }
 function toggleBrand(el,id){var l=document.getElementById(id),c=el.querySelector('.bc');l.classList.toggle('open');c.classList.toggle('open');el.classList.toggle('open');}
-function selectPattern(id){currentId=id;activeTab='info';unsaved=false;buildSidebar();renderPattern();document.getElementById('hdr-actions').style.display='flex';setStatus('');}
+function selectPattern(id){currentId=id;activeTab='info';unsaved=false;undoStack=[];redoStack=[];buildSidebar();renderPattern();document.getElementById('hdr-actions').style.display='flex';setStatus('');setTimeout(snapshot,100);}
 function getP(){return patterns.find(function(p){return p.id===currentId;});}
 function setStatus(m,c){c=c||'';var el=document.getElementById('hdr-status');if(el){el.textContent=m;el.className='hdr-status '+c;}}
 function markDirty(){unsaved=true;setStatus('Unsaved changes');}
@@ -387,7 +394,7 @@ function renderPattern(){
       html+='<div class="var-row" id="varrow-'+g.id+'" ondragover="onVarOver(event,\''+g.id+'\')" ondragleave="onVarLeave(\''+g.id+'\')" ondrop="onVarDrop(event,\''+g.id+'\')">'+
         '<span class="var-row-label">'+g.label+'</span><div class="var-btns">'+
         g.btns.map(function(b){return '<button class="var-btn '+(p.positions[b.id]?'on':'')+'" onclick="toggleVarBtn(\''+b.id+'\',\''+g.id+'\')">'+b.label+'</button>';}).join('')+
-        '</div>'+(thumb?'<div class="var-photo" onclick="openLB(\''+su(thumb)+'\',event)"><img src="'+thumb+'" alt=""><button class="var-photo-x" onclick="confirmAction(\'Remove photo?\',function(){removeGroupThumb(\''+g.id+'\')})">&#x2715;</button></div>':'<span class="var-drop-hint">drop photo here</span>')+
+        '</div>'+(thumb?'<div class="var-photo" onclick="openLB(\''+su(thumb)+'\',event)"><img src="'+thumb+'" alt=""><button class="var-photo-x" onclick="confirmAction(\'Remove photo?\',function(){removeGroupThumb(\''+g.id+'\')})">&#x2715;</button></div>':'<div class="var-photo-placeholder" onclick="document.getElementById(\'vp-file-'+g.id+'\').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247; drop or click</div></div><input type="file" id="vp-file-'+g.id+'" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,\''+g.id+'\')">')+
         '</div>';
     });
     (p.other_positions||[]).forEach(function(op,i){
@@ -395,7 +402,7 @@ function renderPattern(){
       html+='<div class="other-var-row" id="orow-'+i+'" ondragover="onOtherOver(event,'+i+')" ondragleave="onOtherLeave('+i+')" ondrop="onOtherDrop(event,'+i+')">'+
         '<button class="other-var-toggle '+(op.active?'on':'')+'" onclick="confirmAction(\'Toggle this variation?\',function(){toggleOtherVar('+i+')})"></button>'+
         '<input class="other-var-input" value="'+esc(op.label)+'" placeholder="e.g. Center console, Foam cushion..." oninput="updateOtherLabel('+i+',this.value)">'+
-        (thumb?'<div class="other-var-photo" onclick="openLB(\''+su(thumb)+'\',event)"><img src="'+thumb+'" alt=""><button class="other-var-photo-x" onclick="confirmAction(\'Remove photo?\',function(){removeOtherThumb('+i+')})">&#x2715;</button></div>':'<span style="font-size:12px;color:var(--text3);white-space:nowrap;font-style:italic">drop photo</span>')+
+        (thumb?'<div class="other-var-photo" onclick="openLB(\''+su(thumb)+'\',event)"><img src="'+thumb+'" alt=""><button class="other-var-photo-x" onclick="confirmAction(\'Remove photo?\',function(){removeOtherThumb('+i+')})">&#x2715;</button></div>':'<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById(\'ovp-file-'+i+'\').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-file-'+i+'" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,'+i+')">')+
         '<button class="btn-ico" onclick="confirmAction(\'Remove this variation?\',function(){removeOtherVar('+i+')})">&#x2715;</button></div>';
     });
     html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button></div>';
@@ -407,7 +414,7 @@ function renderPattern(){
     html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body">'+
       '<div class="toggle-group">'+
       stdMats.map(function(m){return '<button class="tog-btn '+(mats.includes(m)?'on':'')+'" onclick="toggleMaterial(\''+m+'\')">'+m+'</button>';}).join('')+
-      '<button class="tog-btn '+(hasOther?'on':'')+'" onclick="toggleMaterial(\'Other\')">Other</button>'+
+      '<button class="tog-btn '+(hasOther?'on':'')+'" onclick="toggleMaterial(\'Other\')">'+(otherCustom||'Other')+'</button>'+
       '</div>'+
       (hasOther?'<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2);white-space:nowrap">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene, Suede..." value="'+esc(otherCustom)+'" oninput="setOtherMaterial(this.value)"></div>':'')+
       '</div></div>';
@@ -528,6 +535,45 @@ function onOtherDrop(e,i){
   if(f)fileToDataUrl(f).then(function(url){var p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');});
 }
 function removeOtherThumb(i){var p=getP();p.other_positions[i].thumb='';markDirty();renderPattern();toast('Removed');}
+
+// Click-to-upload handlers for variation photo placeholders
+function handleVarPhotoFile(e,gid){var f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(function(url){saveGroupThumb(gid,url);});}
+function handleOtherVarPhotoFile(e,i){var f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(function(url){var p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');});}
+
+// ── UNDO / REDO ──────────────────────────────────────────
+var undoStack=[],redoStack=[],lastSnapshot='';
+function snapshot(){
+  var p=getP();if(!p)return;
+  collectText();
+  var s=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions});
+  if(s===lastSnapshot)return;
+  undoStack.push(lastSnapshot);
+  if(undoStack.length>40)undoStack.shift();
+  redoStack=[];
+  lastSnapshot=s;
+}
+function applySnapshot(s){
+  var p=getP();if(!p||!s)return;
+  var d=JSON.parse(s);
+  Object.assign(p,d);
+  renderPattern();markDirty();
+}
+function undo(){if(!undoStack.length){toast('Nothing to undo','err');return;}var prev=undoStack.pop();redoStack.push(lastSnapshot);lastSnapshot=prev;applySnapshot(prev);toast('Undone');}
+function redo(){if(!redoStack.length){toast('Nothing to redo','err');return;}var next=redoStack.pop();undoStack.push(lastSnapshot);lastSnapshot=next;applySnapshot(next);toast('Redone');}
+document.addEventListener('keydown',function(e){
+  var meta=e.metaKey||e.ctrlKey;
+  if(!meta)return;
+  if(e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}
+  else if((e.key==='y')||(e.key==='z'&&e.shiftKey)){e.preventDefault();redo();}
+});
+
+// Snapshot on meaningful changes (debounced)
+var snapshotTimer=null;
+var origMarkDirty=markDirty;
+markDirty=function(){origMarkDirty();clearTimeout(snapshotTimer);snapshotTimer=setTimeout(snapshot,800);};
+
+// ── AUTOSAVE ─────────────────────────────────────────────
+setInterval(function(){if(unsaved&&currentId)saveAll();},30000);
 function toggleOtherVar(i){var p=getP();p.other_positions[i].active=!p.other_positions[i].active;markDirty();renderPattern();}
 function updateOtherLabel(i,v){var p=getP();p.other_positions[i].label=v;markDirty();}
 function addOtherVar(){var p=getP();p.other_positions.push({label:'',active:true,thumb:''});markDirty();renderPattern();}
