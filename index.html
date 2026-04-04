@@ -53,10 +53,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .btn-add-pat{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);padding:10px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s}
 .btn-add-pat:hover{background:var(--navy2)}
 .main{display:flex;flex-direction:column;overflow:hidden}
-.main-hdr{padding:0 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;min-height:54px;flex-shrink:0;gap:12px}
+.main-hdr{padding:0 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;min-height:54px;flex-shrink:0;gap:8px}
 .breadcrumb{font-size:13px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .bcs{color:var(--border2)}
-.hdr-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.hdr-actions{display:flex;gap:8px;align-items:center}
 .hdr-status{font-size:13px;color:var(--text3)}
 .hdr-status.saved{color:var(--green)}
 .hdr-status.saving{color:var(--gold2)}
@@ -219,6 +219,59 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 </style>
 </head>
 <body>
+<!-- LOGIN -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:var(--sb-bg);z-index:600;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:40px;width:380px;box-shadow:var(--shadow-md);text-align:center">
+    <svg width="40" height="40" viewBox="0 0 100 100" style="margin-bottom:12px"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px">United Seat Factory</div>
+    <div style="font-size:12px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:600;margin-bottom:28px">Pattern Database</div>
+    <div style="text-align:left;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Email</div>
+      <input id="login-email" type="email" placeholder="your@email.com" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key===&apos;Enter&apos;)doLogin()">
+    </div>
+    <div style="text-align:left;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Password</div>
+      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key===&apos;Enter&apos;)doLogin()">
+    </div>
+    <div id="login-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;border:1px solid var(--red-border);text-align:left"></div>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
+  </div>
+</div>
+
+<!-- USER MANAGEMENT MODAL -->
+<div class="modal-overlay" id="users-modal" style="display:none" onclick="if(event.target===this)closeUsersModal()">
+  <div class="modal" style="width:600px;max-width:95vw">
+    <div style="display:flex;align-items:center;margin-bottom:18px">
+      <div class="modal-title" style="margin-bottom:0;flex:1">User Management</div>
+      <button class="btn btn-navy btn-sm" id="add-user-btn" onclick="showAddUser()">+ Add User</button>
+    </div>
+    <div id="users-list"><div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div></div>
+    <div id="add-user-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">Add new user</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="nu-name" placeholder="e.g. Sarah Jones"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Temp Password</label><input class="form-input" id="nu-pass" placeholder="Min 6 characters" type="password"></div>
+        <div class="form-group"><label class="form-label">Role</label>
+          <select class="form-input" id="nu-role" style="cursor:pointer">
+            <option value="viewer">Viewer (read only)</option>
+            <option value="editor">Editor (add, edit, delete)</option>
+            <option value="manager">Manager (+ manage users)</option>
+          </select>
+        </div>
+      </div>
+      <div id="add-user-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:10px;padding:8px 12px;background:var(--red-bg);border-radius:8px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="hideAddUser()">Cancel</button>
+        <button class="btn btn-navy btn-sm" id="create-user-btn" onclick="createUser()">Create User</button>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeUsersModal()">Close</button></div>
+  </div>
+</div>
+
 <div class="loading-overlay" id="loading-overlay">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
     <svg width="28" height="28" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
@@ -242,12 +295,19 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
   <div class="main">
     <div class="main-hdr">
       <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
+      <div style="flex:1"></div>
       <div class="hdr-actions" id="hdr-actions" style="display:none">
         <span class="hdr-status" id="hdr-status"></span>
-        <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">↩ Undo</button>
-        <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">↪ Redo</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
-        <button class="btn btn-navy btn-sm" onclick="saveAll()">Save changes</button>
+        <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">&#x21A9; Undo</button>
+        <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">&#x21AA; Redo</button>
+        <button class="btn btn-danger btn-sm" id="delete-btn" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
+        <button class="btn btn-navy btn-sm" id="save-btn-hdr" onclick="saveAll()">Save changes</button>
+      </div>
+      <div id="user-bar" style="display:none;align-items:center;gap:10px;flex-shrink:0">
+        <span id="user-bar-name" style="font-size:13px;color:var(--text2);font-weight:500"></span>
+        <span id="user-bar-role" style="font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:0.04em;font-weight:600"></span>
+        <button class="btn btn-ghost btn-sm" id="users-btn" onclick="openUsersModal()" style="display:none">&#128100; Users</button>
+        <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign out</button>
       </div>
     </div>
     <div class="content" id="content">
@@ -325,11 +385,201 @@ function confirmAction(msg,cb,title){
   document.getElementById('confirm-ok-btn').onclick=function(){closeConfirm();cb();};
 }
 function closeConfirm(){document.getElementById('confirm-overlay').style.display='none';}
-async function init(){
-  const r=await supa.from('patterns').select('id').limit(1);
-  if(r.error&&r.error.code==='42P01'){showSql();return;}
+
+// ── AUTH GLOBALS ─────────────────────────────────────────
+var currentUser=null, currentRole=null, currentProfile=null;
+var ROLE_LEVEL={admin:4,manager:3,editor:2,viewer:1};
+function can(action){
+  // action: 'edit','delete','manage_users','bulk'
+  if(!currentRole)return false;
+  if(action==='bulk')return currentRole==='admin';
+  if(action==='manage_users')return ROLE_LEVEL[currentRole]>=3;
+  if(action==='delete')return ROLE_LEVEL[currentRole]>=2;
+  if(action==='edit')return ROLE_LEVEL[currentRole]>=2;
+  return false;
+}
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────
+async function doLogin(){
+  var email=document.getElementById('login-email').value.trim();
+  var pass=document.getElementById('login-password').value;
+  var btn=document.getElementById('login-btn');
+  var errEl=document.getElementById('login-error');
+  errEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  var res=await supa.auth.signInWithPassword({email:email,password:pass});
+  btn.textContent='Sign in';btn.disabled=false;
+  if(res.error){errEl.textContent=res.error.message;errEl.style.display='block';return;}
+  await onAuthSuccess(res.data.user);
+}
+async function doLogout(){
+  await supa.auth.signOut();
+  currentUser=null;currentRole=null;currentProfile=null;
+  document.getElementById('user-bar').style.display='none';
+  document.getElementById('hdr-actions').style.display='none';
+  showLoginScreen();
+}
+function showLoginScreen(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-email').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-error').style.display='none';
+}
+function hideLoginScreen(){document.getElementById('login-screen').style.display='none';}
+
+async function onAuthSuccess(user){
+  currentUser=user;
+  // Load profile
+  var pr=await supa.from('user_profiles').select('*').eq('id',user.id).single();
+  if(pr.error||!pr.data){
+    await supa.auth.signOut();
+    var el=document.getElementById('login-error');
+    el.textContent='No profile found. Contact your administrator.';el.style.display='block';
+    return;
+  }
+  currentProfile=pr.data;
+  currentRole=pr.data.role;
+  hideLoginScreen();
+  // Show user bar
+  var ub=document.getElementById('user-bar');
+  ub.style.display='flex';
+  document.getElementById('user-bar-name').textContent=pr.data.full_name||pr.data.email;
+  document.getElementById('user-bar-role').textContent=currentRole;
+  // Show users button for admin/manager
+  if(can('manage_users'))document.getElementById('users-btn').style.display='';
+  // Apply role restrictions
+  applyRoleUI();
+  // Load data
   await loadAll();
   document.getElementById('loading-overlay').style.display='none';
+}
+
+function applyRoleUI(){
+  // Hide add pattern button for viewers
+  var addBtn=document.querySelector('.btn-add-pat');
+  if(addBtn)addBtn.style.display=can('edit')?'':'none';
+}
+
+// ── USER MANAGEMENT ───────────────────────────────────────
+async function openUsersModal(){
+  if(!can('manage_users')){toast('Permission denied','err');return;}
+  document.getElementById('users-modal').style.display='flex';
+  await loadUsersList();
+}
+function closeUsersModal(){document.getElementById('users-modal').style.display='none';hideAddUser();}
+
+async function loadUsersList(){
+  var el=document.getElementById('users-list');
+  el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div>';
+  var res=await supa.from('user_profiles').select('*').order('created_at');
+  if(res.error){el.innerHTML='<div style="color:var(--red);font-size:13px">Error loading users</div>';return;}
+  var users=res.data||[];
+  var roleColors={admin:'var(--navy)',manager:'var(--gold2)',editor:'var(--green)',viewer:'var(--text3)'};
+  var canManage=can('manage_users');
+  var html='<table style="width:100%;border-collapse:collapse">';
+  html+='<thead><tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Name</th><th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Email</th><th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Role</th><th style="padding:6px 8px"></th></tr></thead><tbody>';
+  users.forEach(function(u){
+    var isMe=u.id===currentUser.id;
+    var canEdit=canManage&&!isMe&&(currentRole==='admin'||ROLE_LEVEL[u.role]<ROLE_LEVEL[currentRole]);
+    html+='<tr style="border-bottom:1px solid var(--border)">';
+    html+='<td style="padding:10px 8px;font-size:14px;font-weight:500">'+(u.full_name||'—')+(isMe?' <span style="font-size:11px;color:var(--text3)">(you)</span>':'')+'</td>';
+    html+='<td style="padding:10px 8px;font-size:13px;color:var(--text2)">'+u.email+'</td>';
+    html+='<td style="padding:10px 8px">';
+    if(canEdit){
+      html+='<select onchange="changeUserRole(''+u.id+'',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;cursor:pointer">';
+      ['viewer','editor','manager'].forEach(function(r){
+        if(currentRole==='admin')['viewer','editor','manager','admin'].forEach(function(r2,_,arr){});
+        var roles=currentRole==='admin'?['viewer','editor','manager','admin']:['viewer','editor','manager'];
+        // only render once
+      });
+      var roles=currentRole==='admin'?['viewer','editor','manager','admin']:['viewer','editor','manager'];
+      roles.forEach(function(r){html+='<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+r+'</option>';});
+      html+='</select>';
+    } else {
+      html+='<span style="font-size:12px;font-weight:600;color:'+roleColors[u.role]+';text-transform:uppercase;letter-spacing:0.04em">'+u.role+'</span>';
+    }
+    html+='</td><td style="padding:10px 8px;text-align:right">';
+    if(canEdit)html+='<button onclick="removeUser(''+u.id+'',''+esc(u.full_name||u.email)+'')" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:3px 8px;font-size:12px;cursor:pointer;font-family:var(--font)">Remove</button>';
+    html+='</td></tr>';
+  });
+  html+='</tbody></table>';
+  el.innerHTML=html;
+}
+
+async function changeUserRole(uid,role){
+  var res=await supa.from('user_profiles').update({role:role}).eq('id',uid);
+  if(res.error){toast('Error: '+res.error.message,'err');return;}
+  toast('Role updated ✓');
+  await loadUsersList();
+}
+
+async function removeUser(uid,name){
+  confirmAction('Remove '+name+' from the system? They will no longer be able to log in.',async function(){
+    // Delete profile first (auth user deletion requires service role — we just deactivate by removing profile)
+    var res=await supa.from('user_profiles').delete().eq('id',uid);
+    if(res.error){toast('Error: '+res.error.message,'err');return;}
+    toast('User removed');
+    await loadUsersList();
+  });
+}
+
+function showAddUser(){
+  // Check role level
+  if(!can('manage_users')){toast('Permission denied','err');return;}
+  document.getElementById('add-user-form').style.display='block';
+  document.getElementById('add-user-btn').style.display='none';
+  // Managers can only create editors and viewers
+  var roleSelect=document.getElementById('nu-role');
+  if(currentRole!=='admin'){
+    Array.from(roleSelect.options).forEach(function(o){if(o.value==='manager'||o.value==='admin')o.style.display='none';});
+  }
+}
+function hideAddUser(){
+  document.getElementById('add-user-form').style.display='none';
+  document.getElementById('add-user-btn').style.display='';
+  document.getElementById('add-user-error').style.display='none';
+  ['nu-name','nu-email','nu-pass'].forEach(function(id){document.getElementById(id).value='';});
+}
+
+async function createUser(){
+  var name=document.getElementById('nu-name').value.trim();
+  var email=document.getElementById('nu-email').value.trim();
+  var pass=document.getElementById('nu-pass').value;
+  var role=document.getElementById('nu-role').value;
+  var errEl=document.getElementById('add-user-error');
+  errEl.style.display='none';
+  if(!name||!email||!pass){errEl.textContent='All fields are required.';errEl.style.display='block';return;}
+  if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
+  // Managers cannot create managers or admins
+  if(currentRole==='manager'&&(role==='manager'||role==='admin')){errEl.textContent='Managers can only create editors and viewers.';errEl.style.display='block';return;}
+  var btn=document.getElementById('create-user-btn');btn.textContent='Creating...';btn.disabled=true;
+  // Create auth user via Supabase admin API (requires service role — we use signUp instead)
+  var res=await supa.auth.signUp({email:email,password:pass,options:{data:{full_name:name}}});
+  btn.textContent='Create User';btn.disabled=false;
+  if(res.error){errEl.textContent=res.error.message;errEl.style.display='block';return;}
+  if(!res.data||!res.data.user){errEl.textContent='User creation failed. Email may already exist.';errEl.style.display='block';return;}
+  // Insert profile
+  var pr=await supa.from('user_profiles').insert({id:res.data.user.id,email:email,full_name:name,role:role,created_by:currentUser.id});
+  if(pr.error){errEl.textContent='Profile error: '+pr.error.message;errEl.style.display='block';return;}
+  toast('User created ✓');
+  hideAddUser();
+  await loadUsersList();
+}
+
+async function init(){
+  // Check for existing session
+  var sess=await supa.auth.getSession();
+  if(sess.data&&sess.data.session&&sess.data.session.user){
+    await onAuthSuccess(sess.data.session.user);
+  } else {
+    document.getElementById('loading-overlay').style.display='none';
+    showLoginScreen();
+  }
+  // Listen for auth changes
+  supa.auth.onAuthStateChange(async function(event,session){
+    if(event==='SIGNED_OUT'){showLoginScreen();}
+  });
 }
 function showSql(){
   document.getElementById('loading-overlay').innerHTML='<div style="text-align:center;max-width:520px;padding:24px"><div style="font-size:15px;font-weight:600;margin-bottom:12px">Database setup needed</div><textarea readonly style="width:100%;height:200px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:none;color:var(--navy)">'+getSql()+'</textarea><button onclick="location.reload()" style="margin-top:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Reload after running SQL</button></div>';
@@ -488,6 +738,18 @@ function renderPattern(){
   }
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
+  // Apply role restrictions to rendered content
+  if(!can('edit')){
+    document.querySelectorAll('.btn-add-other,.tog-btn,.var-btn,.btn-navy').forEach(function(b){b.disabled=true;b.style.opacity='0.4';b.style.cursor='not-allowed';b.onclick=function(){toast('You have view-only access','err');};});
+    var ed=document.getElementById('rich-editor');if(ed)ed.setAttribute('contenteditable','false');
+    var ta=document.getElementById('ta-notes');if(ta)ta.disabled=true;
+  }
+  // Hide delete button for non-editors
+  var delBtn=document.getElementById('delete-btn');
+  if(delBtn)delBtn.style.display=can('delete')?'':'none';
+  // Hide save button for viewers
+  var saveBtn=document.getElementById('save-btn-hdr');
+  if(saveBtn)saveBtn.style.display=can('edit')?'':'none';
 }
 function buildPhotoTab(title,dropId,type,photos){
   return '<div class="sec"><div class="sec-hdr"><span class="sec-title">'+title+'</span></div><div class="sec-body">'+
