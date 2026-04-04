@@ -9,60 +9,61 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#17183B;--navy2:#1f2048;--navy-light:rgba(23,24,59,0.07);--navy-lighter:rgba(23,24,59,0.03);
-  --gold:#C9B27E;--gold2:#b89d68;--gold-bg:rgba(201,178,126,0.12);--gold-border:rgba(201,178,126,0.35);
-  --red:#AF0129;--red-bg:rgba(175,1,41,0.07);--red-border:rgba(175,1,41,0.25);
-  --bg:#fff;--bg2:#f8f7f5;--bg3:#f1eeea;
-  --border:#e5e0d8;--border2:#ccc6bb;
-  --text:var(--navy);--text2:rgba(23,24,59,0.6);--text3:rgba(23,24,59,0.38);
-  --green:#1a6e42;--green-bg:rgba(26,110,66,0.08);
+  --navy:#17183B;--navy2:#1f2048;
+  --navy-light:rgba(23,24,59,0.06);--navy-lighter:rgba(23,24,59,0.03);
+  --gold:#C9B27E;--gold2:#b89d68;--gold-bg:rgba(201,178,126,0.1);--gold-border:rgba(201,178,126,0.3);
+  --red:#AF0129;--red-bg:rgba(175,1,41,0.06);--red-border:rgba(175,1,41,0.2);
+  --bg:#ffffff;--bg2:#f8f7f5;--bg3:#f1eeea;
+  --border:#e5e0d8;--border2:#d0c9be;
+  --text:var(--navy);--text2:rgba(23,24,59,0.58);--text3:rgba(23,24,59,0.36);
+  --green:#1a6e42;--green-bg:rgba(26,110,66,0.07);
+  /* sidebar: very light navy */
+  --sb-bg:#eef0f6;--sb-border:#dde0ec;
+  --sb-text:var(--navy);--sb-text2:rgba(23,24,59,0.55);--sb-text3:rgba(23,24,59,0.35);
+  --sb-active-bg:rgba(23,24,59,0.08);--sb-active-border:var(--navy);
+  --sb-hover:rgba(23,24,59,0.04);
   --radius:8px;--font:'DM Sans',sans-serif;
-  --shadow:0 1px 3px rgba(23,24,59,0.08);--shadow-md:0 4px 16px rgba(23,24,59,0.12);
+  --shadow:0 1px 3px rgba(23,24,59,0.07);--shadow-md:0 4px 16px rgba(23,24,59,0.11);
 }
 body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:100vh;font-size:14px;line-height:1.5}
-.app{display:grid;grid-template-columns:268px 1fr;height:100vh;overflow:hidden}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh;overflow:hidden}
 
-/* SIDEBAR */
-.sidebar{background:var(--navy);display:flex;flex-direction:column;overflow:hidden}
-.sidebar-header{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
-.logo{display:flex;align-items:center;gap:10px;margin-bottom:13px}
-.logo-text{font-size:13px;font-weight:600;color:#fff;line-height:1.2}
-.logo-sub{font-size:10px;color:rgba(255,255,255,0.38);letter-spacing:0.07em;text-transform:uppercase;margin-top:1px}
+/* ── SIDEBAR ── */
+.sidebar{background:var(--sb-bg);border-right:1px solid var(--sb-border);display:flex;flex-direction:column;overflow:hidden}
+.sb-header{padding:18px 16px 14px;border-bottom:1px solid var(--sb-border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+.logo-text{font-size:13px;font-weight:700;color:var(--navy);line-height:1.2;letter-spacing:-0.01em}
+.logo-sub{font-size:10px;color:var(--sb-text3);letter-spacing:0.07em;text-transform:uppercase;margin-top:1px}
 .search-wrap{position:relative}
-.search-wrap input{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:8px 10px 8px 32px;color:#fff;font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s}
-.search-wrap input:focus{background:rgba(255,255,255,0.1);border-color:rgba(201,178,126,0.4)}
-.search-wrap input::placeholder{color:rgba(255,255,255,0.28)}
-.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.28);pointer-events:none}
+.search-wrap input{width:100%;background:rgba(23,24,59,0.05);border:1px solid var(--sb-border);border-radius:var(--radius);padding:7px 10px 7px 30px;color:var(--navy);font-family:var(--font);font-size:13px;outline:none;transition:all 0.2s}
+.search-wrap input:focus{background:#fff;border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
+.search-wrap input::placeholder{color:var(--sb-text3)}
+.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--sb-text3);pointer-events:none;font-size:14px}
 .brand-list{flex:1;overflow-y:auto;padding:6px 0}
 .brand-list::-webkit-scrollbar{width:3px}
-.brand-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:2px}
-.brand-hdr{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;user-select:none;transition:background 0.15s}
-.brand-hdr:hover{background:rgba(255,255,255,0.04)}
-.brand-hdr.open{background:rgba(201,178,126,0.1)}
-.brand-chev{font-size:9px;color:rgba(255,255,255,0.28);transition:transform 0.2s}
-.brand-chev.open{transform:rotate(90deg);color:var(--gold)}
-.brand-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.82);flex:1}
-.brand-ct{font-size:10px;color:rgba(255,255,255,0.32);background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:10px}
+.brand-list::-webkit-scrollbar-thumb{background:var(--sb-border);border-radius:2px}
+.brand-hdr{display:flex;align-items:center;gap:7px;padding:6px 14px;cursor:pointer;user-select:none;transition:background 0.12s;border-radius:0}
+.brand-hdr:hover{background:var(--sb-hover)}
+.brand-hdr.open{background:var(--sb-active-bg)}
+.brand-chev{font-size:9px;color:var(--sb-text3);transition:transform 0.18s;flex-shrink:0}
+.brand-chev.open{transform:rotate(90deg);color:var(--navy)}
+.brand-name{font-size:13px;font-weight:600;color:var(--navy);flex:1}
+.brand-ct{font-size:10px;color:var(--sb-text3);background:rgba(23,24,59,0.06);padding:1px 6px;border-radius:10px;font-weight:600}
 .pat-list{display:none;padding-bottom:4px}
 .pat-list.open{display:block}
-.pat-item{padding:7px 16px 7px 34px;cursor:pointer;font-size:12.5px;color:rgba(255,255,255,0.52);transition:all 0.15s;border-left:2px solid transparent}
-.pat-item:hover{color:rgba(255,255,255,0.82);background:rgba(255,255,255,0.04)}
-.pat-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,178,126,0.1)}
-.pat-name{font-weight:500;margin-bottom:3px;line-height:1.3}
-.bdg-row{display:flex;gap:3px;flex-wrap:wrap}
-.bdg{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:500}
-.bdg.ok{background:rgba(26,110,66,0.25);color:#5cb88a}
-.bdg.warn{background:rgba(201,178,126,0.2);color:var(--gold)}
-.bdg.miss{background:rgba(175,1,41,0.2);color:#e05252}
-.sidebar-foot{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
-.btn-add-pat{width:100%;background:var(--gold);color:var(--navy);border:none;border-radius:var(--radius);padding:9px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s}
-.btn-add-pat:hover{background:var(--gold2)}
+.pat-item{padding:6px 14px 6px 30px;cursor:pointer;font-size:12.5px;color:var(--sb-text2);transition:all 0.12s;border-left:2.5px solid transparent;margin-left:0}
+.pat-item:hover{color:var(--navy);background:var(--sb-hover)}
+.pat-item.active{color:var(--navy);border-left-color:var(--navy);background:var(--sb-active-bg);font-weight:500}
+.pat-name{margin-bottom:1px;line-height:1.35}
+.sb-foot{padding:12px 16px;border-top:1px solid var(--sb-border);flex-shrink:0}
+.btn-add-pat{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);padding:9px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;letter-spacing:0.01em}
+.btn-add-pat:hover{background:var(--navy2)}
 
-/* MAIN */
+/* ── MAIN ── */
 .main{display:flex;flex-direction:column;overflow:hidden}
-.main-hdr{padding:0 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;min-height:52px;flex-shrink:0;gap:12px}
+.main-hdr{padding:0 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;min-height:52px;flex-shrink:0;gap:12px;background:var(--bg)}
 .breadcrumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px}
-.sep{color:var(--border2)}
+.bc-sep{color:var(--border2)}
 .hdr-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
 .hdr-status{font-size:12px;color:var(--text3)}
 .hdr-status.saved{color:var(--green)}
@@ -80,137 +81,145 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .btn-danger:hover{background:var(--red-bg)}
 .btn-sm{padding:5px 12px;font-size:12px}
 .btn:disabled{opacity:0.4;cursor:not-allowed}
-.btn-ico{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px 7px;border-radius:4px;transition:all 0.15s;font-size:13px;line-height:1}
+.btn-ico{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px 6px;border-radius:4px;transition:all 0.15s;font-size:13px;line-height:1}
 .btn-ico:hover{background:var(--red-bg);color:var(--red)}
 
-/* PATTERN HEADER */
-.pat-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:22px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+/* ── PATTERN HEADER ── */
+.pat-hdr{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border)}
 .pat-title-block{flex:1}
-.pat-title{font-size:21px;font-weight:700;color:var(--navy);letter-spacing:-0.02em;line-height:1.25}
+.pat-title{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-0.02em;line-height:1.25}
 .pat-edit-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .pat-edit-field{display:flex;flex-direction:column;gap:3px}
 .pat-edit-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
 .pat-edit-input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;width:140px;transition:all 0.2s}
 .pat-edit-input:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
 
-/* TABS */
+/* ── TABS ── */
 .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
 .tab{padding:9px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--navy);border-bottom-color:var(--gold)}
 
-/* SECTION */
-.sec{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
-.sec-hdr{padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2)}
+/* ── SECTION ── */
+.sec{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.sec-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2)}
 .sec-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em}
-.sec-body{padding:16px}
+.sec-body{padding:14px}
 
-/* VARIATIONS */
-.var-group{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
-.var-group:last-child{border-bottom:none}
-.var-group-label{font-size:13px;font-weight:600;color:var(--navy);width:48px;flex-shrink:0}
-.var-btns{display:flex;gap:6px;flex:1}
-.var-btn{padding:7px 18px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s;user-select:none}
+/* ── 2×2 GRID ── */
+.info-grid{display:grid;grid-template-columns:3fr 2fr;grid-template-rows:auto auto;gap:14px;margin-bottom:0}
+.info-cell-tl{grid-column:1;grid-row:1} /* Variations */
+.info-cell-tr{grid-column:2;grid-row:1} /* Materials */
+.info-cell-bl{grid-column:1;grid-row:2} /* Colors */
+.info-cell-br{grid-column:2;grid-row:2} /* Submodels */
+@media(max-width:860px){
+  .info-grid{grid-template-columns:1fr;grid-template-rows:auto}
+  .info-cell-tl,.info-cell-tr,.info-cell-bl,.info-cell-br{grid-column:1;grid-row:auto}
+}
+
+/* ── VARIATION ROWS ── */
+.var-row{position:relative;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);transition:background 0.15s;cursor:default}
+.var-row:last-of-type{border-bottom:none}
+.var-row.dragover{background:var(--gold-bg);outline:2px dashed var(--gold);outline-offset:-2px}
+.var-row-label{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;width:40px;flex-shrink:0}
+.var-btns{display:flex;gap:5px;flex:1}
+.var-btn{padding:6px 14px;border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s;user-select:none}
 .var-btn:hover{border-color:var(--navy);color:var(--navy)}
-.var-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 10px rgba(23,24,59,0.28)}
+.var-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(23,24,59,0.25)}
 
-/* GROUP PHOTO SLOT */
-.var-photo-slot{width:72px;height:52px;border-radius:6px;border:1.5px dashed var(--border2);background:var(--bg3);cursor:pointer;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;position:relative}
-.var-photo-slot:hover{border-color:var(--gold);background:var(--gold-bg)}
-.var-photo-slot img{width:100%;height:100%;object-fit:cover;display:block}
-.var-photo-slot-empty{font-size:20px;opacity:0.22}
-.var-photo-slot-hover{position:absolute;inset:0;background:rgba(23,24,59,0.55);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff;text-align:center;line-height:1.3;font-weight:500}
-.var-photo-slot:hover .var-photo-slot-hover{display:flex}
-.var-photo-actions{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+/* Inline photo in var row */
+.var-row-photo{position:relative;width:52px;height:52px;border-radius:6px;overflow:hidden;flex-shrink:0;cursor:pointer}
+.var-row-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.var-row-photo-x{position:absolute;top:2px;right:2px;width:18px;height:18px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;transition:background 0.15s}
+.var-row-photo-x:hover{background:var(--red)}
+.var-row-drop-hint{font-size:11px;color:var(--text3);white-space:nowrap}
 
-/* OTHER VARIATIONS */
-.other-var-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.other-var-row:last-child{border-bottom:none}
-.other-var-toggle{width:38px;height:22px;border-radius:11px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
+/* other var rows */
+.other-var-row{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);cursor:default;transition:background 0.15s}
+.other-var-row:last-of-type{border-bottom:none}
+.other-var-row.dragover{background:var(--gold-bg);outline:2px dashed var(--gold);outline-offset:-2px}
+.other-var-toggle{width:36px;height:20px;border-radius:10px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
 .other-var-toggle.on{background:var(--navy)}
-.other-var-toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.other-var-toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.18s;box-shadow:0 1px 2px rgba(0,0,0,0.18)}
 .other-var-toggle.on::after{left:19px}
 .other-var-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:13px;color:var(--navy);font-weight:500}
 .other-var-input::placeholder{color:var(--text3)}
-.btn-add-other{background:transparent;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:8px 14px;font-family:var(--font);font-size:12px;color:var(--text3);cursor:pointer;transition:all 0.15s;width:100%;text-align:center;margin:8px 16px 0;width:calc(100% - 32px);display:block}
+.other-var-photo{position:relative;width:44px;height:44px;border-radius:6px;overflow:hidden;flex-shrink:0}
+.other-var-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.other-var-photo-x{position:absolute;top:2px;right:2px;width:16px;height:16px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.btn-add-other{background:transparent;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:7px;font-family:var(--font);font-size:12px;color:var(--text3);cursor:pointer;transition:all 0.15s;width:calc(100% - 28px);margin:8px 14px;text-align:center;display:block}
 .btn-add-other:hover{border-color:var(--navy);color:var(--navy);background:var(--navy-light)}
 
-/* TOGGLE BUTTONS */
-.toggle-group{display:flex;gap:7px;flex-wrap:wrap}
-.tog-btn{padding:8px 18px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s}
-.tog-btn:hover{border-color:var(--navy);color:var(--navy);background:var(--navy-lighter)}
-.tog-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 10px rgba(23,24,59,0.28)}
+/* ── TOGGLE BUTTONS ── */
+.toggle-group{display:flex;gap:6px;flex-wrap:wrap}
+.tog-btn{padding:7px 16px;border-radius:var(--radius);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s}
+.tog-btn:hover{border-color:var(--navy);color:var(--navy)}
+.tog-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(23,24,59,0.25)}
 
-/* 3-COLUMN INFO LAYOUT */
-.info-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
-.info-col-wide{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px}
-@media(max-width:900px){
-  .info-3col{grid-template-columns:1fr}
-  .info-col-wide{grid-template-columns:1fr}
-  .app{grid-template-columns:220px 1fr}
-}
-@media(max-width:700px){
-  .app{grid-template-columns:1fr}
-  .sidebar{display:none}
-}
-
-/* COLOR ROWS */
-.color-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);transition:background 0.1s}
+/* ── COLOR ROWS ── */
+.color-row{display:flex;align-items:center;gap:9px;padding:8px 14px;border-bottom:1px solid var(--border);transition:background 0.1s}
 .color-row:last-child{border-bottom:none}
 .color-row:hover{background:var(--navy-lighter)}
-.color-swatch{width:22px;height:22px;border-radius:5px;border:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
-.color-name{font-size:13px;font-weight:500;flex:1;min-width:0}
-.color-code{font-size:11px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px;border:1px solid var(--border);white-space:nowrap}
-.color-years{font-size:11px;color:var(--text3);white-space:nowrap}
-.color-thumb{width:46px;height:34px;border-radius:5px;border:1.5px dashed var(--border2);background:var(--bg3);cursor:pointer;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;position:relative}
-.color-thumb:hover{border-color:var(--gold);background:var(--gold-bg)}
-.color-thumb img{width:100%;height:100%;object-fit:cover}
-.color-thumb-empty{font-size:13px;opacity:0.22}
-.color-thumb-hover{position:absolute;inset:0;background:rgba(23,24,59,0.5);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff}
-.color-thumb:hover .color-thumb-hover{display:flex}
+.color-swatch{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
+.color-name{font-size:13px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.color-code{font-size:10px;color:var(--text2);background:var(--bg3);padding:2px 5px;border-radius:3px;border:1px solid var(--border);white-space:nowrap}
+.color-years{font-size:10px;color:var(--text3);white-space:nowrap}
 
-/* SUBMODEL ROWS */
-.submodel-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border)}
-.submodel-row:last-child{border-bottom:none}
-.submodel-name-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:13px;color:var(--navy);font-weight:500}
-.submodel-name-input::placeholder{color:var(--text3)}
-.submodel-years-input{width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-family:var(--font);font-size:11px;color:var(--text2);outline:none}
-.submodel-years-input:focus{border-color:var(--gold-border)}
+/* SQUARE THUMBS */
+.sq-thumb{width:44px;height:44px;border-radius:6px;overflow:hidden;flex-shrink:0;position:relative;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.sq-thumb:hover{border-color:var(--gold)}
+.sq-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.sq-thumb-ico{font-size:14px;opacity:0.22}
+.sq-thumb-hov{position:absolute;inset:0;background:rgba(23,24,59,0.48);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.sq-thumb:hover .sq-thumb-hov{display:flex}
+/* filled thumb */
+.sq-thumb.filled{border-style:solid;border-color:var(--border)}
+.sq-thumb-x{position:absolute;top:2px;right:2px;width:17px;height:17px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:2}
 
-/* RICH EDITOR */
-.rich-toolbar{display:flex;gap:3px;padding:8px 10px;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;background:var(--bg2);flex-wrap:wrap;align-items:center}
-.rich-btn{background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 8px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--text2);transition:all 0.15s;line-height:1.4}
+/* ── SUBMODEL ROWS ── */
+.sub-row{display:flex;align-items:center;gap:7px;padding:7px 14px;border-bottom:1px solid var(--border)}
+.sub-row:last-child{border-bottom:none}
+.sub-name-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:13px;color:var(--navy);font-weight:500}
+.sub-name-input::placeholder{color:var(--text3)}
+.sub-years-input{width:100px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 7px;font-family:var(--font);font-size:11px;color:var(--text2);outline:none}
+.sub-years-input:focus{border-color:var(--gold-border)}
+
+/* ── RICH EDITOR ── */
+.rich-toolbar{display:flex;gap:3px;padding:7px 10px;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;background:var(--bg2);flex-wrap:wrap;align-items:center}
+.rich-btn{background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--text2);transition:all 0.15s;line-height:1.4}
 .rich-btn:hover{background:var(--bg3);border-color:var(--border);color:var(--navy)}
 .rich-sep{width:1px;background:var(--border);margin:0 3px;align-self:stretch}
 .rich-editor{border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:14px;min-height:200px;outline:none;font-family:var(--font);font-size:13px;line-height:1.75;color:var(--navy)}
 .rich-editor:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
-.rich-editor img{border-radius:5px;margin:6px 0;border:1px solid var(--border);cursor:nwse-resize;max-width:100%}
-.rich-editor img.selected{outline:2px solid var(--gold);outline-offset:2px}
+.rich-editor img{border-radius:5px;margin:6px 0;border:1px solid var(--border);max-width:100%;cursor:nwse-resize}
+.rich-editor img.img-sel{outline:2.5px solid var(--gold);outline-offset:2px}
 .rich-editor p{margin-bottom:6px}
 
-/* PHOTO GRID */
-.photo-drop{border:2px dashed var(--border);border-radius:var(--radius);padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg2)}
-.photo-drop:hover,.photo-drop.dragover{border-color:var(--gold);background:var(--gold-bg)}
-.drop-ico{font-size:28px;opacity:0.22;margin-bottom:8px}
+/* ── PHOTO GRID ── */
+.photo-drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg2)}
+.photo-drop-zone:hover,.photo-drop-zone.dragover{border-color:var(--gold);background:var(--gold-bg)}
+.drop-ico{font-size:28px;opacity:0.2;margin-bottom:8px}
 .drop-txt{font-size:13px;color:var(--text2);font-weight:500}
 .drop-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:14px}
-.ph-card{display:flex;flex-direction:column;gap:4px}
-.ph-thumb{aspect-ratio:4/3;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;box-shadow:var(--shadow)}
-.ph-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.ph-overlay{position:absolute;inset:0;background:rgba(23,24,59,0.55);display:none;align-items:center;justify-content:center;gap:6px;flex-direction:column}
-.ph-thumb:hover .ph-overlay{display:flex}
-.ph-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:#fff;cursor:pointer;padding:5px 10px;font-size:11px;font-family:var(--font);transition:background 0.15s;width:80px;text-align:center}
-.ph-btn:hover{background:rgba(255,255,255,0.25)}
-.ph-btn.del{background:rgba(175,1,41,0.7);border-color:rgba(175,1,41,0.5)}
-.ph-btn.del:hover{background:var(--red)}
-.ph-label{font-size:11px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px}
 
-/* PDF */
-.pdf-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px}
+/* SQUARE PHOTO GRID */
+.sq-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
+.sq-photo-card{display:flex;flex-direction:column;gap:4px}
+.sq-photo-wrap{width:100%;aspect-ratio:1/1;position:relative;border-radius:var(--radius);overflow:hidden;cursor:pointer;background:var(--bg3);border:1px solid var(--border);box-shadow:var(--shadow)}
+.sq-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.sq-photo-overlay{position:absolute;inset:0;background:rgba(23,24,59,0.5);display:none;align-items:center;justify-content:center}
+.sq-photo-wrap:hover .sq-photo-overlay{display:flex}
+.sq-photo-view-btn{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:5px;color:#fff;cursor:pointer;padding:5px 10px;font-size:11px;font-family:var(--font)}
+.sq-photo-view-btn:hover{background:rgba(255,255,255,0.28)}
+.sq-photo-x{position:absolute;top:5px;right:5px;width:20px;height:20px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:2;transition:background 0.15s}
+.sq-photo-x:hover{background:var(--red)}
+.sq-photo-label{font-size:10px;color:var(--text3);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── PDF ── */
+.pdf-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px}
 .pdf-name{font-size:13px;flex:1;font-weight:500}
 
-/* FORM */
+/* ── FORM ── */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .form-group{display:flex;flex-direction:column;gap:4px}
 .form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
@@ -220,71 +229,64 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 textarea.form-input{resize:vertical;min-height:80px;line-height:1.6}
 input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);cursor:pointer;padding:3px}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.45);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)}
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.38);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px)}
 .modal{background:var(--bg);border:1px solid var(--border);border-radius:12px;width:480px;max-height:88vh;overflow-y:auto;padding:24px;box-shadow:var(--shadow-md)}
 .modal-title{font-size:17px;font-weight:600;margin-bottom:18px;color:var(--navy)}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 
-/* LIGHTBOX */
-.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:flex;align-items:center;justify-content:center;cursor:pointer}
+/* ── LIGHTBOX ── */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:flex;align-items:center;justify-content:center}
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain}
-.lb-close{position:absolute;top:18px;right:20px;color:#fff;font-size:24px;cursor:pointer;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-family:var(--font)}
+.lb-close{position:absolute;top:18px;right:20px;color:#fff;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;font-family:var(--font)}
+.lb-close:hover{background:rgba(255,255,255,0.2)}
 
-/* THUMB PICKER */
-.thumb-picker{position:fixed;inset:0;background:rgba(23,24,59,0.4);z-index:150;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.thumb-picker-box{background:var(--bg);border-radius:12px;padding:24px;width:420px;box-shadow:var(--shadow-md)}
+/* ── THUMB PICKER ── */
+.thumb-picker{position:fixed;inset:0;background:rgba(23,24,59,0.35);z-index:150;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.thumb-picker-box{background:var(--bg);border-radius:12px;padding:24px;width:400px;box-shadow:var(--shadow-md)}
 .thumb-picker-title{font-size:15px;font-weight:600;margin-bottom:14px;color:var(--navy)}
 
-/* CONFIRM DIALOG */
-.confirm-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.45);display:flex;align-items:center;justify-content:center;z-index:250;backdrop-filter:blur(4px)}
-.confirm-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;width:360px;box-shadow:var(--shadow-md)}
-.confirm-title{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--navy)}
-.confirm-msg{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px}
+/* ── CONFIRM ── */
+.confirm-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.38);display:flex;align-items:center;justify-content:center;z-index:250;backdrop-filter:blur(4px)}
+.confirm-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;width:340px;box-shadow:var(--shadow-md)}
+.confirm-title{font-size:15px;font-weight:600;margin-bottom:6px;color:var(--navy)}
+.confirm-msg{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px}
 .confirm-actions{display:flex;gap:8px;justify-content:flex-end}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:#fff;box-shadow:var(--shadow-md);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:300;font-weight:500}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:#fff;box-shadow:var(--shadow-md);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:400;font-weight:500}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.ok{background:var(--green)}
 .toast.err{background:var(--red)}
 
-/* LOADING */
-.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:400;gap:14px}
-.spin{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+/* ── LOADING ── */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;gap:14px}
+.spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:14px;text-align:center}
-.empty-ico{font-size:52px;opacity:0.18}
-.empty-title{font-size:17px;font-weight:600;color:var(--text2)}
-.empty-sub{font-size:13px;max-width:260px;line-height:1.7}
-
-/* IMG RESIZE HANDLES */
-.img-resize-wrap{display:inline-block;position:relative;line-height:0}
-.img-resize-wrap img{display:block;max-width:100%}
-.img-resize-handle{position:absolute;width:10px;height:10px;background:var(--gold);border:1.5px solid #fff;border-radius:2px;z-index:10}
-.img-resize-handle.br{bottom:-5px;right:-5px;cursor:nwse-resize}
-.img-resize-handle.bl{bottom:-5px;left:-5px;cursor:nesw-resize}
-.img-resize-handle.tr{top:-5px;right:-5px;cursor:nesw-resize}
-.img-resize-handle.tl{top:-5px;left:-5px;cursor:nwse-resize}
+.empty-ico{font-size:48px;opacity:0.15}
+.empty-title{font-size:16px;font-weight:600;color:var(--text2)}
+.empty-sub{font-size:13px;max-width:240px;line-height:1.7}
 </style>
 </head>
 <body>
 
 <div class="loading-overlay" id="loading-overlay">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-    <svg width="28" height="28" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
-    <span style="font-size:15px;font-weight:600;color:var(--navy)">United Seat Factory</span>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+    <svg width="26" height="26" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
+    <span style="font-size:14px;font-weight:700;color:var(--navy)">United Seat Factory</span>
   </div>
   <div class="spin"></div>
-  <div style="font-size:13px;color:var(--text3)">Connecting to database...</div>
+  <div style="font-size:12px;color:var(--text3)">Connecting to database...</div>
 </div>
 
 <div class="app">
+  <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-header">
+    <div class="sb-header">
       <div class="logo">
-        <svg width="30" height="30" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="rgba(201,178,126,0.15)"/><path d="M18 26h64v9H18zM26 39h48v24H26zM30 67h40v9H30z" fill="#C9B27E"/></svg>
+        <svg width="28" height="28" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="rgba(23,24,59,0.1)"/><path d="M18 26h64v9H18zM26 39h48v24H26zM30 67h40v9H30z" fill="#17183B"/></svg>
         <div><div class="logo-text">United Seat Factory</div><div class="logo-sub">Pattern Database</div></div>
       </div>
       <div class="search-wrap">
@@ -292,10 +294,11 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
         <input type="text" placeholder="Search patterns..." oninput="filterSidebar(this.value)">
       </div>
     </div>
-    <div class="brand-list" id="brand-list"><div style="padding:20px;color:rgba(255,255,255,0.28);font-size:13px;text-align:center">Loading...</div></div>
-    <div class="sidebar-foot"><button class="btn-add-pat" onclick="openAddModal()">+ Add Pattern</button></div>
+    <div class="brand-list" id="brand-list"><div style="padding:20px;color:var(--sb-text3);font-size:13px;text-align:center">Loading...</div></div>
+    <div class="sb-foot"><button class="btn-add-pat" onclick="openAddModal()">+ Add Pattern</button></div>
   </div>
 
+  <!-- MAIN -->
   <div class="main">
     <div class="main-hdr">
       <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
@@ -355,19 +358,19 @@ input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px 
   <img id="lb-img" src="" alt="">
 </div>
 
-<!-- THUMB PICKER -->
+<!-- THUMB PICKER (for color thumbs) -->
 <div class="thumb-picker" id="thumb-picker" style="display:none" onclick="if(event.target===this)closeThumbPicker()">
   <div class="thumb-picker-box">
-    <div class="thumb-picker-title" id="thumb-picker-title">Add photo</div>
-    <div class="photo-drop" id="thumb-drop" ondragover="onDragOver(event,'thumb-drop')" ondragleave="onDragLeave('thumb-drop')" ondrop="onThumbDrop(event)" onclick="document.getElementById('thumb-file').click()">
-      <div class="drop-ico">📷</div><div class="drop-txt">Drag & drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div>
+    <div class="thumb-picker-title" id="thumb-picker-title">Add color photo</div>
+    <div class="photo-drop-zone" id="thumb-drop" ondragover="onDragOver(event,'thumb-drop')" ondragleave="onDragLeave('thumb-drop')" ondrop="onThumbDrop(event)" onclick="document.getElementById('thumb-file').click()">
+      <div class="drop-ico">📷</div><div class="drop-txt">Drag & drop or click to browse</div>
     </div>
     <input type="file" id="thumb-file" style="display:none" accept="image/*" onchange="handleThumbFile(event)">
     <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="closeThumbPicker()">Cancel</button></div>
   </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
+<!-- CONFIRM -->
 <div class="confirm-overlay" id="confirm-overlay" style="display:none">
   <div class="confirm-box">
     <div class="confirm-title" id="confirm-title">Are you sure?</div>
@@ -390,40 +393,40 @@ const {createClient}=supabase;
 const supa=createClient(SUPA_URL,SUPA_KEY);
 
 const MATERIALS=['Vinyl','Vinyl Perf','Leather','Leather Perf','Cloth','Alcantara','Other'];
-
-// Standard variation groups
 const VAR_GROUPS=[
-  {id:'front',label:'Front',buttons:[{id:'front_bottom',label:'Bottoms'},{id:'front_top',label:'Tops'}]},
-  {id:'rear',label:'Rear',buttons:[{id:'rear_bottom',label:'Bottoms'},{id:'rear_top',label:'Tops'}]},
+  {id:'front',label:'Front',btns:[{id:'front_bottom',label:'Bottoms'},{id:'front_top',label:'Tops'}]},
+  {id:'rear',label:'Rear',btns:[{id:'rear_bottom',label:'Bottoms'},{id:'rear_top',label:'Tops'}]},
 ];
 
 let patterns=[],currentId=null,activeTab='info',unsaved=false;
 let thumbCtx=null,photoUploadType='product';
-let confirmCallback=null;
 
-// ── CONFIRM DIALOG ──────────────────────────────────────────
+// ── CONFIRM ──────────────────────────────────────────────
 function confirmAction(msg,cb,title='Are you sure?'){
-  confirmCallback=cb;
   document.getElementById('confirm-title').textContent=title;
   document.getElementById('confirm-msg').textContent=msg;
   document.getElementById('confirm-overlay').style.display='flex';
   document.getElementById('confirm-ok-btn').onclick=()=>{closeConfirm();cb();};
 }
-function closeConfirm(){document.getElementById('confirm-overlay').style.display='none';confirmCallback=null;}
+function closeConfirm(){document.getElementById('confirm-overlay').style.display='none';}
 
-// ── INIT ──────────────────────────────────────────────────
+// ── INIT ─────────────────────────────────────────────────
 async function init(){
   const {error}=await supa.from('patterns').select('id').limit(1);
-  if(error&&error.code==='42P01'){showSqlSetup();return;}
+  if(error&&error.code==='42P01'){showSql();return;}
   await loadAll();
   document.getElementById('loading-overlay').style.display='none';
 }
 
-function showSqlSetup(){
-  document.getElementById('loading-overlay').innerHTML=`<div style="text-align:center;max-width:520px;padding:24px"><div style="font-size:15px;font-weight:600;margin-bottom:12px">One-time database setup</div><div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7">Supabase → SQL Editor → paste and run:</div><textarea readonly style="width:100%;height:260px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:none">${getSQL()}</textarea><button onclick="location.reload()" style="margin-top:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Reload</button></div>`;
+function showSql(){
+  document.getElementById('loading-overlay').innerHTML=`<div style="text-align:center;max-width:520px;padding:24px">
+    <div style="font-size:15px;font-weight:600;margin-bottom:12px">One-time database setup</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7">Supabase → SQL Editor → paste and run:</div>
+    <textarea readonly style="width:100%;height:240px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;resize:none;color:var(--navy)">${getSql()}</textarea>
+    <button onclick="location.reload()" style="margin-top:14px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Reload</button>
+  </div>`;
 }
-
-function getSQL(){return`CREATE TABLE IF NOT EXISTS patterns (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, brand text NOT NULL, model text NOT NULL, years text NOT NULL, trim text, research text DEFAULT '', notes text DEFAULT '', submodels jsonb DEFAULT '[]', materials jsonb DEFAULT '[]', positions jsonb DEFAULT '{}', other_positions jsonb DEFAULT '[]', created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now());
+function getSql(){return`CREATE TABLE IF NOT EXISTS patterns (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, brand text NOT NULL, model text NOT NULL, years text NOT NULL, trim text, research text DEFAULT '', notes text DEFAULT '', submodels jsonb DEFAULT '[]', materials jsonb DEFAULT '[]', positions jsonb DEFAULT '{}', other_positions jsonb DEFAULT '[]', created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now());
 CREATE TABLE IF NOT EXISTS pattern_colors (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE, name text NOT NULL, code text, hex text DEFAULT '#888888', year_note text, thumb_url text, sort_order int DEFAULT 0, created_at timestamptz DEFAULT now());
 CREATE TABLE IF NOT EXISTS pattern_pdfs (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE, name text NOT NULL, url text, size_label text, created_at timestamptz DEFAULT now());
 CREATE TABLE IF NOT EXISTS pattern_photos (id uuid DEFAULT gen_random_uuid() PRIMARY KEY, pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE, url text NOT NULL, type text DEFAULT 'product', caption text, created_at timestamptz DEFAULT now());
@@ -446,6 +449,7 @@ async function loadAll(){
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
 }
 
+// ── SIDEBAR ──────────────────────────────────────────────
 let sbFilter='';
 function filterSidebar(v){sbFilter=v.toLowerCase();buildSidebar();}
 function buildSidebar(){
@@ -466,19 +470,13 @@ function buildSidebar(){
       <span class="brand-name">${brand}</span><span class="brand-ct">${list.length}</span>
     </div><div class="pat-list ${isOpen?'open':''}" id="${bid}">`;
     list.forEach(p=>{
-      const posActive=Object.entries(p.positions||{}).filter(([k,v])=>!k.endsWith('_thumb')&&v===true).length+(p.other_positions||[]).filter(o=>o.active).length;
       html+=`<div class="pat-item ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')">
         <div class="pat-name">${p.model} ${p.years}${p.trim?' · '+p.trim:''}</div>
-        <div class="bdg-row">
-          <span class="bdg ${posActive>0?'ok':'miss'}">${posActive} var</span>
-          <span class="bdg ${p.colors.length>0?'ok':'miss'}">${p.colors.length} col</span>
-          ${p.pdfs.length?`<span class="bdg warn">${p.pdfs.length} PDF</span>`:''}
-        </div>
       </div>`;
     });
     html+='</div></div>';
   });
-  document.getElementById('brand-list').innerHTML=html||'<div style="padding:16px;color:rgba(255,255,255,0.28);font-size:13px">No patterns found</div>';
+  document.getElementById('brand-list').innerHTML=html||'<div style="padding:16px;color:var(--sb-text3);font-size:13px">No patterns found</div>';
 }
 function toggleBrand(el,id){const l=document.getElementById(id),c=el.querySelector('.brand-chev');l.classList.toggle('open');c.classList.toggle('open');el.classList.toggle('open');}
 
@@ -487,14 +485,21 @@ function getP(){return patterns.find(p=>p.id===currentId);}
 function setStatus(m,c=''){const el=document.getElementById('hdr-status');if(el){el.textContent=m;el.className='hdr-status '+c;}}
 function markDirty(){unsaved=true;setStatus('Unsaved changes');}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function safeUrl(s){return String(s||'').replace(/'/g,"\\'");}
 
-// ── RENDER ────────────────────────────────────────────────
+// ── RENDER ───────────────────────────────────────────────
 function renderPattern(){
   const p=getP();if(!p)return;
-  document.getElementById('breadcrumb').innerHTML=`<span style="color:var(--text3)">${p.brand}</span><span class="sep">›</span><span style="font-weight:500">${p.model} ${p.years}</span>`;
-  const productPhotos=(p.photos||[]).filter(ph=>ph.type==='product');
+  document.getElementById('breadcrumb').innerHTML=`<span style="color:var(--text3)">${p.brand}</span><span class="bc-sep"> › </span><span style="font-weight:500">${p.model} ${p.years}${p.trim?' · '+p.trim:''}</span>`;
+  const prodPhotos=(p.photos||[]).filter(ph=>ph.type==='product');
   const baPhotos=(p.photos||[]).filter(ph=>ph.type==='before_after');
-  const tabs=[{id:'info',label:'Info'},{id:'photos',label:`Photos (${productPhotos.length})`},{id:'before_after',label:`Before & After (${baPhotos.length})`},{id:'pdfs',label:`PDFs (${p.pdfs.length})`},{id:'research',label:'Research'}];
+  const tabs=[
+    {id:'info',label:'Info'},
+    {id:'photos',label:`Photos (${prodPhotos.length})`},
+    {id:'before_after',label:`Before & After (${baPhotos.length})`},
+    {id:'pdfs',label:`PDFs (${p.pdfs.length})`},
+    {id:'research',label:'Research'},
+  ];
 
   let html=`
   <div class="pat-hdr">
@@ -513,53 +518,60 @@ function renderPattern(){
 
   // ── INFO TAB ──
   if(activeTab==='info'){
+    html+=`<div class="info-grid">`;
 
-    // VARIATIONS SECTION
-    html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>`;
-
-    // Standard groups: Front and Rear
-    VAR_GROUPS.forEach(group=>{
-      const thumb=p.positions[group.id+'_thumb']||'';
-      const anyOn=group.buttons.some(b=>p.positions[b.id]);
-      html+=`<div class="var-group">
-        <span class="var-group-label">${group.label}</span>
+    // TOP LEFT: Variations
+    html+=`<div class="info-cell-tl sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>`;
+    // Standard groups
+    VAR_GROUPS.forEach(g=>{
+      const thumb=p.positions[g.id+'_thumb']||'';
+      const hasPhoto=!!thumb;
+      html+=`<div class="var-row ${''}" id="varrow-${g.id}"
+        ondragover="onVarDragOver(event,'${g.id}')"
+        ondragleave="onVarDragLeave('${g.id}')"
+        ondrop="onVarDrop(event,'${g.id}')">
+        <span class="var-row-label">${g.label}</span>
         <div class="var-btns">
-          ${group.buttons.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${group.id}')">${b.label}</button>`).join('')}
+          ${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}
         </div>
-        <div class="var-photo-slot" onclick="openThumbPicker('group','${group.id}')">
-          ${thumb?`<img src="${thumb}" alt="">`:`<span class="var-photo-slot-empty">📷</span>`}
-          <div class="var-photo-slot-hover">Add<br>photo</div>
-        </div>
-        <div class="var-photo-actions">
-          ${thumb?`<button class="btn-ico" onclick="openLB('${thumb.replace(/'/g,"\\'")}',event)" title="View">🔍</button>`:''}
-          ${thumb?`<button class="btn-ico" onclick="confirmAction('Remove this group photo?',()=>removeGroupThumb('${group.id}'))" title="Remove">🗑</button>`:''}
-        </div>
+        ${hasPhoto
+          ?`<div class="var-row-photo" onclick="openLB('${safeUrl(thumb)}',event)">
+              <img src="${thumb}" alt="">
+              <button class="var-row-photo-x" onclick="confirmAction('Remove this photo?',()=>removeGroupThumb('${g.id}'),event)">✕</button>
+            </div>`
+          :`<span class="var-row-drop-hint">← drop photo here</span>`
+        }
       </div>`;
     });
-
     // Other variations
-    html+=`<div style="padding-bottom:8px">`;
     (p.other_positions||[]).forEach((op,i)=>{
       const thumb=op.thumb||'';
-      html+=`<div class="other-var-row">
+      html+=`<div class="other-var-row" id="otherrow-${i}"
+        ondragover="onOtherVarDragOver(event,${i})"
+        ondragleave="onOtherVarDragLeave(${i})"
+        ondrop="onOtherVarDrop(event,${i})">
         <button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle this variation?',()=>toggleOtherVar(${i}))"></button>
-        <input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console, Foam cushion driver..." oninput="updateOtherLabel(${i},this.value)">
-        <div class="var-photo-slot" style="width:60px;height:44px" onclick="openThumbPicker('other_pos',${i})">
-          ${thumb?`<img src="${thumb}" alt="">`:`<span class="var-photo-slot-empty" style="font-size:16px">📷</span>`}
-          <div class="var-photo-slot-hover" style="font-size:11px">Photo</div>
-        </div>
-        ${thumb?`<button class="btn-ico" onclick="openLB('${thumb.replace(/'/g,"\\'")}',event)">🔍</button>`:''}
+        <input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console, Foam cushion..." oninput="updateOtherLabel(${i},this.value)">
+        ${thumb
+          ?`<div class="other-var-photo" onclick="openLB('${safeUrl(thumb)}',event)">
+              <img src="${thumb}" alt="">
+              <button class="other-var-photo-x" onclick="confirmAction('Remove photo?',()=>removeOtherThumb(${i}),event)">✕</button>
+            </div>`
+          :`<span style="font-size:10px;color:var(--text3);white-space:nowrap">drop photo</span>`
+        }
         <button class="btn-ico" onclick="confirmAction('Remove this variation?',()=>removeOtherVar(${i}))">✕</button>
       </div>`;
     });
-    html+=`<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button></div>`;
-    html+=`</div>`;
+    html+=`<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button>`;
+    html+=`</div>`; // end Variations sec
 
-    // 3-COLUMN SECTION: Colors (wide) | Materials | Submodels
-    html+=`<div class="info-col-wide">`;
+    // TOP RIGHT: Materials
+    html+=`<div class="info-cell-tr sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body">
+      <div class="toggle-group">${MATERIALS.map(m=>`<button class="tog-btn ${(p.materials||[]).includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}</div>
+    </div></div>`;
 
-    // Colors (left, wider)
-    html+=`<div class="sec" style="margin-bottom:0"><div class="sec-hdr"><span class="sec-title">Colors</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button></div>`;
+    // BOTTOM LEFT: Colors
+    html+=`<div class="info-cell-bl sec"><div class="sec-hdr"><span class="sec-title">Colors</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button></div>`;
     if(p.colors.length){
       p.colors.forEach(c=>{
         const thumb=c.thumb_url||'';
@@ -567,53 +579,42 @@ function renderPattern(){
           <div class="color-swatch" style="background:${c.hex||'#888'}"></div>
           <span class="color-name">${esc(c.name)}</span>
           ${c.code?`<span class="color-code">${esc(c.code)}</span>`:''}
-          <span class="color-years" style="font-size:10px;color:var(--text3)">${esc(c.year_note||'All years')}</span>
-          <div class="color-thumb" onclick="openThumbPicker('color','${c.id}')">
-            ${thumb?`<img src="${thumb}" alt="">`:`<span class="color-thumb-empty">📷</span>`}
-            <div class="color-thumb-hover">📷</div>
+          <span class="color-years">${esc(c.year_note||'All years')}</span>
+          <div class="sq-thumb ${thumb?'filled':''}" onclick="${thumb?`openLB('${safeUrl(thumb)}',event)`:`openThumbPicker('color','${c.id}')`}">
+            ${thumb?`<img src="${thumb}" alt=""><button class="sq-thumb-x" onclick="confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'),event)">✕</button>`:`<span class="sq-thumb-ico">📷</span><div class="sq-thumb-hov">📷</div>`}
           </div>
-          ${thumb?`<button class="btn-ico" onclick="openLB('${thumb.replace(/'/g,"\\'")}',event)">🔍</button>`:''}
-          <button class="btn-ico" onclick="confirmAction('Remove color &quot;${esc(c.name)}&quot;?',()=>removeColor('${c.id}'))">✕</button>
         </div>`;
       });
     } else {
       html+=`<div style="padding:18px;text-align:center;color:var(--text3);font-size:13px">No colors yet.</div>`;
     }
-    html+=`</div>`;
+    html+=`</div>`; // end Colors sec
 
-    // Right column: Materials + Submodels stacked
-    html+=`<div style="display:flex;flex-direction:column;gap:14px">`;
-
-    // Materials
-    html+=`<div class="sec" style="margin-bottom:0"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body">
-      <div class="toggle-group">${MATERIALS.map(m=>`<button class="tog-btn ${(p.materials||[]).includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}</div>
-    </div></div>`;
-
-    // Submodels
-    html+=`<div class="sec" style="margin-bottom:0"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button></div>`;
+    // BOTTOM RIGHT: Submodels
+    html+=`<div class="info-cell-br sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button></div>`;
     if((p.submodels||[]).length){
       (p.submodels||[]).forEach((s,i)=>{
         const name=typeof s==='string'?s:(s.name||'');
         const years=typeof s==='string'?'All years':(s.years||'All years');
-        html+=`<div class="submodel-row">
-          <input class="submodel-name-input" value="${esc(name)}" placeholder="Submodel..." oninput="updateSubmodel(${i},'name',this.value)">
-          <input class="submodel-years-input" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)">
+        html+=`<div class="sub-row">
+          <input class="sub-name-input" value="${esc(name)}" placeholder="Submodel..." oninput="updateSubmodel(${i},'name',this.value)">
+          <input class="sub-years-input" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)">
           <button class="btn-ico" onclick="confirmAction('Remove this submodel?',()=>removeSubmodel(${i}))">✕</button>
         </div>`;
       });
     } else {
       html+=`<div style="padding:14px;text-align:center;color:var(--text3);font-size:13px">No submodels added.</div>`;
     }
-    html+=`</div>`;
+    html+=`</div>`; // end Submodels sec
 
-    html+=`</div></div>`; // end right col + info-col-wide
+    html+=`</div>`; // end info-grid
   }
 
   // ── RESEARCH TAB ──
   else if(activeTab==='research'){
     html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Research summary</span>
       <span style="margin-left:auto;font-size:11px;color:var(--text3)">Drag images in · Click image to resize</span></div>
-    <div style="padding:0">
+    <div>
       <div class="rich-toolbar">
         <button class="rich-btn" onclick="fmt('bold')"><b>B</b></button>
         <button class="rich-btn" onclick="fmt('italic')"><i>I</i></button>
@@ -624,61 +625,66 @@ function renderPattern(){
         <div class="rich-sep"></div>
         <button class="rich-btn" onclick="document.getElementById('research-img-file').click()">📷 Image</button>
         <div class="rich-sep"></div>
-        <span style="font-size:11px;color:var(--text3);padding:0 4px">Selected image:</span>
-        <button class="rich-btn" onclick="resizeSelectedImg(0.5)">S</button>
-        <button class="rich-btn" onclick="resizeSelectedImg(0.75)">M</button>
-        <button class="rich-btn" onclick="resizeSelectedImg(1.0)">L</button>
-        <button class="rich-btn" onclick="resizeSelectedImg('custom')">Custom</button>
+        <span style="font-size:11px;color:var(--text3);padding:0 2px">Resize:</span>
+        <button class="rich-btn" onclick="resizeImg(0.33)">S</button>
+        <button class="rich-btn" onclick="resizeImg(0.6)">M</button>
+        <button class="rich-btn" onclick="resizeImg(1.0)">L</button>
+        <button class="rich-btn" onclick="resizeImg('px')">Custom px</button>
       </div>
-      <div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()" ondragover="event.preventDefault()" ondrop="onResearchDrop(event)" onpaste="onResearchPaste(event)" onclick="onEditorClick(event)">${p.research||'<p>Add research notes here...</p>'}</div>
+      <div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()"
+        ondragover="event.preventDefault()" ondrop="onResearchDrop(event)"
+        onpaste="onResearchPaste(event)" onclick="onEditorClick(event)"
+        onmousedown="onEditorMouseDown(event)">${p.research||'<p>Add research notes here...</p>'}</div>
     </div></div>
-    <div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body">
+    <div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body">
       <textarea class="form-input" id="ta-notes" style="min-height:80px" placeholder="Fitment warnings, caveats, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea>
     </div></div>`;
   }
 
   // ── PHOTOS TAB ──
   else if(activeTab==='photos'){
-    html+=photoTabHtml('Product photos','prod-drop','product',productPhotos);
+    html+=buildPhotoTab('Product photos','prod-drop','product',prodPhotos);
   }
 
   // ── BEFORE & AFTER TAB ──
   else if(activeTab==='before_after'){
-    html+=photoTabHtml('Before & after — customer photos','ba-drop','before_after',baPhotos);
+    html+=buildPhotoTab('Before & after — customer photos','ba-drop','before_after',baPhotos);
   }
 
   // ── PDFS TAB ──
   else if(activeTab==='pdfs'){
-    html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">PDF brochures & research docs</span></div><div class="sec-body">
+    html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">PDFs & research docs</span></div><div class="sec-body">
       ${p.pdfs.length?`<div style="margin-bottom:12px">${p.pdfs.map(f=>`<div class="pdf-item">
         <span style="font-size:18px">📄</span><span class="pdf-name">${esc(f.name)}</span>
         ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:12px;text-decoration:none;font-weight:500">Open ↗</a>`:''}
-        <button class="btn-ico" onclick="confirmAction('Remove PDF &quot;${esc(f.name)}&quot;?',()=>removePdf('${f.id}'))">✕</button>
+        <button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">✕</button>
       </div>`).join('')}</div>`:''}
-      <div class="photo-drop" onclick="openPdfInput()">
+      <div class="photo-drop-zone" onclick="openPdfInput()">
         <div class="drop-ico">📄</div><div class="drop-txt">Add PDF reference</div><div class="drop-sub">Enter name + Google Drive or Dropbox URL</div>
       </div>
     </div></div>`;
   }
 
   document.getElementById('content').innerHTML=html;
-  initResizeHandles();
+  initEditorImgResize();
 }
 
-function photoTabHtml(title,dropId,type,photos){
+function buildPhotoTab(title,dropId,type,photos){
   return`<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body">
-    <div class="photo-drop" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')">
-      <div class="drop-ico">${type==='product'?'📷':'🔄'}</div><div class="drop-txt">Drag & drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div>
+    <div class="photo-drop-zone" id="${dropId}"
+      ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')"
+      ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')">
+      <div class="drop-ico">${type==='product'?'📷':'🔄'}</div>
+      <div class="drop-txt">Drag & drop or click to browse</div>
+      <div class="drop-sub">JPG, PNG, WEBP</div>
     </div>
-    ${photos.length?`<div class="photo-grid">${photos.map(ph=>`<div class="ph-card">
-      <div class="ph-thumb">
+    ${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card">
+      <div class="sq-photo-wrap">
         <img src="${ph.url}" onerror="this.style.display='none'" alt="">
-        <div class="ph-overlay">
-          <button class="ph-btn" onclick="openLB('${ph.url.replace(/'/g,"\\'")}',event)">🔍 View</button>
-          <button class="ph-btn del" onclick="confirmAction('Remove this photo?',()=>removePhoto('${ph.id}',null))">✕ Remove</button>
-        </div>
+        <button class="sq-photo-x" onclick="confirmAction('Remove this photo?',()=>removePhoto('${ph.id}'))">✕</button>
+        <div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${safeUrl(ph.url)}',event)">🔍 View</button></div>
       </div>
-      <div class="ph-label">${esc(ph.caption||'Photo')}</div>
+      <div class="sq-photo-label">${esc(ph.caption||'Photo')}</div>
     </div>`).join('')}</div>`:''}
   </div></div>`;
 }
@@ -691,40 +697,63 @@ function collectText(){
   const ey=document.getElementById('edit-years'),eb=document.getElementById('edit-brand'),em=document.getElementById('edit-model'),et=document.getElementById('edit-trim');
   if(r)p.research=r.innerHTML;
   if(n)p.notes=n.value;
-  if(ey){p.years=ey.value;p.brand=eb.value;p.model=em.value;p.trim=et.value;}
+  if(ey){p.years=ey.value.trim();p.brand=eb.value.trim();p.model=em.value.trim();p.trim=et.value.trim();}
 }
 
 let editMode=false;
 function toggleEditMode(){
   editMode=!editMode;
   const td=document.getElementById('pat-title-display'),er=document.getElementById('pat-edit-row'),btn=document.getElementById('edit-toggle-btn');
-  td.style.display=editMode?'none':'block';er.style.display=editMode?'flex':'none';
+  td.style.display=editMode?'none':'block';
+  er.style.display=editMode?'flex':'none';
   btn.textContent=editMode?'✓ Done':'✏️ Edit';
   if(!editMode){collectText();markDirty();}
 }
 
-// ── VARIATIONS ────────────────────────────────────────────
+// ── VARIATIONS ───────────────────────────────────────────
 async function toggleVarBtn(btnId,groupId){
-  const p=getP();
-  const newVal=!p.positions[btnId];
-  p.positions[btnId]=newVal;
+  const p=getP();p.positions[btnId]=!p.positions[btnId];
   await supa.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);
   buildSidebar();renderPattern();toast('Saved ✓');
 }
 
+// Drag onto var row
+function onVarDragOver(e,groupId){e.preventDefault();const el=document.getElementById('varrow-'+groupId);if(el)el.classList.add('dragover');}
+function onVarDragLeave(groupId){const el=document.getElementById('varrow-'+groupId);if(el)el.classList.remove('dragover');}
+function onVarDrop(e,groupId){
+  e.preventDefault();
+  const el=document.getElementById('varrow-'+groupId);if(el)el.classList.remove('dragover');
+  const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
+  if(f)fileToDataUrl(f).then(url=>saveGroupThumb(groupId,url));
+}
+async function saveGroupThumb(groupId,url){
+  const p=getP();p.positions[groupId+'_thumb']=url;
+  await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);
+  renderPattern();toast('Photo saved ✓');
+}
 async function removeGroupThumb(groupId){
-  const p=getP();
-  delete p.positions[groupId+'_thumb'];
+  const p=getP();delete p.positions[groupId+'_thumb'];
   await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);
   renderPattern();toast('Photo removed');
 }
+
+// Drag onto other var row
+function onOtherVarDragOver(e,i){e.preventDefault();const el=document.getElementById('otherrow-'+i);if(el)el.classList.add('dragover');}
+function onOtherVarDragLeave(i){const el=document.getElementById('otherrow-'+i);if(el)el.classList.remove('dragover');}
+function onOtherVarDrop(e,i){
+  e.preventDefault();
+  const el=document.getElementById('otherrow-'+i);if(el)el.classList.remove('dragover');
+  const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
+  if(f)fileToDataUrl(f).then(url=>{const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added ✓');});
+}
+function removeOtherThumb(i){const p=getP();p.other_positions[i].thumb='';markDirty();renderPattern();toast('Photo removed');}
 
 function toggleOtherVar(i){const p=getP();p.other_positions[i].active=!p.other_positions[i].active;markDirty();renderPattern();}
 function updateOtherLabel(i,v){const p=getP();p.other_positions[i].label=v;markDirty();}
 function addOtherVar(){const p=getP();p.other_positions.push({label:'',active:true,thumb:''});markDirty();renderPattern();}
 function removeOtherVar(i){const p=getP();p.other_positions.splice(i,1);markDirty();renderPattern();}
 
-// ── MATERIALS ─────────────────────────────────────────────
+// ── MATERIALS ────────────────────────────────────────────
 async function toggleMaterial(mat){
   const p=getP();const idx=(p.materials||[]).indexOf(mat);
   if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);
@@ -732,7 +761,7 @@ async function toggleMaterial(mat){
   renderPattern();toast('Saved ✓');
 }
 
-// ── SUBMODELS ─────────────────────────────────────────────
+// ── SUBMODELS ────────────────────────────────────────────
 function addSubmodel(){const p=getP();p.submodels.push({name:'',years:'All years'});markDirty();renderPattern();}
 function updateSubmodel(i,field,val){
   const p=getP();
@@ -741,43 +770,45 @@ function updateSubmodel(i,field,val){
 }
 function removeSubmodel(i){const p=getP();p.submodels.splice(i,1);markDirty();renderPattern();}
 
-// ── THUMB PICKER ──────────────────────────────────────────
+// ── THUMB PICKER (colors) ────────────────────────────────
 function openThumbPicker(type,key){
   thumbCtx={type,key};
-  document.getElementById('thumb-picker-title').textContent=type==='color'?'Add color reference photo':type==='group'?'Add variation group photo':'Add photo';
   document.getElementById('thumb-picker').style.display='flex';
 }
 function closeThumbPicker(){document.getElementById('thumb-picker').style.display='none';thumbCtx=null;}
-function onDragOver(e,id){e.preventDefault();const el=document.getElementById(id);if(el)el.classList.add('dragover');}
-function onDragLeave(id){const el=document.getElementById(id);if(el)el.classList.remove('dragover');}
 function onThumbDrop(e){e.preventDefault();document.getElementById('thumb-drop').classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))processThumbFile(f);}
 function handleThumbFile(e){const f=e.target.files[0];e.target.value='';if(f)processThumbFile(f);}
 function processThumbFile(file){
   fileToDataUrl(file).then(url=>{
+    if(!thumbCtx)return;
     const p=getP();
     if(thumbCtx.type==='color'){
       const c=p.colors.find(c=>c.id===thumbCtx.key);
       if(c){c.thumb_url=url;supa.from('pattern_colors').update({thumb_url:url}).eq('id',c.id);}
-    } else if(thumbCtx.type==='group'){
-      p.positions[thumbCtx.key+'_thumb']=url;
-      supa.from('patterns').update({positions:p.positions}).eq('id',p.id);
-    } else if(thumbCtx.type==='other_pos'){
-      p.other_positions[thumbCtx.key].thumb=url;markDirty();
     }
     closeThumbPicker();renderPattern();toast('Photo added ✓');
   });
 }
+async function removeColorThumb(id){
+  const p=getP();const c=p.colors.find(c=>c.id===id);
+  if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}
+  renderPattern();toast('Photo removed');
+}
 
-// ── LIGHTBOX ──────────────────────────────────────────────
+// ── DRAG HELPERS ─────────────────────────────────────────
+function onDragOver(e,id){e.preventDefault();const el=document.getElementById(id);if(el)el.classList.add('dragover');}
+function onDragLeave(id){const el=document.getElementById(id);if(el)el.classList.remove('dragover');}
+
+// ── LIGHTBOX ─────────────────────────────────────────────
 function openLB(url,e){if(e)e.stopPropagation();document.getElementById('lb-img').src=url;document.getElementById('lightbox').style.display='flex';}
 function closeLightbox(){document.getElementById('lightbox').style.display='none';}
 
-// ── PHOTOS ────────────────────────────────────────────────
+// ── PHOTOS ───────────────────────────────────────────────
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function onPhotoDrop(e,type){
   e.preventDefault();
-  const dropId=type==='product'?'prod-drop':'ba-drop';
-  const el=document.getElementById(dropId);if(el)el.classList.remove('dragover');
+  const id=type==='product'?'prod-drop':'ba-drop';
+  const el=document.getElementById(id);if(el)el.classList.remove('dragover');
   uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);
 }
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
@@ -796,126 +827,110 @@ async function removePhoto(id){
   p.photos=p.photos.filter(ph=>ph.id!==id);renderPattern();toast('Photo removed');
 }
 
-// ── RESEARCH IMAGES ───────────────────────────────────────
+// ── RESEARCH IMAGE HANDLING ───────────────────────────────
 function fmt(cmd){document.execCommand(cmd,false,null);const ed=document.getElementById('rich-editor');if(ed)ed.focus();markDirty();}
-function handleResearchImg(e){const f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(url=>{insertResearchImg(url);});}
-function insertResearchImg(url){
-  const ed=document.getElementById('rich-editor');if(!ed)return;
-  ed.focus();
-  document.execCommand('insertImage',false,url);
-  markDirty();
-}
-function onResearchPaste(e){
-  for(const item of e.clipboardData.items){
-    if(item.type.startsWith('image/')){e.preventDefault();fileToDataUrl(item.getAsFile()).then(url=>insertResearchImg(url));return;}
-  }
-}
-function onResearchDrop(e){
-  e.preventDefault();
-  const f=e.dataTransfer.files[0];
-  if(f&&f.type.startsWith('image/'))fileToDataUrl(f).then(url=>insertResearchImg(url));
-}
+function handleResearchImg(e){const f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(url=>insertImg(url));}
+function insertImg(url){document.execCommand('insertImage',false,url);markDirty();}
+function onResearchPaste(e){for(const item of e.clipboardData.items){if(item.type.startsWith('image/')){e.preventDefault();fileToDataUrl(item.getAsFile()).then(url=>insertImg(url));return;}}}
+function onResearchDrop(e){e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))fileToDataUrl(f).then(url=>insertImg(url));}
 
-// ── IMAGE RESIZE IN EDITOR ────────────────────────────────
 let selectedImg=null;
 function onEditorClick(e){
   if(e.target.tagName==='IMG'){
     selectedImg=e.target;
-    document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('selected'));
-    selectedImg.classList.add('selected');
+    document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));
+    selectedImg.classList.add('img-sel');
   } else {
     selectedImg=null;
-    document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('selected'));
+    document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));
   }
 }
 
-function resizeSelectedImg(factor){
-  if(!selectedImg){toast('Click an image in the editor first','err');return;}
+function resizeImg(factor){
+  if(!selectedImg){toast('Click an image in the editor first to select it','err');return;}
   const ed=document.getElementById('rich-editor');
-  const edWidth=ed?ed.offsetWidth-28:600;
-  if(factor==='custom'){
-    const w=prompt('Enter width in pixels (e.g. 300):');
+  if(!ed)return;
+  const edW=ed.offsetWidth-28;
+  if(factor==='px'){
+    const w=prompt('Width in pixels (e.g. 300):');
     if(!w||isNaN(parseInt(w)))return;
     selectedImg.style.width=parseInt(w)+'px';
     selectedImg.style.height='auto';
   } else {
-    selectedImg.style.width=Math.round(edWidth*factor)+'px';
+    selectedImg.style.width=Math.round(edW*factor)+'px';
     selectedImg.style.height='auto';
   }
   markDirty();
 }
 
-function initResizeHandles(){
-  // Make images in the rich editor resizable via mouse drag
+// Mouse-drag resize on image bottom-right corner
+function initEditorImgResize(){
   const ed=document.getElementById('rich-editor');
   if(!ed)return;
-  ed.addEventListener('click',function(e){
-    if(e.target.tagName==='IMG'){
-      selectedImg=e.target;
-      setupImgResize(selectedImg);
+  ed.addEventListener('mousedown',function(e){
+    if(e.target.tagName!=='IMG')return;
+    const img=e.target;
+    const rect=img.getBoundingClientRect();
+    const nearRight=e.clientX>rect.right-14;
+    const nearBottom=e.clientY>rect.bottom-14;
+    if(!nearRight||!nearBottom)return;
+    e.preventDefault();
+    const startX=e.clientX,startW=img.offsetWidth;
+    function onMove(ev){
+      const newW=Math.max(60,startW+(ev.clientX-startX));
+      img.style.width=newW+'px';img.style.height='auto';
     }
+    function onUp(){document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);markDirty();}
+    document.addEventListener('mousemove',onMove);
+    document.addEventListener('mouseup',onUp);
   });
 }
-
-function setupImgResize(img){
-  // Remove existing handles
-  document.querySelectorAll('.resize-handle-active').forEach(h=>h.remove());
-  const ed=document.getElementById('rich-editor');if(!ed)return;
-
-  img.style.cursor='default';
-  let startX,startW;
-
-  // Simple approach: drag the right edge of the image
-  img.onmousedown=function(e){
+function onEditorMouseDown(e){
+  if(e.target.tagName==='IMG'){
+    const img=e.target;
     const rect=img.getBoundingClientRect();
-    const nearRight=e.clientX>rect.right-12;
-    const nearBottom=e.clientY>rect.bottom-12;
-    if(!nearRight&&!nearBottom)return;
-    e.preventDefault();
-    startX=e.clientX;
-    startW=img.offsetWidth;
-    document.onmousemove=function(ev){
-      const newW=Math.max(60,startW+(ev.clientX-startX));
-      img.style.width=newW+'px';
-      img.style.height='auto';
-    };
-    document.onmouseup=function(){
-      document.onmousemove=null;
-      document.onmouseup=null;
-      markDirty();
-    };
-  };
-  img.style.cursor='nwse-resize';
-  img.title='Drag bottom-right corner to resize. Use toolbar buttons for preset sizes.';
+    if(e.clientX>rect.right-14&&e.clientY>rect.bottom-14){
+      img.style.cursor='nwse-resize';
+    } else {
+      img.style.cursor='default';
+    }
+  }
 }
 
-// ── COLORS ────────────────────────────────────────────────
+// ── COLORS ───────────────────────────────────────────────
 function openColorModal(){document.getElementById('color-modal').style.display='flex';}
 function closeColorModal(){document.getElementById('color-modal').style.display='none';}
 async function addColor(){
   const name=document.getElementById('c-name').value.trim();if(!name){alert('Color name required.');return;}
   const p=getP();
-  const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:document.getElementById('c-hex').value,year_note:document.getElementById('c-years').value.trim()||'All years',sort_order:p.colors.length}).select().single();
+  const {data,error}=await supa.from('pattern_colors').insert({
+    pattern_id:p.id,name,
+    code:document.getElementById('c-code').value.trim(),
+    hex:document.getElementById('c-hex').value,
+    year_note:document.getElementById('c-years').value.trim()||'All years',
+    sort_order:p.colors.length
+  }).select().single();
   if(error){toast('Error: '+error.message,'err');return;}
   p.colors.push(data);closeColorModal();
   ['c-name','c-code','c-years'].forEach(id=>document.getElementById(id).value='');
   buildSidebar();renderPattern();toast('Color added ✓');
 }
-async function removeColor(id){
-  const p=getP();await supa.from('pattern_colors').delete().eq('id',id);
-  p.colors=p.colors.filter(c=>c.id!==id);buildSidebar();renderPattern();toast('Color removed');
-}
 
-// ── PDFS ──────────────────────────────────────────────────
+// ── PDFS ─────────────────────────────────────────────────
 function openPdfInput(){const name=prompt('PDF name:');if(!name)return;const url=prompt('URL (optional):');savePdf(name.trim(),url?url.trim():null);}
 async function savePdf(name,url){const p=getP();const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();if(error){toast('Error: '+error.message,'err');return;}p.pdfs.push(data);buildSidebar();renderPattern();toast('PDF added ✓');}
 async function removePdf(id){const p=getP();await supa.from('pattern_pdfs').delete().eq('id',id);p.pdfs=p.pdfs.filter(f=>f.id!==id);buildSidebar();renderPattern();toast('Removed');}
 
-// ── SAVE ──────────────────────────────────────────────────
+// ── SAVE ─────────────────────────────────────────────────
 async function saveAll(){
   collectText();const p=getP();if(!p)return;
   setStatus('Saving...','saving');
-  const {error}=await supa.from('patterns').update({brand:p.brand,model:p.model,years:p.years,trim:p.trim,research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,updated_at:new Date().toISOString()}).eq('id',p.id);
+  const {error}=await supa.from('patterns').update({
+    brand:p.brand,model:p.model,years:p.years,trim:p.trim,
+    research:p.research,notes:p.notes,
+    submodels:p.submodels,other_positions:p.other_positions,
+    updated_at:new Date().toISOString()
+  }).eq('id',p.id);
   if(error){toast('Save failed: '+error.message,'err');setStatus('Save failed');return;}
   unsaved=false;setStatus('Saved ✓','saved');buildSidebar();
   const td=document.getElementById('pat-title-display');
@@ -941,8 +956,7 @@ async function addPattern(){
   selectPattern(data.id);toast('Pattern added ✓');
 }
 async function doDelete(){
-  const p=getP();
-  await supa.from('patterns').delete().eq('id',p.id);
+  const p=getP();await supa.from('patterns').delete().eq('id',p.id);
   patterns=patterns.filter(x=>x.id!==p.id);currentId=null;buildSidebar();
   document.getElementById('content').innerHTML=`<div class="empty-state"><div class="empty-ico">🪑</div><div class="empty-title">Pattern deleted</div><div class="empty-sub">Select another or add a new one.</div></div>`;
   document.getElementById('hdr-actions').style.display='none';
@@ -950,7 +964,7 @@ async function doDelete(){
   toast('Deleted');
 }
 
-// ── UTILS ──────────────────────────────────────────────────
+// ── UTILS ────────────────────────────────────────────────
 function fileToDataUrl(file){return new Promise(res=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.readAsDataURL(file);});}
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
 
