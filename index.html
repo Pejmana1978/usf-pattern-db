@@ -235,40 +235,55 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     </div>
     <div id="login-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;border:1px solid var(--red-border);text-align:left"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
+    <div style="margin-top:14px;text-align:center">
+      <a href="#" onclick="doForgotPassword();return false;" style="font-size:13px;color:var(--text3);text-decoration:none;border-bottom:1px solid var(--border)">Forgot password?</a>
+    </div>
   </div>
 </div>
 
 <!-- USER MANAGEMENT MODAL -->
 <div class="modal-overlay" id="users-modal" style="display:none" onclick="if(event.target===this)closeUsersModal()">
-  <div class="modal" style="width:600px;max-width:95vw">
-    <div style="display:flex;align-items:center;margin-bottom:18px">
+  <div class="modal" style="width:640px;max-width:95vw">
+    <div style="display:flex;align-items:center;margin-bottom:6px">
       <div class="modal-title" style="margin-bottom:0;flex:1">User Management</div>
       <button class="btn btn-navy btn-sm" id="add-user-btn" onclick="showAddUser()">+ Add User</button>
     </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">
+      <strong style="color:var(--navy)">How to add users:</strong> Create the auth account in 
+      <a href="https://supabase.com/dashboard/project/doommgfawoqiptgqadwd/auth/users" target="_blank" style="color:var(--gold2);font-weight:500">Supabase &rarr; Authentication &rarr; Users &rarr; Add user</a>, 
+      then paste their User UID below to assign them a role and name. This keeps your service key secure.
+    </div>
     <div id="users-list"><div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div></div>
     <div id="add-user-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px">Add new user</div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Register existing Supabase user</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="nu-name" placeholder="e.g. Sarah Jones"></div>
-        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
+        <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="nu-name" placeholder="e.g. Sarah Jones"></div>
+        <div class="form-group"><label class="form-label">Email (for display) *</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Temp Password</label><input class="form-input" id="nu-pass" placeholder="Min 6 characters" type="password"></div>
-        <div class="form-group"><label class="form-label">Role</label>
+        <div class="form-group">
+          <label class="form-label">Supabase User UID *</label>
+          <input class="form-input" id="nu-uid" placeholder="e.g. 1ced8b54-8ece-4e0b-b20c-...">
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">Find in Supabase &rarr; Auth &rarr; Users &rarr; click user &rarr; copy UID</div>
+        </div>
+        <div class="form-group"><label class="form-label">Role *</label>
           <select class="form-input" id="nu-role" style="cursor:pointer">
-            <option value="viewer">Viewer (read only)</option>
-            <option value="editor">Editor (add, edit, delete)</option>
-            <option value="manager">Manager (+ manage users)</option>
+            <option value="viewer">Viewer &mdash; read only</option>
+            <option value="editor">Editor &mdash; add, edit, delete</option>
+            <option value="manager">Manager &mdash; + manage users</option>
           </select>
         </div>
       </div>
-      <div id="add-user-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:10px;padding:8px 12px;background:var(--red-bg);border-radius:8px"></div>
+      <div id="add-user-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:10px;padding:10px 14px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-ghost btn-sm" onclick="hideAddUser()">Cancel</button>
-        <button class="btn btn-navy btn-sm" id="create-user-btn" onclick="createUser()">Create User</button>
+        <button class="btn btn-navy btn-sm" id="create-user-btn" onclick="registerUser()">Register User</button>
       </div>
     </div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeUsersModal()">Close</button></div>
+    <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div style="font-size:12px;color:var(--text3)">Password resets are sent via email by Supabase.</div>
+      <button class="btn btn-ghost" onclick="closeUsersModal()">Close</button>
+    </div>
   </div>
 </div>
 
@@ -487,6 +502,17 @@ function showLoginScreen(){
 }
 function hideLoginScreen(){document.getElementById('login-screen').style.display='none';}
 
+async function doForgotPassword(){
+  const email=document.getElementById('login-email').value.trim();
+  const errEl=document.getElementById('login-error');
+  if(!email){errEl.textContent='Enter your email address above first.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  errEl.style.background='var(--green-bg)';errEl.style.borderColor='var(--green)';errEl.style.color='var(--green)';
+  errEl.textContent='Password reset email sent! Check your inbox.';errEl.style.display='block';
+}
+
 async function onAuthSuccess(user){
   currentUser=user;
   const {data:profile,error}=await supa.from('user_profiles').select('*').eq('id',user.id).single();
@@ -541,25 +567,44 @@ async function loadUsersList(){
         ?`<select onchange="changeUserRole('${u.id}',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;cursor:pointer">${roles.map(r=>`<option value="${r}"${u.role===r?' selected':''}>${r}</option>`).join('')}</select>`
         :`<span style="font-size:12px;font-weight:700;color:${roleColors[u.role]};text-transform:uppercase;letter-spacing:0.04em">${u.role}</span>`
       }</td>
-      <td style="padding:10px 8px;text-align:right">${canEdit?`<button onclick="removeUser('${u.id}','${su(u.full_name||u.email)}')" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font)">Remove</button>`:''}</td>
+      <td style="padding:10px 8px;text-align:right;white-space:nowrap">${canEdit?`
+        <button onclick="sendReset('${esc(u.email)}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font);margin-right:4px" title="Send password reset email">Reset pw</button>
+        <button onclick="editUserName('${u.id}','${su(u.full_name||'')}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font);margin-right:4px">Edit</button>
+        <button onclick="removeUser('${u.id}','${su(u.full_name||u.email)}')" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font)">Remove</button>
+      `:''}</td>
     </tr>`;
   });
   html+='</tbody></table>';
   el.innerHTML=html;
 }
 
+async function sendReset(email){
+  const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+  if(error){toast('Error: '+error.message,'err');return;}
+  toast('Password reset email sent to '+email+' ✓');
+}
+
+async function editUserName(uid,currentName){
+  const name=prompt('Enter new name for this user:',currentName);
+  if(!name||!name.trim())return;
+  const {error}=await supa.from('user_profiles').update({full_name:name.trim()}).eq('id',uid);
+  if(error){toast('Error: '+error.message,'err');return;}
+  toast('Name updated ✓');
+  await loadUsersList();
+}
+
 async function changeUserRole(uid,role){
   const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);
   if(error){toast('Error: '+error.message,'err');return;}
-  toast('Role updated \u2713');
+  toast('Role updated ✓');
   await loadUsersList();
 }
 
 async function removeUser(uid,name){
-  confirmAction(`Remove ${name}? They will no longer be able to log in.`,async()=>{
+  confirmAction(`Remove ${name}? They will no longer be able to log in. Their auth account in Supabase will need to be deleted separately.`,async()=>{
     const {error}=await supa.from('user_profiles').delete().eq('id',uid);
     if(error){toast('Error: '+error.message,'err');return;}
-    toast('User removed');
+    toast('User removed from app');
     await loadUsersList();
   });
 }
@@ -568,7 +613,6 @@ function showAddUser(){
   if(!can('manage_users')){toast('Permission denied','err');return;}
   document.getElementById('add-user-form').style.display='block';
   document.getElementById('add-user-btn').style.display='none';
-  // Restrict roles for managers
   const sel=document.getElementById('nu-role');
   Array.from(sel.options).forEach(o=>{
     if(currentRole!=='admin'&&(o.value==='manager'||o.value==='admin'))o.style.display='none';
@@ -578,27 +622,30 @@ function hideAddUser(){
   document.getElementById('add-user-form').style.display='none';
   document.getElementById('add-user-btn').style.display='';
   document.getElementById('add-user-error').style.display='none';
-  ['nu-name','nu-email','nu-pass'].forEach(id=>document.getElementById(id).value='');
+  ['nu-name','nu-email','nu-uid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 
-async function createUser(){
+async function registerUser(){
   const name=document.getElementById('nu-name').value.trim();
   const email=document.getElementById('nu-email').value.trim();
-  const pass=document.getElementById('nu-pass').value;
+  const uid=document.getElementById('nu-uid').value.trim();
   const role=document.getElementById('nu-role').value;
   const errEl=document.getElementById('add-user-error');
   errEl.style.display='none';
-  if(!name||!email||!pass){errEl.textContent='All fields are required.';errEl.style.display='block';return;}
-  if(pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
-  if(currentRole==='manager'&&(role==='manager'||role==='admin')){errEl.textContent='Managers can only create editors and viewers.';errEl.style.display='block';return;}
-  const btn=document.getElementById('create-user-btn');btn.textContent='Creating...';btn.disabled=true;
-  const {data,error}=await supa.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
-  btn.textContent='Create User';btn.disabled=false;
-  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
-  if(!data?.user){errEl.textContent='User creation failed.';errEl.style.display='block';return;}
-  const {error:pe}=await supa.from('user_profiles').insert({id:data.user.id,email,full_name:name,role,created_by:currentUser.id});
-  if(pe){errEl.textContent='Profile error: '+pe.message;errEl.style.display='block';return;}
-  toast('User created \u2713');
+  if(!name||!email||!uid){errEl.textContent='All fields are required.';errEl.style.display='block';return;}
+  // Validate UUID format
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)){
+    errEl.textContent='Invalid UID format. It should look like: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';errEl.style.display='block';return;
+  }
+  if(currentRole==='manager'&&(role==='manager'||role==='admin')){errEl.textContent='Managers can only register editors and viewers.';errEl.style.display='block';return;}
+  const btn=document.getElementById('create-user-btn');btn.textContent='Registering...';btn.disabled=true;
+  // Check if profile already exists
+  const {data:existing}=await supa.from('user_profiles').select('id').eq('id',uid).single();
+  if(existing){btn.textContent='Register User';btn.disabled=false;errEl.textContent='A profile for this UID already exists.';errEl.style.display='block';return;}
+  const {error}=await supa.from('user_profiles').insert({id:uid,email,full_name:name,role,created_by:currentUser.id});
+  btn.textContent='Register User';btn.disabled=false;
+  if(error){errEl.textContent='Error: '+error.message;errEl.style.display='block';return;}
+  toast('User registered ✓');
   hideAddUser();
   await loadUsersList();
 }
