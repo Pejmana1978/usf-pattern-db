@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USF Pattern Database</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;--bg2:#181818;--bg3:#222;--bg4:#2a2a2a;
+  --border:#333;--border2:#444;--text:#f0f0f0;--text2:#aaa;--text3:#666;
+  --accent:#c8a96e;--accent2:#a8844e;--accent-bg:rgba(200,169,110,0.08);--accent-border:rgba(200,169,110,0.25);
+  --green:#4caf7d;--green-bg:rgba(76,175,125,0.1);
+  --red:#e05252;--red-bg:rgba(224,82,82,0.1);
+  --blue:#5b8fff;--blue-bg:rgba(91,143,255,0.1);
+  --radius:8px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+.app{display:grid;grid-template-columns:270px 1fr;height:100vh;overflow:hidden}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main{display:flex;flex-direction:column;overflow:hidden}
+
+/* Sidebar */
+.sidebar-header{padding:16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.logo-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#000}
+.logo-text{font-size:13px;font-weight:600}
+.logo-sub{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:0.05em;text-transform:uppercase}
+.search-box{position:relative}
+.search-box input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px 7px 30px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color 0.2s}
+.search-box input:focus{border-color:var(--accent-border)}
+.search-box input::placeholder{color:var(--text3)}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3)}
+.brand-list{flex:1;overflow-y:auto;padding:8px 0}
+.brand-list::-webkit-scrollbar{width:4px}
+.brand-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.brand-header{display:flex;align-items:center;gap:8px;padding:7px 16px;cursor:pointer;user-select:none;transition:background 0.15s}
+.brand-header:hover{background:var(--bg3)}
+.brand-header.open{background:var(--accent-bg)}
+.brand-chevron{font-size:10px;color:var(--text3);transition:transform 0.2s}
+.brand-chevron.open{transform:rotate(90deg)}
+.brand-name{font-size:13px;font-weight:500;flex:1}
+.brand-count{font-size:11px;color:var(--text3);font-family:var(--mono);background:var(--bg3);padding:1px 6px;border-radius:10px}
+.pattern-list{display:none;padding:0 0 4px}
+.pattern-list.open{display:block}
+.pattern-item{padding:6px 16px 6px 34px;cursor:pointer;font-size:12.5px;color:var(--text2);transition:all 0.15s;border-left:2px solid transparent}
+.pattern-item:hover{color:var(--text);background:var(--bg3)}
+.pattern-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-bg)}
+.pattern-item-name{font-weight:500;margin-bottom:2px}
+.badge-row{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.badge{font-size:10px;padding:1px 5px;border-radius:3px;font-family:var(--mono)}
+.badge.has{background:var(--green-bg);color:var(--green)}
+.badge.warn{background:var(--accent-bg);color:var(--accent)}
+.badge.miss{background:var(--red-bg);color:var(--red)}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.btn-add{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--radius);padding:8px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.2s}
+.btn-add:hover{background:var(--accent2)}
+.btn-add:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Main */
+.main-header{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;min-height:54px}
+.breadcrumb{font-size:12px;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.breadcrumb .sep{color:var(--border2)}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{padding:6px 14px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:var(--accent2)}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:24px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);gap:12px;text-align:center}
+.empty-icon{font-size:48px;opacity:0.3}
+.empty-title{font-size:16px;font-weight:500;color:var(--text2)}
+.empty-sub{font-size:13px;max-width:280px;line-height:1.6}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.stat-value{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+.progress-wrap{margin-bottom:20px}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;color:var(--text3)}
+.progress-bar{background:var(--bg3);border-radius:10px;height:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:10px;transition:width 0.4s}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* Sections */
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.section-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.section-title{font-size:13px;font-weight:600}
+.section-body{padding:16px}
+
+/* Inputs */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
+.form-input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border-color 0.2s}
+.form-input:focus{border-color:var(--accent-border)}
+.form-input::placeholder{color:var(--text3)}
+.form-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+textarea.form-input{resize:vertical;min-height:100px;line-height:1.6}
+
+/* Tags */
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 10px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.tag .remove{cursor:pointer;color:var(--text3);font-size:10px;line-height:1;padding:1px}
+.tag .remove:hover{color:var(--red)}
+.tag-input{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;width:130px;transition:border-color 0.2s}
+.tag-input:focus{border-color:var(--accent-border)}
+
+/* Colors table */
+.colors-table{width:100%;border-collapse:collapse}
+.colors-table th{text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding:6px 10px;border-bottom:1px solid var(--border)}
+.colors-table td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.colors-table tr:last-child td{border-bottom:none}
+.colors-table tr:hover td{background:rgba(255,255,255,0.02)}
+.color-cell{display:flex;align-items:center;gap:8px}
+.color-swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);flex-shrink:0}
+.trim-code{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg3);padding:2px 6px;border-radius:4px}
+.year-note{font-size:11px;color:var(--text3)}
+.btn-icon{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px 6px;border-radius:4px;transition:all 0.15s;font-size:13px;line-height:1}
+.btn-icon:hover{background:var(--red-bg);color:var(--red)}
+
+/* Positions */
+.positions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.position-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all 0.15s;position:relative}
+.position-card:hover{border-color:var(--border2)}
+.position-card.has{border-color:var(--green);background:var(--green-bg)}
+.position-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.position-status{font-size:11px;font-family:var(--mono)}
+.position-card.has .position-status{color:var(--green)}
+.position-card:not(.has) .position-status{color:var(--text3)}
+.position-check{position:absolute;top:8px;right:8px;font-size:12px;color:var(--green)}
+
+/* Materials */
+.materials-row{display:flex;gap:8px;flex-wrap:wrap}
+.mat-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:6px 14px;font-size:12px;cursor:pointer;transition:all 0.15s;font-family:var(--font);color:var(--text2)}
+.mat-btn:hover{border-color:var(--border2);color:var(--text)}
+.mat-btn.on{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+
+/* PDFs */
+.pdf-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.pdf-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)}
+.pdf-name{font-size:13px;flex:1}
+.pdf-meta{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.drop-zone{border:1px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:all 0.15s}
+.drop-zone:hover{border-color:var(--accent-border);background:var(--accent-bg)}
+.drop-zone-icon{font-size:28px;opacity:0.3;margin-bottom:8px}
+.drop-zone-text{font-size:13px;color:var(--text3)}
+.drop-zone-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Photos */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.photo-thumb{aspect-ratio:4/3;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center}
+.photo-thumb:hover .photo-thumb-overlay{display:flex}
+.photo-add{aspect-ratio:4/3;background:var(--bg3);border:1px dashed var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;gap:4px}
+.photo-add:hover{border-color:var(--accent-border);background:var(--accent-bg)}
+.photo-add-icon{font-size:22px;opacity:0.3}
+.photo-add-label{font-size:10px;color:var(--text3)}
+
+/* Save bar */
+.save-bar{padding:10px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg2);flex-shrink:0}
+.save-status{font-size:12px;color:var(--text3)}
+.save-status.saved{color:var(--green)}
+.save-status.saving{color:var(--accent)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:500px;max-height:85vh;overflow-y:auto;padding:24px}
+.modal::-webkit-scrollbar{width:4px}
+.modal::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 20px rgba(0,0,0,0.4);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:200;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+
+/* Loading */
+.loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text3);font-family:var(--mono)}
+
+.pattern-title{font-size:20px;font-weight:600;letter-spacing:-0.02em}
+.pattern-sub{font-size:13px;color:var(--text2);margin-top:3px}
+
+input[type=color]{width:100%;height:38px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);cursor:pointer;padding:2px}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to database...</div>
+</div>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">U</div>
+        <div>
+          <div class="logo-text">United Seat Factory</div>
+          <div class="logo-sub">Pattern Research DB</div>
+        </div>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Search patterns..." oninput="filterSidebar(this.value)">
+      </div>
+    </div>
+    <div class="brand-list" id="brand-list">
+      <div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading...</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-add" id="add-btn" onclick="openAddModal()">+ Add Pattern</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="main-header" id="main-header">
+      <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
+      <div class="header-actions" id="header-actions" style="display:none">
+        <span class="save-status" id="hdr-status"></span>
+        <button class="btn btn-danger btn-sm" onclick="confirmDelete()">Delete</button>
+        <button class="btn btn-primary btn-sm" id="save-btn" onclick="saveAll()">Save changes</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty-state">
+        <div class="empty-icon">🪑</div>
+        <div class="empty-title">No pattern selected</div>
+        <div class="empty-sub">Choose a pattern from the sidebar, or add a new one to get started.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PATTERN MODAL -->
+<div class="modal-overlay" id="add-modal" style="display:none" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal">
+    <div class="modal-title">➕ Add new pattern</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Car Brand *</label>
+        <input class="form-input" id="nm-brand" placeholder="e.g. Ford, Lexus, Toyota..." list="brand-dl">
+        <datalist id="brand-dl"></datalist>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Model *</label>
+        <input class="form-input" id="nm-model" placeholder="e.g. Mustang, RX330...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Year Range *</label>
+        <input class="form-input" id="nm-years" placeholder="e.g. 2004-2009">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trim / Version</label>
+        <input class="form-input" id="nm-trim" placeholder="e.g. GT, Base, Sport...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" id="add-confirm-btn" onclick="addPattern()">Add Pattern</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD COLOR MODAL -->
+<div class="modal-overlay" id="color-modal" style="display:none" onclick="if(event.target===this)closeColorModal()">
+  <div class="modal">
+    <div class="modal-title">🎨 Add color</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Color Name *</label>
+        <input class="form-input" id="c-name" placeholder="e.g. Black, Tan, Ivory...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trim Code</label>
+        <input class="form-input" id="c-code" placeholder="e.g. LA00, FE1...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Approximate hex color</label>
+        <input type="color" id="c-hex" value="#2c2c2c">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Year note (optional)</label>
+        <input class="form-input" id="c-years" placeholder="e.g. 2004-2006 only">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeColorModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addColor()">Add Color</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="modal-overlay" id="photo-modal" style="display:none" onclick="if(event.target===this)closePhotoModal()">
+  <div class="modal">
+    <div class="modal-title" id="photo-modal-title">📸 Add photo</div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Photo URL</label>
+      <input class="form-input" id="ph-url" placeholder="https://... (paste image URL)">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">In Phase 2 we'll add direct upload. For now paste a URL from Google Drive, Dropbox, or imgur.</div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Type</label>
+      <select class="form-select form-input" id="ph-type">
+        <option value="reference">Reference / Example color</option>
+        <option value="before_after">Before & After (customer)</option>
+        <option value="factory">Factory photo</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Caption (optional)</label>
+      <input class="form-input" id="ph-caption" placeholder="e.g. Black vinyl perforated — customer install">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closePhotoModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addPhoto()">Add Photo</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const SUPA_URL = 'https://doommgfawoqiptgqadwd.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
+
+const { createClient } = supabase;
+const db = createClient(SUPA_URL, SUPA_KEY);
+
+const POSITIONS = [
+  {id:'driver_bottom',label:'Driver Bottom'},
+  {id:'passenger_bottom',label:'Passenger Bottom'},
+  {id:'front_top_driver',label:'Front Top (Driver)'},
+  {id:'front_top_passenger',label:'Front Top (Passenger)'},
+  {id:'rear_bench',label:'Rear Bench'},
+  {id:'rear_60_40',label:'Rear 60/40'},
+  {id:'rear_40_20_40',label:'Rear 40/20/40'},
+  {id:'center_console',label:'Center Console'},
+  {id:'foam_driver',label:'Foam (Driver)'},
+  {id:'foam_passenger',label:'Foam (Passenger)'},
+];
+const MATERIALS = ['Vinyl','Vinyl Perforated','Leather','Cloth'];
+
+let patterns = [];
+let currentId = null;
+let activeTab = 'research';
+let unsaved = false;
+let saving = false;
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+  await setupTables();
+  await loadPatterns();
+  document.getElementById('loading-overlay').style.display = 'none';
+}
+
+async function setupTables() {
+  // Create tables via raw SQL using the REST API approach
+  // We'll use Supabase's rpc or just try inserting and catch errors
+  // Instead we'll use the management approach - create tables if they don't exist
+  // by attempting a select and handling gracefully
+  try {
+    // Try to create tables by calling a setup function
+    // Since we can't run DDL directly, we'll use the Supabase SQL editor approach
+    // For now, check if table exists
+    const { error } = await db.from('patterns').select('id').limit(1);
+    if (error && error.code === '42P01') {
+      // Table doesn't exist - show setup instructions
+      document.getElementById('loading-overlay').innerHTML = `
+        <div style="text-align:center;max-width:500px;padding:24px">
+          <div style="font-size:32px;margin-bottom:16px">🗄️</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:12px;color:#f0f0f0">One-time database setup needed</div>
+          <div style="font-size:13px;color:#aaa;line-height:1.7;margin-bottom:20px">
+            Go to your Supabase project → <strong style="color:#c8a96e">SQL Editor</strong> → paste the SQL below → click Run
+          </div>
+          <textarea readonly style="width:100%;height:260px;background:#222;border:1px solid #333;border-radius:8px;padding:12px;color:#c8a96e;font-family:monospace;font-size:11px;resize:none;text-align:left">${getSetupSQL()}</textarea>
+          <div style="margin-top:16px">
+            <button onclick="init()" style="background:#c8a96e;color:#000;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">I've run the SQL — reload</button>
+          </div>
+        </div>`;
+      return;
+    }
+  } catch(e) {}
+}
+
+function getSetupSQL() {
+  return `-- USF Pattern Database Setup
+CREATE TABLE IF NOT EXISTS patterns (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  brand text NOT NULL,
+  model text NOT NULL,
+  years text NOT NULL,
+  trim text,
+  research text DEFAULT '',
+  notes text DEFAULT '',
+  submodels jsonb DEFAULT '[]',
+  materials jsonb DEFAULT '[]',
+  positions jsonb DEFAULT '{}',
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS pattern_colors (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  code text,
+  hex text DEFAULT '#888888',
+  year_note text,
+  sort_order int DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS pattern_pdfs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  url text,
+  size_label text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS pattern_photos (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  pattern_id uuid REFERENCES patterns(id) ON DELETE CASCADE,
+  url text NOT NULL,
+  type text DEFAULT 'reference',
+  caption text,
+  created_at timestamptz DEFAULT now()
+);`;
+}
+
+// ── LOAD ─────────────────────────────────────────────────────
+async function loadPatterns() {
+  const { data: pats, error } = await db.from('patterns').select('*').order('brand').order('model').order('years');
+  if (error) { toast('Error loading patterns: ' + error.message, 'err'); return; }
+
+  const { data: colors } = await db.from('pattern_colors').select('*').order('sort_order');
+  const { data: pdfs } = await db.from('pattern_pdfs').select('*').order('created_at');
+  const { data: photos } = await db.from('pattern_photos').select('*').order('created_at');
+
+  patterns = (pats || []).map(p => ({
+    ...p,
+    submodels: p.submodels || [],
+    materials: p.materials || [],
+    positions: p.positions || {},
+    colors: (colors || []).filter(c => c.pattern_id === p.id),
+    pdfs: (pdfs || []).filter(f => f.pattern_id === p.id),
+    photos: (photos || []).filter(ph => ph.pattern_id === p.id),
+  }));
+
+  buildSidebar();
+  updateBrandDatalist();
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────
+let sidebarFilter = '';
+function filterSidebar(v) { sidebarFilter = v.toLowerCase(); buildSidebar(); }
+
+function buildSidebar() {
+  const grouped = {};
+  patterns.forEach(p => {
+    const key = p.brand;
+    if (!grouped[key]) grouped[key] = [];
+    const q = sidebarFilter;
+    if (!q || p.brand.toLowerCase().includes(q) || p.model.toLowerCase().includes(q) || p.years.includes(q) || (p.trim||'').toLowerCase().includes(q)) {
+      grouped[key].push(p);
+    }
+  });
+
+  let html = '';
+  Object.keys(grouped).sort().forEach(brand => {
+    const list = grouped[brand];
+    if (!list.length) return;
+    const isOpen = list.some(p => p.id === currentId) || sidebarFilter;
+    html += `<div>
+      <div class="brand-header ${isOpen?'open':''}" onclick="toggleBrand(this,'bl-${brand.replace(/[^a-z0-9]/gi,'_')}')">
+        <span class="brand-chevron ${isOpen?'open':''}">▶</span>
+        <span class="brand-name">${brand}</span>
+        <span class="brand-count">${list.length}</span>
+      </div>
+      <div class="pattern-list ${isOpen?'open':''}" id="bl-${brand.replace(/[^a-z0-9]/gi,'_')}">`;
+    list.forEach(p => {
+      const hasPos = Object.values(p.positions).filter(Boolean).length;
+      const colorCount = p.colors.length;
+      html += `<div class="pattern-item ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')">
+        <div class="pattern-item-name">${p.model} ${p.years}${p.trim?' <span style="color:var(--text3);font-weight:400">· '+p.trim+'</span>':''}</div>
+        <div class="badge-row">
+          <span class="badge ${hasPos>0?'has':'miss'}">${hasPos}/${POSITIONS.length} pos</span>
+          <span class="badge ${colorCount>0?'has':'miss'}">${colorCount} colors</span>
+          ${p.pdfs.length?`<span class="badge warn">${p.pdfs.length} PDF</span>`:''}
+        </div>
+      </div>`;
+    });
+    html += '</div></div>';
+  });
+
+  document.getElementById('brand-list').innerHTML = html || '<div style="padding:16px;color:var(--text3);font-size:13px">No patterns found</div>';
+}
+
+function toggleBrand(el, listId) {
+  const list = document.getElementById(listId);
+  const chev = el.querySelector('.brand-chevron');
+  list.classList.toggle('open');
+  chev.classList.toggle('open');
+  el.classList.toggle('open');
+}
+
+function updateBrandDatalist() {
+  const brands = [...new Set(patterns.map(p => p.brand))].sort();
+  document.getElementById('brand-dl').innerHTML = brands.map(b => `<option value="${b}">`).join('');
+}
+
+// ── SELECT PATTERN ────────────────────────────────────────────
+function selectPattern(id) {
+  currentId = id;
+  activeTab = 'research';
+  unsaved = false;
+  buildSidebar();
+  renderPattern();
+  document.getElementById('header-actions').style.display = 'flex';
+  setStatus('');
+}
+
+function getP() { return patterns.find(p => p.id === currentId); }
+
+function setStatus(msg, cls='') {
+  const el = document.getElementById('hdr-status');
+  if (el) { el.textContent = msg; el.className = 'save-status ' + cls; }
+}
+
+function markDirty() {
+  unsaved = true;
+  setStatus('Unsaved changes');
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderPattern() {
+  const p = getP();
+  if (!p) return;
+
+  // Breadcrumb
+  document.getElementById('breadcrumb').innerHTML =
+    `<span style="color:var(--text3)">${p.brand}</span><span class="sep">›</span><span>${p.model}</span><span class="sep">›</span><span style="color:var(--accent)">${p.years}${p.trim?' · '+p.trim:''}</span>`;
+
+  const hasPos = Object.values(p.positions).filter(Boolean).length;
+  const pct = Math.round((hasPos / POSITIONS.length) * 100);
+
+  const tabList = ['research','colors','positions','materials','photos','pdfs'];
+
+  let inner = `
+  <div style="margin-bottom:16px">
+    <div class="pattern-title">${p.brand} ${p.model}</div>
+    <div class="pattern-sub">${p.years}${p.trim?' · '+p.trim:''}</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-value">${p.colors.length}</div><div class="stat-label">Colors</div></div>
+    <div class="stat-card"><div class="stat-value">${hasPos}/${POSITIONS.length}</div><div class="stat-label">Positions</div></div>
+    <div class="stat-card"><div class="stat-value">${p.materials.length}</div><div class="stat-label">Materials</div></div>
+    <div class="stat-card"><div class="stat-value">${p.pdfs.length}</div><div class="stat-label">PDFs</div></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-meta"><span>Completeness</span><span style="color:var(--accent);font-family:var(--mono)">${pct}%</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>
+  <div class="tabs">${tabList.map(t=>`<div class="tab ${activeTab===t?'active':''}" onclick="switchTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('')}</div>`;
+
+  // Tab content
+  if (activeTab === 'research') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>📋</span><span class="section-title">Research summary</span></div>
+      <div class="section-body">
+        <textarea class="form-input" id="ta-research" style="min-height:140px" placeholder="Paste research notes — trim codes, year differences, OEM notes, fitment details..." oninput="markDirty()">${esc(p.research||'')}</textarea>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span>🚗</span><span class="section-title">Submodels / Trims</span></div>
+      <div class="section-body">
+        <div class="tag-list">
+          ${(p.submodels||[]).map((s,i)=>`<div class="tag">${esc(s)}<span class="remove" onclick="removeSubmodel(${i})">✕</span></div>`).join('')}
+          <input class="tag-input" placeholder="Add submodel, press Enter" onkeydown="addSubmodelKey(event)">
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header"><span>📝</span><span class="section-title">Additional notes</span></div>
+      <div class="section-body">
+        <textarea class="form-input" id="ta-notes" style="min-height:70px" placeholder="Fitment warnings, installation notes, caveats..." oninput="markDirty()">${esc(p.notes||'')}</textarea>
+      </div>
+    </div>`;
+  }
+
+  else if (activeTab === 'colors') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>🎨</span><span class="section-title">Colors</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add color</button>
+      </div>
+      <div class="section-body" style="padding:0">
+        ${p.colors.length ? `<table class="colors-table">
+          <thead><tr><th>Color</th><th>Trim code</th><th>Year note</th><th></th></tr></thead>
+          <tbody>${p.colors.map((c,i)=>`<tr>
+            <td><div class="color-cell"><div class="color-swatch" style="background:${c.hex||'#888'}"></div>${esc(c.name)}</div></td>
+            <td>${c.code?`<span class="trim-code">${esc(c.code)}</span>`:'<span style="color:var(--text3)">—</span>'}</td>
+            <td><span class="year-note">${c.year_note||'All years'}</span></td>
+            <td><button class="btn-icon" onclick="removeColor('${c.id}')">✕</button></td>
+          </tr>`).join('')}</tbody>
+        </table>` : `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">No colors yet. Click "+ Add color" to start.</div>`}
+      </div>
+    </div>`;
+  }
+
+  else if (activeTab === 'positions') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>🪑</span><span class="section-title">Available positions</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)">Click to toggle · saves immediately</span>
+      </div>
+      <div class="section-body">
+        <div class="positions-grid">
+          ${POSITIONS.map(pos=>{
+            const has = p.positions[pos.id];
+            return `<div class="position-card ${has?'has':''}" onclick="togglePosition('${pos.id}')">
+              ${has?'<div class="position-check">✓</div>':''}
+              <div class="position-name">${pos.label}</div>
+              <div class="position-status">${has?'Available':'Not yet'}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  else if (activeTab === 'materials') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>🧵</span><span class="section-title">Materials</span></div>
+      <div class="section-body">
+        <p style="font-size:12px;color:var(--text3);margin-bottom:14px">Toggle which materials you produce for this pattern.</p>
+        <div class="materials-row">
+          ${MATERIALS.map(m=>`<button class="mat-btn ${(p.materials||[]).includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  else if (activeTab === 'photos') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>📸</span><span class="section-title">Photos</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPhotoModal()">+ Add photo</button>
+      </div>
+      <div class="section-body">
+        <div class="photo-grid">
+          ${p.photos.map(ph=>`<div class="photo-thumb">
+            <img src="${ph.url}" onerror="this.style.display='none'" alt="${esc(ph.caption||'')}">
+            <div class="photo-thumb-overlay">
+              <button class="btn-icon" style="color:#fff" onclick="removePhoto('${ph.id}')">✕</button>
+            </div>
+          </div>`).join('')}
+          <div class="photo-add" onclick="openPhotoModal()">
+            <div class="photo-add-icon">+</div>
+            <div class="photo-add-label">Add photo</div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:12px">Paste image URLs. Direct upload via Supabase Storage coming in Phase 2.</p>
+      </div>
+    </div>`;
+  }
+
+  else if (activeTab === 'pdfs') {
+    inner += `
+    <div class="section">
+      <div class="section-header"><span>📄</span><span class="section-title">PDF brochures & research docs</span></div>
+      <div class="section-body">
+        ${p.pdfs.length ? `<div class="pdf-list">${p.pdfs.map(f=>`<div class="pdf-item">
+          <span style="font-size:18px">📄</span>
+          <span class="pdf-name">${esc(f.name)}</span>
+          ${f.size_label?`<span class="pdf-meta">${esc(f.size_label)}</span>`:''}
+          ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none">Open ↗</a>`:''}
+          <button class="btn-icon" onclick="removePdf('${f.id}')">✕</button>
+        </div>`).join('')}</div>` : ''}
+        <div class="drop-zone" onclick="openPdfInput()">
+          <div class="drop-zone-icon">📄</div>
+          <div class="drop-zone-text">Add PDF reference</div>
+          <div class="drop-zone-sub">Enter name + URL of a Google Drive or Dropbox PDF</div>
+        </div>
+        <input type="file" id="pdf-file-input" style="display:none" accept=".pdf" onchange="handlePdfFile(event)">
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('content').innerHTML = inner;
+}
+
+function switchTab(t) {
+  collectText();
+  activeTab = t;
+  renderPattern();
+}
+
+function collectText() {
+  const p = getP();
+  if (!p) return;
+  const r = document.getElementById('ta-research');
+  const n = document.getElementById('ta-notes');
+  if (r) p.research = r.value;
+  if (n) p.notes = n.value;
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── POSITIONS ─────────────────────────────────────────────────
+async function togglePosition(posId) {
+  const p = getP();
+  p.positions[posId] = !p.positions[posId];
+  // Save positions immediately
+  const { error } = await db.from('patterns').update({ positions: p.positions, updated_at: new Date().toISOString() }).eq('id', p.id);
+  if (error) { toast('Error saving: ' + error.message, 'err'); return; }
+  toast('Position updated ✓');
+  buildSidebar();
+  renderPattern();
+}
+
+// ── MATERIALS ─────────────────────────────────────────────────
+async function toggleMaterial(mat) {
+  const p = getP();
+  const idx = (p.materials||[]).indexOf(mat);
+  if (idx > -1) p.materials.splice(idx, 1);
+  else p.materials.push(mat);
+  const { error } = await db.from('patterns').update({ materials: p.materials, updated_at: new Date().toISOString() }).eq('id', p.id);
+  if (error) { toast('Error saving: ' + error.message, 'err'); return; }
+  toast('Materials updated ✓');
+  renderPattern();
+}
+
+// ── SUBMODELS ─────────────────────────────────────────────────
+function addSubmodelKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/,'');
+    if (!val) return;
+    const p = getP();
+    p.submodels.push(val);
+    e.target.value = '';
+    markDirty();
+    renderPattern();
+  }
+}
+function removeSubmodel(i) {
+  const p = getP();
+  p.submodels.splice(i,1);
+  markDirty();
+  renderPattern();
+}
+
+// ── SAVE ALL ──────────────────────────────────────────────────
+async function saveAll() {
+  if (saving) return;
+  collectText();
+  const p = getP();
+  if (!p) return;
+  saving = true;
+  setStatus('Saving...', 'saving');
+  const btn = document.getElementById('save-btn');
+  if (btn) btn.disabled = true;
+
+  const { error } = await db.from('patterns').update({
+    research: p.research,
+    notes: p.notes,
+    submodels: p.submodels,
+    updated_at: new Date().toISOString()
+  }).eq('id', p.id);
+
+  saving = false;
+  if (btn) btn.disabled = false;
+  if (error) { toast('Save failed: ' + error.message, 'err'); setStatus('Save failed', ''); return; }
+  unsaved = false;
+  setStatus('Saved ✓', 'saved');
+  buildSidebar();
+  toast('Pattern saved ✓');
+}
+
+// ── COLORS ────────────────────────────────────────────────────
+function openColorModal() { document.getElementById('color-modal').style.display='flex'; }
+function closeColorModal() { document.getElementById('color-modal').style.display='none'; }
+
+async function addColor() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { alert('Color name required.'); return; }
+  const code = document.getElementById('c-code').value.trim();
+  const hex = document.getElementById('c-hex').value;
+  const year_note = document.getElementById('c-years').value.trim();
+  const p = getP();
+
+  const { data, error } = await db.from('pattern_colors').insert({
+    pattern_id: p.id, name, code, hex, year_note, sort_order: p.colors.length
+  }).select().single();
+
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.colors.push(data);
+  closeColorModal();
+  ['c-name','c-code','c-years'].forEach(id => document.getElementById(id).value = '');
+  buildSidebar();
+  renderPattern();
+  toast('Color added ✓');
+}
+
+async function removeColor(id) {
+  if (!confirm('Remove this color?')) return;
+  const p = getP();
+  const { error } = await db.from('pattern_colors').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.colors = p.colors.filter(c => c.id !== id);
+  buildSidebar();
+  renderPattern();
+  toast('Color removed');
+}
+
+// ── PHOTOS ────────────────────────────────────────────────────
+function openPhotoModal() { document.getElementById('photo-modal').style.display='flex'; }
+function closePhotoModal() { document.getElementById('photo-modal').style.display='none'; }
+
+async function addPhoto() {
+  const url = document.getElementById('ph-url').value.trim();
+  if (!url) { alert('Photo URL required.'); return; }
+  const type = document.getElementById('ph-type').value;
+  const caption = document.getElementById('ph-caption').value.trim();
+  const p = getP();
+  const { data, error } = await db.from('pattern_photos').insert({ pattern_id: p.id, url, type, caption }).select().single();
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.photos.push(data);
+  closePhotoModal();
+  ['ph-url','ph-caption'].forEach(id => document.getElementById(id).value = '');
+  renderPattern();
+  toast('Photo added ✓');
+}
+
+async function removePhoto(id) {
+  if (!confirm('Remove this photo?')) return;
+  const p = getP();
+  const { error } = await db.from('pattern_photos').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.photos = p.photos.filter(ph => ph.id !== id);
+  renderPattern();
+  toast('Photo removed');
+}
+
+// ── PDFS ──────────────────────────────────────────────────────
+function openPdfInput() {
+  const name = prompt('PDF name (e.g. "Lexus RX330 Color Guide 2004-2009.pdf"):');
+  if (!name) return;
+  const url = prompt('Google Drive or Dropbox URL (optional, press Enter to skip):');
+  savePdf(name.trim(), url ? url.trim() : null, null);
+}
+
+async function savePdf(name, url, size_label) {
+  const p = getP();
+  const { data, error } = await db.from('pattern_pdfs').insert({ pattern_id: p.id, name, url, size_label }).select().single();
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.pdfs.push(data);
+  buildSidebar();
+  renderPattern();
+  toast('PDF added ✓');
+}
+
+async function removePdf(id) {
+  if (!confirm('Remove this PDF record?')) return;
+  const p = getP();
+  const { error } = await db.from('pattern_pdfs').delete().eq('id', id);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  p.pdfs = p.pdfs.filter(f => f.id !== id);
+  buildSidebar();
+  renderPattern();
+  toast('PDF removed');
+}
+
+// ── ADD PATTERN ───────────────────────────────────────────────
+function openAddModal() { document.getElementById('add-modal').style.display='flex'; }
+function closeAddModal() { document.getElementById('add-modal').style.display='none'; }
+
+async function addPattern() {
+  const brand = document.getElementById('nm-brand').value.trim();
+  const model = document.getElementById('nm-model').value.trim();
+  const years = document.getElementById('nm-years').value.trim();
+  const trim = document.getElementById('nm-trim').value.trim();
+  if (!brand || !model || !years) { alert('Brand, Model and Year Range are required.'); return; }
+
+  const btn = document.getElementById('add-confirm-btn');
+  btn.disabled = true; btn.textContent = 'Adding...';
+
+  const defaultPos = {};
+  POSITIONS.forEach(p => defaultPos[p.id] = false);
+
+  const { data, error } = await db.from('patterns').insert({
+    brand, model, years, trim,
+    research: '', notes: '',
+    submodels: [], materials: [],
+    positions: defaultPos
+  }).select().single();
+
+  btn.disabled = false; btn.textContent = 'Add Pattern';
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+
+  const full = { ...data, colors: [], pdfs: [], photos: [], submodels: [], materials: [], positions: defaultPos };
+  patterns.push(full);
+  patterns.sort((a,b) => a.brand.localeCompare(b.brand) || a.model.localeCompare(b.model));
+  updateBrandDatalist();
+  closeAddModal();
+  ['nm-brand','nm-model','nm-years','nm-trim'].forEach(id => document.getElementById(id).value = '');
+  selectPattern(data.id);
+  toast('Pattern added ✓');
+}
+
+// ── DELETE PATTERN ────────────────────────────────────────────
+async function confirmDelete() {
+  const p = getP();
+  if (!confirm(`Delete "${p.brand} ${p.model} ${p.years}"? This will also delete all colors, PDFs and photos for this pattern. This cannot be undone.`)) return;
+  const { error } = await db.from('patterns').delete().eq('id', p.id);
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  patterns = patterns.filter(x => x.id !== p.id);
+  currentId = null;
+  buildSidebar();
+  document.getElementById('content').innerHTML = `<div class="empty-state"><div class="empty-icon">🪑</div><div class="empty-title">Pattern deleted</div><div class="empty-sub">Select another pattern or add a new one.</div></div>`;
+  document.getElementById('header-actions').style.display = 'none';
+  document.getElementById('breadcrumb').innerHTML = '<span>Select a pattern</span>';
+  toast('Pattern deleted');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── START ─────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
