@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USF Pattern Importer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#17183B;--navy2:#1f2048;--navy-light:rgba(23,24,59,0.06);
+  --gold:#C9B27E;--gold2:#b89d68;--gold-bg:rgba(201,178,126,0.1);--gold-border:rgba(201,178,126,0.3);
+  --red:#AF0129;--red-bg:rgba(175,1,41,0.06);--red-border:rgba(175,1,41,0.2);
+  --green:#1a6e42;--green-bg:rgba(26,110,66,0.07);--green-border:rgba(26,110,66,0.25);
+  --bg:#fff;--bg2:#f8f7f5;--bg3:#f1eeea;--border:#e5e0d8;--border2:#d0c9be;
+  --text2:rgba(23,24,59,0.6);--text3:rgba(23,24,59,0.4);
+  --sb-bg:#eef0f6;--sb-border:#dde0ec;
+  --radius:8px;--font:'DM Sans',sans-serif;
+  --shadow:0 1px 3px rgba(23,24,59,0.07);--shadow-md:0 4px 16px rgba(23,24,59,0.11);
+}
+body{font-family:var(--font);background:var(--bg2);color:var(--navy);min-height:100vh;font-size:14px}
+.app{display:grid;grid-template-columns:300px 1fr;height:100vh;overflow:hidden}
+.sidebar{background:var(--sb-bg);border-right:1px solid var(--sb-border);display:flex;flex-direction:column;overflow:hidden}
+.main{display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:16px;border-bottom:1px solid var(--sb-border);flex-shrink:0}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sb-logo-text{font-size:13px;font-weight:700;color:var(--navy)}
+.sb-logo-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em}
+.progress-stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;flex:1;text-align:center}
+.stat-val{font-size:18px;font-weight:700;color:var(--navy)}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;margin-top:1px}
+.stat.approved .stat-val{color:var(--green)}
+.stat.skipped .stat-val{color:var(--text3)}
+.stat.pending .stat-val{color:var(--gold2)}
+.filter-btns{display:flex;gap:4px;margin-bottom:8px}
+.filter-btn{flex:1;padding:5px 4px;border-radius:5px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--text3);transition:all 0.15s}
+.filter-btn.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.sw{position:relative;margin-bottom:6px}
+.sw input{width:100%;background:rgba(23,24,59,0.05);border:1px solid var(--sb-border);border-radius:var(--radius);padding:7px 10px 7px 28px;color:var(--navy);font-family:var(--font);font-size:13px;outline:none}
+.sw input:focus{background:#fff;border-color:var(--gold-border)}
+.sw-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.prod-list{flex:1;overflow-y:auto;padding:4px 0}
+.prod-list::-webkit-scrollbar{width:3px}
+.prod-list::-webkit-scrollbar-thumb{background:var(--sb-border);border-radius:2px}
+.prod-item{padding:8px 14px;cursor:pointer;border-left:3px solid transparent;transition:all 0.12s;border-bottom:1px solid rgba(23,24,59,0.04)}
+.prod-item:hover{background:rgba(23,24,59,0.04)}
+.prod-item.active{background:rgba(23,24,59,0.07);border-left-color:var(--navy)}
+.prod-item.approved{border-left-color:var(--green)}
+.prod-item.imported{border-left-color:var(--gold);opacity:0.7}
+.prod-status.imported{background:var(--gold-bg);color:var(--gold2);border-color:var(--gold-border)}
+.prod-item.skipped{border-left-color:var(--border2);opacity:0.5}
+.prod-item-name{font-size:12.5px;font-weight:500;color:var(--navy);line-height:1.3;margin-bottom:2px}
+.prod-item-meta{display:flex;align-items:center;gap:6px;margin-top:2px}
+.prod-status{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;text-transform:uppercase;letter-spacing:0.04em}
+.prod-status.approved{background:var(--green-bg);color:var(--green)}
+.prod-status.skipped{background:var(--bg3);color:var(--text3)}
+.prod-status.pending{background:var(--gold-bg);color:var(--gold2)}
+.sb-foot{padding:12px 14px;border-top:1px solid var(--sb-border);flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.import-prog{display:none;font-size:12px;color:var(--text3);text-align:center}
+.btn-import{width:100%;background:var(--green);color:#fff;border:none;border-radius:var(--radius);padding:10px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background 0.15s}
+.btn-import:hover{background:#155a36}
+.btn-import:disabled{opacity:0.4;cursor:not-allowed}
+.main-hdr{padding:14px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg)}
+.main-title{font-size:15px;font-weight:700;color:var(--navy);flex:1}
+.main-meta{font-size:12px;color:var(--text3)}
+.main-actions{display:flex;gap:8px}
+.btn{padding:7px 16px;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--navy)}
+.btn-approve{background:var(--green);color:#fff}
+.btn-approve:hover{background:#155a36}
+.btn-skip{background:transparent;border:1px solid var(--border2);color:var(--text3)}
+.btn-skip:hover{border-color:var(--red-border);color:var(--red)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.content{flex:1;overflow-y:auto;padding:24px}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.upload-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;text-align:center}
+.upload-drop{border:2px dashed var(--border);border-radius:16px;padding:48px;cursor:pointer;transition:all 0.2s;background:var(--bg);max-width:520px;width:100%}
+.upload-drop:hover,.upload-drop.dragover{border-color:var(--gold);background:var(--gold-bg)}
+.upload-drop-ico{font-size:48px;opacity:0.2;margin-bottom:14px}
+.upload-drop-txt{font-size:16px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.upload-drop-sub{font-size:13px;color:var(--text3);line-height:1.6}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.section{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.section-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.section-title{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em}
+.section-body{padding:14px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field:last-child{margin-bottom:0}
+.field-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
+.field-input{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;color:var(--navy);font-family:var(--font);font-size:13px;outline:none;width:100%;transition:all 0.2s}
+.field-input:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.pos-btn{padding:7px 8px;border-radius:6px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s;text-align:center}
+.pos-btn:hover{border-color:var(--navy);color:var(--navy)}
+.pos-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600}
+.mat-group{display:flex;flex-wrap:wrap;gap:5px}
+.mat-btn{padding:5px 12px;border-radius:6px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s}
+.mat-btn:hover{border-color:var(--navy);color:var(--navy)}
+.mat-btn.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.color-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.color-row:last-child{border-bottom:none}
+.color-name-input{flex:1;background:transparent;border:none;outline:none;font-family:var(--font);font-size:13px;font-weight:500;color:var(--navy)}
+.color-code-input{width:120px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--font);font-size:12px;color:var(--text2);outline:none}
+.color-code-input:focus{border-color:var(--gold-border)}
+.color-img-slot{position:relative;width:56px;height:56px;border-radius:6px;flex-shrink:0;overflow:hidden;background:var(--bg3);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center}
+.color-img-slot img{width:100%;height:100%;object-fit:cover}
+.color-img-slot.has-img{border-color:var(--green);border-width:2px}
+.color-img-slot .check{position:absolute;top:2px;right:2px;width:15px;height:15px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700}
+.img-picker{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.img-picker-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+.color-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.color-tab{padding:5px 12px;border-radius:5px;font-size:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--text2);font-family:var(--font);transition:all 0.15s}
+.color-tab.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+.img-option{aspect-ratio:1;border-radius:5px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all 0.15s;position:relative;background:var(--bg3)}
+.img-option:hover{border-color:var(--gold)}
+.img-option.selected{border-color:var(--green)}
+.img-option img{width:100%;height:100%;object-fit:cover;display:block}
+.img-score{position:absolute;bottom:2px;right:2px;background:rgba(23,24,59,0.75);color:#fff;font-size:9px;padding:1px 4px;border-radius:3px}
+.img-sel-mark{position:absolute;top:3px;right:3px;width:18px;height:18px;background:var(--green);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700}
+.img-option.selected .img-sel-mark{display:flex}
+.log{background:var(--navy);color:#c8e6c9;font-family:monospace;font-size:12px;padding:16px;border-radius:var(--radius);height:340px;overflow-y:auto;white-space:pre-wrap;line-height:1.6}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);border-radius:var(--radius);padding:10px 16px;font-size:13px;color:#fff;box-shadow:var(--shadow-md);transform:translateY(60px);opacity:0;transition:all 0.3s;z-index:400;font-weight:500}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+</style>
+</head>
+<body>
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="position:fixed;inset:0;background:var(--sb-bg);z-index:999;display:flex;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:36px;width:360px;box-shadow:var(--shadow-md);text-align:center">
+    <svg width="36" height="36" viewBox="0 0 100 100" style="margin-bottom:12px"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
+    <div style="font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px">USF Pattern Importer</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:24px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Sign in to continue</div>
+    <div style="text-align:left;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Email</div>
+      <input id="li-email" type="email" placeholder="your@email.com" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key==='Enter')doImporterLogin()">
+    </div>
+    <div style="text-align:left;margin-bottom:18px">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Password</div>
+      <input id="li-pass" type="password" placeholder="••••••••" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key==='Enter')doImporterLogin()">
+    </div>
+    <div id="li-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;border:1px solid var(--red-border);text-align:left"></div>
+    <button id="li-btn" onclick="doImporterLogin()" style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:11px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
+  </div>
+</div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo">
+        <svg width="26" height="26" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
+        <div><div class="sb-logo-text">USF Pattern Importer</div><div class="sb-logo-sub">WooCommerce &rarr; Database</div></div>
+      </div>
+      <div class="progress-stats">
+        <div class="stat approved"><div class="stat-val" id="cnt-approved">0</div><div class="stat-lbl">Approved</div></div>
+        <div class="stat skipped"><div class="stat-val" id="cnt-skipped">0</div><div class="stat-lbl">Skipped</div></div>
+        <div class="stat pending"><div class="stat-val" id="cnt-pending">0</div><div class="stat-lbl">Pending</div></div>
+      </div>
+      <div class="filter-btns">
+        <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
+        <button class="filter-btn" id="filter-pending" onclick="setFilter('pending')">Pending</button>
+        <button class="filter-btn" id="filter-approved" onclick="setFilter('approved')">Approved</button>
+        <button class="filter-btn" id="filter-skipped" onclick="setFilter('skipped')">Skipped</button>
+        <button class="filter-btn" id="filter-imported" onclick="setFilter('imported')">In DB</button>
+      </div>
+      <div class="sw"><span class="sw-ico">&#8981;</span><input type="text" placeholder="Search brand or model..." oninput="filterList(this.value)"></div>
+    </div>
+    <div class="prod-list" id="prod-list"><div style="padding:20px;color:var(--text3);font-size:13px;text-align:center">Upload CSV to begin</div></div>
+    <div class="sb-foot">
+      <div class="import-prog" id="import-prog"></div>
+      <div id="importer-user-row" style="display:none;align-items:center;gap:6px;padding:4px 0;margin-bottom:6px;font-size:12px;color:var(--text3)">
+  <span>&#128100;</span><span id="importer-user" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+  <button onclick="supa.auth.signOut().then(()=>{location.reload()})" style="background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:11px;text-decoration:underline;font-family:var(--font)">Sign out</button>
+</div>
+<button class="btn btn-ghost" id="btn-detect" onclick="showDuplicates()" disabled style="width:100%;margin-bottom:4px">&#128279; Detect also-fits</button>
+<button class="btn btn-ghost" id="btn-import-all" onclick="importAllRemaining()" disabled style="width:100%;margin-bottom:4px;border-color:var(--gold-border);color:var(--gold2)">&#9889; Import all pending</button>
+<button class="btn-import" id="btn-import" onclick="startImport()" disabled>Import Approved to Database</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="main-hdr">
+      <div class="main-title" id="main-title">USF Pattern Importer</div>
+      <div class="main-meta" id="main-meta"></div>
+      <div class="main-actions" id="main-actions" style="display:none">
+        <button class="btn btn-skip btn-sm" onclick="skipCurrent()">Skip &darr;</button>
+        <button class="btn btn-approve btn-sm" onclick="approveCurrent()">&checkmark; Approve &amp; Next</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="upload-screen">
+        <div class="upload-drop" id="upload-drop" ondragover="onOver(event)" ondragleave="onLeave()" ondrop="onDrop(event)" onclick="document.getElementById('csv-input').click()">
+          <div class="upload-drop-ico">&#128196;</div>
+          <div class="upload-drop-txt">Drop the clean CSV here</div>
+          <div class="upload-drop-sub">Use the file named <strong>usf-patterns-clean.csv</strong> (provided alongside this tool)<br>or drop the original WooCommerce export</div>
+        </div>
+        <div style="font-size:13px;color:var(--text3);max-width:440px;line-height:1.7">
+          Reviews all published patterns from your WooCommerce site. For each one you verify the info, pick the right photo per color, then approve. Only approved patterns are imported.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="file" id="csv-input" accept=".csv" style="display:none" onchange="handleFile(event)">
+<div class="toast" id="toast"></div>
+
+<script>
+
+// Known vehicle pairs that share platforms/seat patterns
+const KNOWN_PAIRS=[
+  ['Chevrolet','Silverado','GMC','Sierra'],
+  ['Chevrolet','Tahoe','GMC','Yukon'],
+  ['Chevrolet','Tahoe','Cadillac','Escalade'],
+  ['GMC','Yukon','Cadillac','Escalade'],
+  ['Chevrolet','Suburban','GMC','Yukon XL'],
+  ['Chevrolet','Silverado','Chevrolet','Silverado HD'],
+  ['Ford','F-150','Ford','F-250'],
+  ['Ford','F-150','Ford','F-350'],
+  ['Ford','Expedition','Lincoln','Navigator'],
+  ['Ford','Explorer','Mercury','Mountaineer'],
+  ['Ford','Escape','Mercury','Mariner'],
+  ['Ford','Escape','Mazda','Tribute'],
+  ['Dodge','Ram 1500','Dodge','Ram 2500'],
+  ['Dodge','Ram 1500','Dodge','Ram 3500'],
+  ['Jeep','Grand Cherokee','Dodge','Durango'],
+  ['Toyota','Tundra','Toyota','Sequoia'],
+  ['Toyota','Camry','Lexus','ES'],
+  ['Toyota','4Runner','Lexus','GX'],
+  ['Toyota','Highlander','Lexus','RX'],
+  ['Honda','Pilot','Acura','MDX'],
+  ['Honda','Odyssey','Honda','Pilot'],
+  ['Nissan','Titan','Nissan','Armada'],
+  ['Infiniti','QX56','Nissan','Armada'],
+  ['Infiniti','QX80','Nissan','Armada'],
+  ['BMW','3 Series','BMW','4 Series'],
+  ['Mercedes-Benz','C-Class','Mercedes-Benz','E-Class'],
+  ['Hummer','H2','Cadillac','Escalade'],
+];
+
+function detectDuplicates(products){
+  const suggestions=[];
+  const seenPairs=new Set(); // deduplicate by brand+model pair key
+  const n=products.length;
+  for(let i=0;i<n;i++){
+    for(let j=i+1;j<n;j++){
+      const a=products[i],b=products[j];
+      if(a.status==='skipped'||b.status==='skipped')continue;
+      let reason='';
+
+      // Rule 1: Known platform pairs — brand+model match AND years overlap
+      const knownMatch=KNOWN_PAIRS.find(([b1,m1,b2,m2])=>
+        (a.brand===b1&&a.model.toLowerCase().includes(m1.toLowerCase())&&b.brand===b2&&b.model.toLowerCase().includes(m2.toLowerCase()))||
+        (a.brand===b2&&a.model.toLowerCase().includes(m2.toLowerCase())&&b.brand===b1&&b.model.toLowerCase().includes(m1.toLowerCase()))
+      );
+      if(knownMatch&&yearsOverlap(a.years,b.years))reason='Known platform: '+knownMatch[1]+' / '+knownMatch[3];
+
+      // Rule 2: Same brand, model contains same number, years overlap, 3+ shared colors
+      if(!reason&&a.brand===b.brand&&yearsOverlap(a.years,b.years)){
+        const numA=(a.model.match(/\d{3,4}/)||[])[0];
+        const numB=(b.model.match(/\d{3,4}/)||[])[0];
+        if(numA&&numB&&numA===numB&&a.model!==b.model){
+          const aC=new Set(a.colors.map(c=>c.name.toLowerCase()));
+          const bC=new Set(b.colors.map(c=>c.name.toLowerCase()));
+          const shared=[...aC].filter(c=>bC.has(c));
+          if(shared.length>=3)reason='Same brand+number, '+shared.length+' shared colors';
+        }
+      }
+
+      if(!reason)continue;
+
+      // Deduplicate: only show each brand/model pair ONCE regardless of year variants
+      const pairKey=[a.brand,a.model,b.brand,b.model].map(s=>s.toLowerCase().replace(/\s+/g,'-')).sort().join('|');
+      if(seenPairs.has(pairKey))continue;
+      seenPairs.add(pairKey);
+
+      // Collect ALL shared colors across ALL year variants of this pair
+      const aColors=a.colors.map(c=>c.name);
+      const bColors=b.colors.map(c=>c.name);
+      const sharedColors=aColors.filter(c=>bColors.some(bc=>bc.toLowerCase()===c.toLowerCase()));
+      suggestions.push({i,j,reason,sharedColors});
+    }
+  }
+  return suggestions;
+}
+
+function yearsOverlap(a,b){
+  if(!a||!b)return false;
+  const parseRange=s=>{const m=s.match(/(\d{4})(?:-(\d{4}))?/);return m?[parseInt(m[1]),parseInt(m[2]||m[1])]:[0,0];};
+  const [as,ae]=parseRange(a);const[bs,be]=parseRange(b);
+  return as<=be&&bs<=ae;
+}
+
+const SUPA_URL='https://doommgfawoqiptgqadwd.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
+const {createClient}=supabase;
+const supa=createClient(SUPA_URL,SUPA_KEY);
+
+const MATERIALS=['Vinyl','Vinyl Perf','Leather','Leather Perf','Cloth','Alcantara'];
+const POS_LABELS={front_bottom:'Front Bottoms',front_top:'Front Tops',rear_bottom:'Rear Bottoms',rear_top:'Rear Tops'};
+const POS_KEYS=['front_bottom','front_top','rear_bottom','rear_top'];
+
+let products=[],currentIdx=null,filter='all',search='',activeColorIdx=0;
+
+// ── FILE HANDLING ─────────────────────────────────────────
+function onOver(e){e.preventDefault();document.getElementById('upload-drop').classList.add('dragover');}
+function onLeave(){document.getElementById('upload-drop').classList.remove('dragover');}
+function onDrop(e){e.preventDefault();onLeave();const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function handleFile(e){const f=e.target.files[0];if(f)processFile(f);e.target.value='';}
+
+function processFile(file){
+  document.getElementById('main-title').textContent='Parsing CSV...';
+  document.getElementById('content').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:16px"><div style="font-size:32px;opacity:0.3">&#8987;</div><div style="font-size:14px;color:var(--text3)">Parsing CSV, please wait...</div></div>';
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const text=ev.target.result;
+      const rows=parseCSV(text);
+      // Filter: only variable + published=1
+      const parents=rows.filter(r=>(r.Type||r.type||'')=='variable'&&(r.Published||r.published||'')==='1');
+      if(!parents.length){
+        // Try the clean CSV format (no Type/Published columns, all rows are parents)
+        const allRows=rows.filter(r=>r.Brands||(r['Attribute 1 name']));
+        if(allRows.length){
+          products=allRows.map(parseProduct).filter(p=>p.brand);
+        } else {
+          showError('No published variable products found. Please use the usf-patterns-clean.csv file.');
+          return;
+        }
+      } else {
+        products=parents.map(parseProduct).filter(p=>p.brand);
+      }
+      products.forEach(p=>p.status='pending');
+      buildList();updateCounts();
+      document.getElementById('btn-import').disabled=false;
+    document.getElementById('btn-detect').disabled=false;
+      document.getElementById('main-title').textContent='Review Patterns';
+      toast('Loaded '+products.length+' patterns','ok');
+      if(products.length>0)selectProduct(0);
+    }catch(e){showError('Parse error: '+e.message);}
+  };
+  reader.onerror=()=>showError('Could not read file');
+  reader.readAsText(file,'UTF-8');
+}
+
+function showError(msg){
+  document.getElementById('main-title').textContent='Error';
+  document.getElementById('content').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%"><div style="color:var(--red);font-size:14px;max-width:400px;text-align:center;line-height:1.7">'+esc(msg)+'</div></div>';
+}
+
+// ── ROBUST CSV PARSER ─────────────────────────────────────
+function parseCSV(raw){
+  // Strip BOM
+  if(raw.charCodeAt(0)===0xFEFF)raw=raw.slice(1);
+  // Use state machine parser - handles quoted fields with embedded newlines
+  const rows=[];let headers=null;
+  let pos=0,fields=[],field='',inQ=false;
+  const n=raw.length;
+  while(pos<=n){
+    const ch=pos<n?raw[pos]:'';
+    if(ch==='"'){
+      if(inQ&&raw[pos+1]==='"'){field+='"';pos+=2;continue;}
+      inQ=!inQ;pos++;continue;
+    }
+    if(!inQ&&(ch===','||ch==='\n'||ch==='\r'||ch==='')){
+      fields.push(field.trim());field='';
+      if(ch!==','){
+        // End of row
+        if(pos<n||fields.some(f=>f)){
+          if(!headers){headers=fields;}
+          else if(fields.length>1){
+            const obj={};
+            headers.forEach((h,i)=>obj[h]=fields[i]||'');
+            // Fast filter: skip variation rows
+            const t=obj.Type||obj.type||'';
+            const p=obj.Published||obj.published||'';
+            if(t===''||t==='variable')rows.push(obj);
+          }
+        }
+        fields=[];
+        // Skip \r\n
+        if(ch==='\r'&&raw[pos+1]==='\n')pos++;
+      }
+      pos++;continue;
+    }
+    field+=ch;pos++;
+  }
+  return rows;
+}
+
+// ── PRODUCT PARSING ───────────────────────────────────────
+function getAttr(row,name){
+  for(let i=1;i<=10;i++){
+    const k='Attribute '+i+' name';
+    if((row[k]||'').trim().toLowerCase()===name.toLowerCase())
+      return(row['Attribute '+i+' value(s)']||'').trim();
+  }
+  return'';
+}
+
+function parseYears(str){
+  if(!str)return'';
+  const yrs=[...new Set(str.split(',').map(s=>s.trim()).filter(s=>/^\d{4}$/.test(s)).map(Number))].sort();
+  if(!yrs.length)return str.trim();
+  if(yrs.length===1)return String(yrs[0]);
+  return yrs[0]+'-'+yrs[yrs.length-1];
+}
+
+function parseColorsTrims(colorStr,trimStr){
+  const colors=(colorStr||'').split(',').map(s=>s.trim()).filter(Boolean);
+  return colors.map(color=>{
+    let code='';
+    if(trimStr){
+      // WooCommerce separates trim entries with \,
+      const parts=trimStr.split('\\,').map(s=>s.trim());
+      const cLow=color.toLowerCase().replace(/[^a-z0-9 ]/g,' ');
+      const colorWords=cLow.split(/\s+/).filter(w=>w.length>2);
+      // Find the trim part that best matches this color
+      let bestScore=-1,bestCode='';
+      for(const part of parts){
+        const pl=part.toLowerCase().replace(/[^a-z0-9 ]/g,' ');
+        const trimWords=pl.split(/\s+/).filter(w=>w.length>2&&!['the','and','with','for'].includes(w));
+        // Score = fraction of color words found in this trim part
+        const matches=colorWords.filter(w=>pl.includes(w)).length;
+        const score=colorWords.length>0?matches/colorWords.length:0;
+        if(score>bestScore){
+          bestScore=score;
+          const m=part.match(/\(([^)]+)\)/);
+          bestCode=m?m[1]:'';
+        }
+      }
+      // Only assign if this color clearly owns the trim entry (>50% word match)
+      if(bestScore>0.5)code=bestCode;
+    }
+    return{name:color,code,selected_image:'',candidate_images:[]};
+  });
+}
+
+function parsePositions(seatRow,seatPos){
+  const pos={front_bottom:false,front_top:false,rear_bottom:false,rear_top:false};
+  const r=(seatRow||'').toLowerCase();
+  const p=(seatPos||'').toLowerCase();
+  const front=r.includes('front');
+  const rear=r.includes('rear');
+  const bottom=p.includes('bottom');
+  const top=p.includes('top');
+  const both=p.includes('top + bottom')||p.includes('top+bottom');
+  if(front&&(bottom||both))pos.front_bottom=true;
+  if(front&&(top||both))pos.front_top=true;
+  if(rear&&(bottom||both))pos.rear_bottom=true;
+  if(rear&&(top||both))pos.rear_top=true;
+  return pos;
+}
+
+function scoreImg(url,colorName){
+  const fn=url.split('/').pop().toLowerCase();
+  const words=colorName.toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  let s=0;
+  for(const w of words)if(fn.includes(w))s+=2;
+  if(fn.includes('driver-passenger')||fn.includes('driver-and-passenger'))s+=3;
+  if(fn.includes('top-and-bottom')||fn.includes('top-bottom'))s+=2;
+  if(fn.includes('front'))s+=1;
+  if(fn.includes('close')||fn.includes('detail')||fn.includes('inside'))s-=1;
+  return s;
+}
+
+function parseProduct(row){
+  const brand=(row.Brands||'').trim();
+  const model=getAttr(row,'Model');
+  const years=parseYears(getAttr(row,'Year'));
+  const submodel=getAttr(row,'Submodel');
+  const matRaw=getAttr(row,'Material');
+  const colorStr=getAttr(row,'Color');
+  const trimStr=getAttr(row,'Color & Trim Code');
+  const seatRow=getAttr(row,'Seat Row');
+  const seatPos=getAttr(row,'Seat Position');
+  const accType=(row['_accessory_type']||'').trim();
+  const images=(row.Images||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const rawTitle=(row.Name||'').split('|')[0].trim();
+  const name=rawTitle; // full title kept for reference
+  // Extract trim level from title: "Brand Model [TRIM] YYYY-YYYY"
+  let trimLevel='';
+  try{
+    let t=rawTitle;
+    // Strip brand
+    t=t.replace(new RegExp('^'+brand.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*','i'),'').trim();
+    // Strip model
+    const modelEsc=(model||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    t=t.replace(new RegExp('^'+modelEsc+'\\s*','i'),'').trim();
+    // Strip trailing year range (YYYY-YYYY or YYYY)
+    t=t.replace(/\s*\d{4}[-\u2013]\d{4}\s*$/, '').trim();
+    t=t.replace(/\s*\d{4}\s*$/, '').trim();
+    // Strip trailing parentheticals like (Cloth), (2-Panel), (Rear), (Advance Package)
+    t=t.replace(/\s*\([^)]+\)\s*$/, '').trim();
+    // Strip trailing descriptor like "Rear Seat 60-40" if it contains a year
+    if(/\d{4}/.test(t))t='';
+    // Sanity check: trim should not be same as model or brand
+    if(t.toLowerCase()===model.toLowerCase()||t.toLowerCase()===brand.toLowerCase())t='';
+    // Should not be empty words or just numbers  
+    if(/^[\d\s-]+$/.test(t))t='';
+    trimLevel=t;
+  }catch(e){trimLevel='';}
+
+function parseMaterials(matRaw){
+  if(!matRaw)return[];
+  const ml=matRaw.toLowerCase();
+  const result=new Set();
+  // Split by comma to check each material separately
+  const parts=ml.split(',').map(s=>s.trim());
+  for(const p of parts){
+    if(p.includes('foam'))result.add('Other');
+    else if(p.includes('alcantara')||p.includes('dinamica')||p.includes('suede'))result.add('Alcantara');
+    else if(p.includes('cloth'))result.add('Cloth');
+    else if(p.includes('genuine leather with perforated')||p.includes('half perforated'))result.add('Leather Perf');
+    else if(p.includes('synthetic leather with perforated')||p.includes('synthetic leather with perf'))result.add('Vinyl Perf');
+    else if(p.includes('genuine leather')||p.includes('leather with suede')||p.includes('leather with cloth')||p.includes('leather and cloth'))result.add('Leather');
+    else if(p.includes('synthetic leather')||p.includes('vinyl')||p.includes('leatherette')||p.includes('synthetic leather with cloth'))result.add('Vinyl');
+    else if(p.trim())result.add(matRaw.trim());
+  }
+  return[...result];
+}
+
+  const materials=parseMaterials(matRaw);
+  const colors=parseColorsTrims(colorStr,trimStr);
+
+  // Score images for COLOR photos (best match per color name)
+  for(const c of colors){
+    const scored=images.map(url=>({url,score:scoreImg(url,c.name)})).sort((a,b)=>b.score-a.score);
+    c.candidate_images=scored.slice(0,8);
+    c.selected_image=scored.length?scored[0].url:'';
+  }
+
+  // Score images for VARIATION photos (layout shots - driver+passenger, top+bottom)
+  // Front variation: high score for front + driver-passenger + top-and-bottom
+  // Rear variation: high score for rear + top-and-bottom
+  function scoreVarImg(url,row){
+    const fn=url.split('/').pop().toLowerCase();
+    let s=0;
+    if(row==='front'){
+      if(fn.includes('front'))s+=2;
+      if(fn.includes('driver-passenger')||fn.includes('driver-and-passenger'))s+=3;
+      if(fn.includes('top-and-bottom')||fn.includes('top-bottom'))s+=2;
+      if(fn.includes('rear'))s-=3;
+    } else {
+      if(fn.includes('rear'))s+=4;
+      if(fn.includes('top-and-bottom')||fn.includes('top-bottom'))s+=2;
+      if(!fn.includes('rear'))s-=2;
+    }
+    // Penalise close-ups, detail shots
+    if(fn.includes('close')||fn.includes('detail')||fn.includes('inside-out'))s-=2;
+    return s;
+  }
+
+  const frontVarCandidates=images.map(url=>({url,score:scoreVarImg(url,'front')})).sort((a,b)=>b.score-a.score).slice(0,8);
+  const rearVarCandidates=images.map(url=>({url,score:scoreVarImg(url,'rear')})).sort((a,b)=>b.score-a.score).slice(0,8);
+
+  // Use pre-computed stock-aware positions if available
+  let parsedPos;
+  const stockPosRaw=row['_stock_positions']||'';
+  if(stockPosRaw){
+    try{parsedPos=JSON.parse(stockPosRaw);}
+    catch(e){parsedPos=parsePositions(seatRow,seatPos);}
+  } else {
+    parsedPos=parsePositions(seatRow,seatPos);
+  }
+
+  // Parse embedded accessories from CSV
+  let embeddedAccessories=[];
+  try{
+    const accJson=(row['_accessories_json']||'').trim();
+    if(accJson)embeddedAccessories=JSON.parse(accJson);
+  }catch(e){}
+
+  return{
+    id:row.ID||'',sku:row.SKU||'',name:brand+' '+model+' '+years+(trimLevel?' '+trimLevel:''),
+    fullTitle:rawTitle,brand,model,years,submodel,trim:trimLevel,
+    accessoryType:accType,
+    accessories:embeddedAccessories,
+    materials,positions:parsedPos,colors,
+    front_var_candidates:frontVarCandidates,
+    front_var_image:frontVarCandidates.length?frontVarCandidates[0].url:'',
+    rear_var_candidates:rearVarCandidates,
+    rear_var_image:(parsedPos.rear_bottom||parsedPos.rear_top)&&rearVarCandidates.length&&rearVarCandidates[0].score>0?rearVarCandidates[0].url:'',
+    notes:'',research:'',other_positions:[],status:'pending'
+  };
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────
+
+// ── CHECK ALREADY IMPORTED ────────────────────────────────────
+async function markAlreadyImported(){
+  // Batch check: fetch all existing patterns from DB
+  const{data:existing}=await supa.from('patterns').select('brand,model,years,trim,status,confirmed_at');
+  if(!existing)return;
+  const dbSet=new Map();
+  existing.forEach(r=>{
+    const key=`${r.brand}|${r.model}|${r.years}|${r.trim||''}`;
+    dbSet.set(key,r);
+  });
+  products.forEach(p=>{
+    const key=`${p.brand}|${p.model}|${p.years}|${p.trim||''}`;
+    if(dbSet.has(key)){
+      const dbRow=dbSet.get(key);
+      p.status='imported';
+      p.dbStatus=dbRow.status; // 'unreviewed' or 'confirmed'
+      p.dbConfirmedAt=dbRow.confirmed_at;
+    }
+  });
+  buildList();updateCounts();
+}
+function buildList(){
+  const filtered=products.map((p,i)=>({p,i})).filter(({p})=>{
+    if(filter!=='all'&&p.status!==filter)return false;
+    const q=search.toLowerCase();
+    if(q&&!p.name.toLowerCase().includes(q)&&!p.brand.toLowerCase().includes(q)&&!p.model.toLowerCase().includes(q))return false;
+    return true;
+  });
+  // Sort: brand → model → start year → trim
+  filtered.sort((a,b)=>{
+    const pa=a.p,pb=b.p;
+    if(pa.brand!==pb.brand)return pa.brand.localeCompare(pb.brand);
+    if(pa.model!==pb.model)return pa.model.localeCompare(pb.model);
+    const ya=parseInt((pa.years||'0').match(/\d{4}/)?.[0]||0);
+    const yb=parseInt((pb.years||'0').match(/\d{4}/)?.[0]||0);
+    if(ya!==yb)return ya-yb;
+    return (pa.trim||'').localeCompare(pb.trim||'');
+  });
+  const list=document.getElementById('prod-list');
+  if(!filtered.length){list.innerHTML='<div style="padding:16px;color:var(--text3);font-size:13px;text-align:center">No results</div>';return;}
+  list.innerHTML=filtered.map(({p,i})=>`
+    <div class="prod-item ${p.status} ${i===currentIdx?'active':''}" onclick="selectProduct(${i})" id="pi-${i}">
+      <div class="prod-item-name">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
+      <div class="prod-item-meta">
+        <span class="prod-status ${p.status}">${p.status==='imported'?(p.dbStatus==='confirmed'?'✓ confirmed':'in db'):p.status}</span>
+        <span style="font-size:11px;color:var(--text3)">${p.colors.length} color${p.colors.length!==1?'s':''}</span>
+      </div>
+    </div>`).join('');
+}
+
+function setFilter(f){
+  filter=f;
+  ['all','pending','approved','skipped','imported'].forEach(x=>document.getElementById('filter-'+x)&&document.getElementById('filter-'+x).classList.toggle('active',x===f));
+  buildList();
+}
+function filterList(v){search=v;buildList();}
+
+function updateCounts(){
+  document.getElementById('cnt-approved').textContent=products.filter(p=>p.status==='approved').length;
+  document.getElementById('cnt-skipped').textContent=products.filter(p=>p.status==='skipped').length;
+  document.getElementById('cnt-pending').textContent=products.filter(p=>p.status==='pending').length;
+  const inDb=products.filter(p=>p.status==='imported').length;
+  const inDbEl=document.getElementById('cnt-indb');
+  if(inDbEl)inDbEl.textContent=inDb;
+}
+
+// ── REVIEW ────────────────────────────────────────────────
+function selectProduct(idx){
+  currentIdx=idx;activeColorIdx=0;
+  buildList();
+  const p=products[idx];
+  document.getElementById('main-title').textContent=p.brand+' '+p.model+' '+p.years+(p.trim?' '+p.trim:'');
+  document.getElementById('main-meta').textContent=(idx+1)+' of '+products.length;
+  document.getElementById('main-actions').style.display='flex';
+  renderReview(p,idx);
+  setTimeout(()=>document.getElementById('pi-'+idx)?.scrollIntoView({block:'nearest'}),50);
+}
+
+function imgGrid(candidates,selectedUrl,onClickFn){
+  if(!candidates||!candidates.length)return'<div style="color:var(--text3);font-size:13px">No images</div>';
+  return`<div class="img-grid">${candidates.map((img,ii)=>`
+    <div class="img-option ${img.url===selectedUrl?'selected':''}" onclick="${onClickFn}(${ii})" title="${esc(img.url.split('/').pop())}">
+      <img src="${img.url}" alt="" onerror="this.parentElement.style.opacity='0.3'">
+      <div class="img-score">${img.score}</div>
+      <div class="img-sel-mark">&#10003;</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderReview(p,idx){
+  const posHtml=POS_KEYS.map(pos=>`<button class="pos-btn ${p.positions[pos]?'on':''}" onclick="togglePos(${idx},'${pos}')">${POS_LABELS[pos]}</button>`).join('');
+  const matHtml=MATERIALS.map(m=>`<button class="mat-btn ${p.materials.includes(m)?'on':''}" onclick="toggleMat(${idx},'${m}')">${m}</button>`).join('');
+  const hasRear=p.positions.rear_bottom||p.positions.rear_top;
+
+  // Color rows with inline thumbnail
+  const colorsHtml=p.colors.map((c,ci)=>`
+    <div class="color-row">
+      <input class="color-name-input" value="${esc(c.name)}" oninput="updateColor(${idx},${ci},'name',this.value)">
+      <input class="color-code-input" value="${esc(c.code)}" oninput="updateColor(${idx},${ci},'code',this.value)" placeholder="Trim code">
+      <div class="color-img-slot ${c.selected_image?'has-img':''}">
+        ${c.selected_image?`<img src="${c.selected_image}" alt="" onerror="this.style.display='none'"><div class="check">&#10003;</div>`:'<span style="font-size:18px;opacity:0.2">&#128247;</span>'}
+      </div>
+    </div>`).join('');
+
+  // Color photo picker (per color tab)
+  const ac=p.colors[activeColorIdx]||p.colors[0];
+  const colorTabsHtml=p.colors.map((c,ci)=>`<button class="color-tab ${ci===activeColorIdx?'active':''}" onclick="setColorTab(${idx},${ci})">${esc(c.name)}</button>`).join('');
+  const colorUrlField=ac?`
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Or paste image URL</div>
+      <div style="display:flex;gap:6px">
+        <input id="color-url-${idx}-${activeColorIdx}" type="text" placeholder="https://..." style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--font);font-size:12px;color:var(--navy);outline:none">
+        <button onclick="setColorImgFromUrl(${idx},${activeColorIdx})" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);white-space:nowrap">Use URL</button>
+      </div>
+    </div>`:'';
+  const colorImgHtml=ac?`<div class="color-tabs" style="margin-bottom:10px">${colorTabsHtml}</div>${imgGrid(ac.candidate_images,ac.selected_image,`selectColorImg_${idx}_${activeColorIdx}`)}${colorUrlField}`:'';
+
+  // Variation photo pickers
+  const frontImgHtml=imgGrid(p.front_var_candidates||[],p.front_var_image,`selectFrontImg_${idx}`);
+  const rearImgHtml=hasRear?imgGrid(p.rear_var_candidates||[],p.rear_var_image,`selectRearImg_${idx}`):'<div style="color:var(--text3);font-size:13px">No rear seats for this pattern</div>';
+
+  const statusBadge=p.status==='approved'
+    ?'<span style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);border-radius:10px;padding:2px 10px;font-size:12px;font-weight:700">&#10003; APPROVED</span>'
+    :p.status==='skipped'
+    ?'<span style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);border-radius:10px;padding:2px 10px;font-size:12px;font-weight:700">SKIPPED</span>'
+    :p.status==='imported'
+    ?'<span style="background:var(--gold-bg);color:var(--gold2);border:1px solid var(--gold-border);border-radius:10px;padding:2px 10px;font-size:12px;font-weight:700">&#10003; IN DATABASE'+(p.dbStatus==='confirmed'?' · CONFIRMED':'')+'</span>'
+    :'';
+
+  document.getElementById('content').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div style="font-size:19px;font-weight:700;color:var(--navy)">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
+      ${statusBadge}
+    </div>
+    <div class="review-grid">
+      <div class="section"><div class="section-hdr"><span class="section-title">Basic info</span></div><div class="section-body">
+        <div class="field"><label class="field-label">Brand</label><input class="field-input" value="${esc(p.brand)}" oninput="updateField(${idx},'brand',this.value)"></div>
+        <div class="field"><label class="field-label">Model</label><input class="field-input" value="${esc(p.model)}" oninput="updateField(${idx},'model',this.value)"></div>
+        <div class="field"><label class="field-label">Years</label><input class="field-input" value="${esc(p.years)}" oninput="updateField(${idx},'years',this.value)"></div>
+        <div class="field"><label class="field-label">Trim level <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text3)">(goes in title — e.g. GT, Lariat, Platinum)</span></label><input class="field-input" value="${esc(p.trim||'')}" oninput="updateField(${idx},'trim',this.value)" placeholder="Leave blank if not needed"></div>
+        <div class="field"><label class="field-label">Submodels / Trims</label>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;font-size:13px;color:var(--text2);line-height:1.6;min-height:36px">
+            ${p.submodel?(p.submodel.split(',').map(s=>`<span style="display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:1px 8px;margin:2px 3px 2px 0;font-size:12px">${esc(s.trim())}</span>`).join('')):'<span style="color:var(--text3);font-style:italic">None</span>'}
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">These will be saved as individual submodel entries</div>
+        </div>
+      </div></div>
+      <div class="section"><div class="section-hdr"><span class="section-title">Variations &amp; materials</span></div><div class="section-body">
+        <div class="field"><label class="field-label">Positions</label><div class="pos-grid">${posHtml}</div></div>
+        <div class="field"><label class="field-label">Materials</label><div class="mat-group">${matHtml}</div></div>
+      </div></div>
+    </div>
+
+    <div class="section" style="margin-bottom:14px">
+      <div class="section-hdr"><span class="section-title">Colors &amp; trim codes</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">Edit name &amp; trim code per color</span></div>
+      <div>${colorsHtml}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="section">
+        <div class="section-hdr">
+          <span class="section-title">&#128247; Front variation photo</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)">Layout shot — driver+passenger, top+bottom</span>
+        </div>
+        <div class="section-body">
+          ${p.front_var_image?`<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+            <div style="border-radius:8px;overflow:hidden;border:2px solid var(--green);flex-shrink:0">
+              <img src="${p.front_var_image}" style="width:100px;height:100px;object-fit:cover;display:block" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:6px">&#10003; Selected</div>
+              <button onclick="clearFrontImg(${idx})" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:var(--font)">&#x2715; Clear</button>
+            </div>
+          </div>`:''}
+          ${frontImgHtml}
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Or paste image URL</div>
+            <div style="display:flex;gap:6px">
+              <input id="front-url-${idx}" type="text" placeholder="https://..." style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--font);font-size:12px;color:var(--navy);outline:none">
+              <button onclick="setFrontImgFromUrl(${idx})" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);white-space:nowrap">Use URL</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-hdr">
+          <span class="section-title">&#128247; Rear variation photo</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--text3)">${hasRear?'Rear seat layout shot':''}</span>
+        </div>
+        <div class="section-body">
+          ${p.rear_var_image?`<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+            <div style="border-radius:8px;overflow:hidden;border:2px solid var(--green);flex-shrink:0">
+              <img src="${p.rear_var_image}" style="width:100px;height:100px;object-fit:cover;display:block" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--green);font-weight:600;margin-bottom:6px">&#10003; Selected</div>
+              <button onclick="clearRearImg(${idx})" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:var(--font)">&#x2715; Clear</button>
+            </div>
+          </div>`:''}
+          ${rearImgHtml}
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Or paste image URL</div>
+            <div style="display:flex;gap:6px">
+              <input id="rear-url-${idx}" type="text" placeholder="https://..." style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;font-family:var(--font);font-size:12px;color:var(--navy);outline:none">
+              <button onclick="setRearImgFromUrl(${idx})" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:var(--font);white-space:nowrap">Use URL</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-bottom:20px">
+      <div class="section-hdr">
+        <span class="section-title">&#127912; Color photos</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)">Hero shot per color — click tab to switch color</span>
+      </div>
+      <div class="section-body">${colorImgHtml}</div>
+    </div>
+
+    ${p.accessories&&p.accessories.length?`
+    <div class="section" style="margin-bottom:14px">
+      <div class="section-hdr"><span class="section-title">&#128268; Linked accessories</span><span style="margin-left:auto;font-size:11px;color:var(--text3)">Auto-matched by brand + model + years</span></div>
+      <div>${p.accessories.map(acc=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)">
+          <span style="font-size:18px">${acc.accessoryType==='armrest'?'💪':acc.accessoryType==='foam'?'🪑':acc.accessoryType==='console'?'📦':acc.accessoryType==='headrest'?'👤':'🎡'}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(acc.accessoryType.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()))}</div>
+            <div style="font-size:12px;color:var(--text3)">${esc(acc.fullTitle||acc.name)} &middot; ${acc.colors.length} color${acc.colors.length!==1?'s':''}</div>
+          </div>
+          <span style="font-size:11px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);padding:2px 8px;border-radius:10px;font-weight:600">Will import</span>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+    <div style="display:flex;gap:10px;padding-bottom:12px">
+      <button class="btn btn-skip" onclick="skipCurrent()" style="flex:1">Skip this pattern</button>
+      <button class="btn btn-approve" onclick="approveCurrent()" style="flex:2">&#10003; Approve &amp; continue</button>
+    </div>`;
+
+  // Attach dynamic onclick handlers after render
+  window[`selectFrontImg_${idx}`]=(ii)=>{products[idx].front_var_image=products[idx].front_var_candidates[ii].url;renderReview(products[idx],idx);};
+  window[`selectRearImg_${idx}`]=(ii)=>{products[idx].rear_var_image=products[idx].rear_var_candidates[ii].url;renderReview(products[idx],idx);};
+  if(ac)window[`selectColorImg_${idx}_${activeColorIdx}`]=(ii)=>{products[idx].colors[activeColorIdx].selected_image=products[idx].colors[activeColorIdx].candidate_images[ii].url;renderReview(products[idx],idx);};
+}
+
+function setColorTab(prodIdx,ci){
+  activeColorIdx=ci;
+  renderReview(products[prodIdx],prodIdx);
+}
+function togglePos(idx,pos){products[idx].positions[pos]=!products[idx].positions[pos];renderReview(products[idx],idx);}
+function toggleMat(idx,mat){const m=products[idx].materials;const i=m.indexOf(mat);if(i>-1)m.splice(i,1);else m.push(mat);renderReview(products[idx],idx);}
+function updateField(idx,f,v){products[idx][f]=v;}
+function updateColor(idx,ci,f,v){products[idx].colors[ci][f]=v;}
+
+function approveCurrent(){
+  if(currentIdx===null)return;
+  products[currentIdx].status='approved';
+  updateCounts();buildList();toast('Approved &#10003;','ok');
+  const next=products.findIndex((p,i)=>i>currentIdx&&p.status==='pending');
+  if(next>-1)selectProduct(next);
+  else{const prev=products.findIndex(p=>p.status==='pending');if(prev>-1)selectProduct(prev);}
+}
+function skipCurrent(){
+  if(currentIdx===null)return;
+  products[currentIdx].status='skipped';
+  updateCounts();buildList();
+  const next=products.findIndex((p,i)=>i>currentIdx&&p.status==='pending');
+  if(next>-1)selectProduct(next);
+}
+
+// ── IMPORT ────────────────────────────────────────────────
+
+// ── IMPORT ALL REMAINING ──────────────────────────────────────
+async function importAllRemaining(){
+  try{
+    const pending=products.filter(p=>p.status==='pending');
+    if(!pending.length){toast('No pending patterns to import','err');return;}
+    if(!confirm('Import all '+pending.length+' pending patterns without review?\n\nThey will be imported as-is with auto-selected photos. You can review and confirm them in the main Pattern Database app.'))return;
+    pending.forEach(p=>p.status='approved');
+    buildList();updateCounts();
+    toast('Starting import of '+pending.length+' patterns...','ok');
+    await runImport();
+  }catch(e){
+    toast('Error: '+e.message,'err');
+    console.error('importAllRemaining error:',e);
+  }
+}
+async function startImport(){
+  const approved=products.filter(p=>p.status==='approved');
+  if(!approved.length){toast('No approved patterns','err');return;}
+  if(!confirm('Import '+approved.length+' approved patterns into the database?\n\nPatterns that already exist (same brand + model + years + trim) will be skipped.'))return;
+  await runImport();
+}
+async function runImport(){
+  const approved=products.filter(p=>p.status==='approved');
+  if(!approved.length){toast('No approved patterns','err');return;}
+  document.getElementById('btn-import').disabled=true;
+  const prog=document.getElementById('import-prog');prog.style.display='block';
+  document.getElementById('content').innerHTML='<div style="margin-bottom:12px;font-size:14px;font-weight:600;color:var(--navy)">Importing '+approved.length+' patterns...</div><div class="log" id="import-log"></div>';
+  const log=document.getElementById('import-log');
+  let done=0,skipped=0,errors=0;
+  function logLine(msg,cls){const s=document.createElement('span');s.style.color=cls==='ok'?'#a5d6a7':cls==='err'?'#ef9a9a':'#90caf9';s.textContent=msg+'\n';log.appendChild(s);log.scrollTop=log.scrollHeight;}
+  for(const p of approved){
+    prog.textContent='Importing '+(done+skipped+errors+1)+' of '+approved.length+'...';
+    try{
+      const{data:ex}=await supa.from('patterns').select('id').eq('brand',p.brand).eq('model',p.model).eq('years',p.years).eq('trim',p.trim||'').maybeSingle();
+      if(ex){logLine('  SKIP  '+p.brand+' '+p.years+' '+p.model+(p.trim?' '+p.trim:'')+' \u2014 already exists','info');skipped++;continue;}
+      // Embed variation photos into positions object
+      const posWithPhotos={...p.positions};
+      if(p.front_var_image)posWithPhotos['front_thumb']=p.front_var_image;
+      if(p.rear_var_image)posWithPhotos['rear_thumb']=p.rear_var_image;
+      // Build submodels list from comma-separated submodel string
+      const submodelList=(p.submodel||'').split(',').map(s=>s.trim()).filter(Boolean)
+        .map(s=>({name:s,years:'All years'}));
+      const{data:pat,error:pe}=await supa.from('patterns').insert({
+        brand:p.brand,model:p.model,years:p.years,trim:p.trim||'',
+        research:'',notes:'',
+        submodels:submodelList,
+        materials:p.materials,positions:posWithPhotos,other_positions:[]
+      }).select().single();
+      if(pe){logLine('  ERROR '+p.brand+' '+p.years+' '+p.model+': '+pe.message,'err');errors++;continue;}
+      for(let ci=0;ci<p.colors.length;ci++){
+        const c=p.colors[ci];
+        await supa.from('pattern_colors').insert({pattern_id:pat.id,name:c.name,code:c.code||'',hex:'#888888',year_note:'All years',thumb_url:c.selected_image||null,sort_order:ci});
+      }
+      logLine('  OK    '+p.brand+' '+p.years+' '+p.model+' ('+p.colors.length+' colors)','ok');
+      done++;
+    }catch(e){logLine('  ERROR '+p.brand+' '+p.years+' '+p.model+': '+e.message,'err');errors++;}
+  }
+  logLine('','info');
+  // Save also-fits links
+  if(fitsLinks.length){
+    logLine('Saving '+fitsLinks.length+' also-fits link(s)...','info');
+    for(const link of fitsLinks){
+      const a=products[link.i],b=products[link.j];
+      // Find the imported pattern IDs by brand+model+years
+      const{data:pa}=await supa.from('patterns').select('id').eq('brand',a.brand).eq('model',a.model).eq('years',a.years).maybeSingle();
+      const{data:pb}=await supa.from('patterns').select('id').eq('brand',b.brand).eq('model',b.model).eq('years',b.years).maybeSingle();
+      if(pa&&pb){
+        const{error:fe}=await supa.from('pattern_fits').insert({pattern_id_a:pa.id,pattern_id_b:pb.id,shared_colors:link.shared});
+        if(fe)logLine('  FIT ERROR: '+fe.message,'err');
+        else logLine('  FIT OK: '+a.brand+' '+a.model+' ↔ '+b.brand+' '+b.model,'ok');
+      } else {
+        logLine('  FIT SKIP: could not find both patterns in DB','info');
+      }
+    }
+  }
+  logLine('Done: '+done+' imported, '+skipped+' skipped, '+errors+' errors','info');
+  prog.textContent='Done: '+done+' imported, '+skipped+' skipped, '+errors+' errors';
+  document.getElementById('btn-import').disabled=false;
+  toast('Import complete: '+done+' patterns added','ok');
+}
+// end runImport
+
+
+// ── DUPLICATE DETECTION ───────────────────────────────────
+var fitsLinks=[]; // {i, j, sharedColors} confirmed links to save on import
+
+function showDuplicates(){
+  const suggestions=detectDuplicates(products);
+  fitsLinks=[];
+  if(!suggestions.length){
+    document.getElementById('content').innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:14px;color:var(--text3)">
+        <div style="font-size:32px;opacity:0.2">&#128279;</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text2)">No potential duplicates found</div>
+        <div style="font-size:13px">No patterns detected with matching positions, years and colors.</div>
+      </div>`;
+    return;
+  }
+  renderDuplicates(suggestions);
+}
+
+function renderDuplicates(suggestions){
+  let html=`<div style="margin-bottom:16px">
+    <div style="font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px">&#128279; Potential also-fits (${suggestions.length})</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.6">Review each pair. Confirm the ones that share the same pattern. Confirmed links will be saved to the database on import.</div>
+  </div>`;
+  suggestions.forEach((s,si)=>{
+    const a=products[s.i],b=products[s.j];
+    const allColors=[...new Set([...a.colors.map(c=>c.name),...b.colors.map(c=>c.name)])].sort();
+    html+=`<div class="section" style="margin-bottom:12px" id="dup-${si}">
+      <div class="section-hdr" style="justify-content:space-between">
+        <span class="section-title">&#128279; ${esc(a.brand)} ${esc(a.years)} ${esc(a.model)} &harr; ${esc(b.brand)} ${esc(b.years)} ${esc(b.model)}</span>
+        <span style="font-size:11px;color:var(--text3)">${esc(s.reason)}</span>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 12px">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">${esc(a.brand)} ${esc(a.years)} ${esc(a.model)}</div>
+            ${a.colors.map(c=>`<div style="font-size:12px;color:var(--text2);padding:1px 0">&#183; ${esc(c.name)}</div>`).join('')}
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 12px">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">${esc(b.brand)} ${esc(b.years)} ${esc(b.model)}</div>
+            ${b.colors.map(c=>`<div style="font-size:12px;color:var(--text2);padding:1px 0">&#183; ${esc(c.name)}</div>`).join('')}
+          </div>
+        </div>
+        <div style="margin-bottom:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Select shared colors</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px" id="dup-colors-${si}">
+            ${allColors.map(name=>{
+              const inBoth=a.colors.some(c=>c.name===name)&&b.colors.some(c=>c.name===name);
+              return `<button onclick="toggleDupColor(${si},'${name.replace(/'/g,"\'")}',this)"
+                style="padding:4px 11px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid ${inBoth?'var(--navy)':'var(--border)'};background:${inBoth?'var(--navy)':'var(--bg2)'};color:${inBoth?'#fff':'var(--text2)'};transition:all 0.15s"
+                data-selected="${inBoth?'1':'0'}">${esc(name)}</button>`;
+            }).join('')}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="dismissDup(${si})" class="btn btn-ghost btn-sm" style="flex:1">Not the same pattern</button>
+          <button onclick="confirmDup(${si},${s.i},${s.j})" class="btn btn-approve btn-sm" style="flex:1" id="dup-confirm-${si}">&#10003; Confirm also-fits</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('content').innerHTML=html;
+  // Init selected state
+  window._dupStates={};
+  suggestions.forEach((s,si)=>{
+    const a=products[s.i],b=products[s.j];
+    const allColors=[...new Set([...a.colors.map(c=>c.name),...b.colors.map(c=>c.name)])].sort();
+    window._dupStates[si]=new Set(allColors.filter(name=>a.colors.some(c=>c.name===name)&&b.colors.some(c=>c.name===name)));
+  });
+}
+
+function toggleDupColor(si,name,btn){
+  const state=window._dupStates[si];
+  if(state.has(name)){
+    state.delete(name);
+    btn.style.background='var(--bg2)';btn.style.borderColor='var(--border)';btn.style.color='var(--text2)';btn.dataset.selected='0';
+  } else {
+    state.add(name);
+    btn.style.background='var(--navy)';btn.style.borderColor='var(--navy)';btn.style.color='#fff';btn.dataset.selected='1';
+  }
+}
+
+function dismissDup(si){
+  const el=document.getElementById('dup-'+si);
+  if(el){el.style.opacity='0.35';el.style.pointerEvents='none';}
+  // Remove from fitsLinks if confirmed
+  fitsLinks=fitsLinks.filter(l=>l.si!==si);
+  toast('Dismissed');
+}
+
+function confirmDup(si,i,j){
+  const shared=[...window._dupStates[si]];
+  // Remove if already exists
+  fitsLinks=fitsLinks.filter(l=>l.si!==si);
+  fitsLinks.push({si,i,j,shared});
+  const btn=document.getElementById('dup-confirm-'+si);
+  const el=document.getElementById('dup-'+si);
+  if(btn){btn.textContent='&#10003; Confirmed';btn.style.background='var(--green)';btn.disabled=true;}
+  if(el){el.style.borderColor='var(--green)';}
+  toast('Confirmed — will be saved on import \u2713','ok');
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function toast(msg,type){const el=document.getElementById('toast');el.innerHTML=msg;el.className='toast '+type;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3000);}
+
+function setColorImgFromUrl(idx,ci){
+  const url=document.getElementById(`color-url-${idx}-${ci}`)?.value.trim();
+  if(!url)return;
+  const c=products[idx].colors[ci];
+  c.selected_image=url;
+  if(!c.candidate_images)c.candidate_images=[];
+  c.candidate_images.unshift({url,score:99});
+  renderReview(products[idx],idx);
+  toast('Color photo set \u2713','ok');
+}
+function clearColorImg(idx,ci){
+  products[idx].colors[ci].selected_image='';
+  renderReview(products[idx],idx);
+}
+function setFrontImgFromUrl(idx){
+  const url=document.getElementById('front-url-'+idx)?.value.trim();
+  if(!url)return;
+  products[idx].front_var_image=url;
+  // Add to candidates so it shows as selected
+  if(!products[idx].front_var_candidates)products[idx].front_var_candidates=[];
+  products[idx].front_var_candidates.unshift({url,score:99});
+  renderReview(products[idx],idx);
+  toast('Front photo set \u2713','ok');
+}
+function setRearImgFromUrl(idx){
+  const url=document.getElementById('rear-url-'+idx)?.value.trim();
+  if(!url)return;
+  products[idx].rear_var_image=url;
+  if(!products[idx].rear_var_candidates)products[idx].rear_var_candidates=[];
+  products[idx].rear_var_candidates.unshift({url,score:99});
+  renderReview(products[idx],idx);
+  toast('Rear photo set \u2713','ok');
+}
+function clearFrontImg(idx){products[idx].front_var_image='';renderReview(products[idx],idx);}
+function clearRearImg(idx){products[idx].rear_var_image='';renderReview(products[idx],idx);}
+
+// ── IMPORTER AUTH ─────────────────────────────────────────
+async function doImporterLogin(){
+  const email=document.getElementById('li-email').value.trim();
+  const pass=document.getElementById('li-pass').value;
+  const btn=document.getElementById('li-btn');
+  const err=document.getElementById('li-error');
+  err.style.display='none';
+  if(!email||!pass){err.textContent='Please enter email and password.';err.style.display='block';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  const {data,error}=await supa.auth.signInWithPassword({email,password:pass});
+  btn.textContent='Sign in';btn.disabled=false;
+  if(error){err.textContent=error.message;err.style.display='block';return;}
+  // Check role — only admin/manager can import
+  const {data:profile}=await supa.from('user_profiles').select('role').eq('id',data.user.id).single();
+  if(profile&&(profile.role==='viewer'||profile.role==='editor')){
+    err.textContent='Only Admin or Manager accounts can import patterns.';err.style.display='block';
+    await supa.auth.signOut();return;
+  }
+  document.getElementById('login-overlay').style.display='none';
+  // Show user in sidebar footer
+  document.getElementById('importer-user').textContent=data.user.email;
+  document.getElementById('importer-user-row').style.display='flex';
+  toast('Signed in as '+data.user.email,'ok');
+}
+
+async function checkImporterSession(){
+  const {data:{session}}=await supa.auth.getSession();
+  if(session?.user){
+    document.getElementById('login-overlay').style.display='none';
+    document.getElementById('importer-user').textContent=session.user.email;
+    document.getElementById('importer-user-row').style.display='flex';
+  } else {
+    setTimeout(()=>document.getElementById('li-email').focus(),100);
+  }
+}
+
+checkImporterSession();
+
+</script>
+</body>
+</html>
