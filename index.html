@@ -842,7 +842,7 @@ function showSql(){
 }
 
 async function loadAll(){
-  const {data:pats,error}=await supa.from('patterns').select('*,confirmed_by(full_name)').order('brand').order('model').order('years');
+  const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
   if(error){if(error.code==='42P01'){showSql();}return;}
   const {data:colors}=await supa.from('pattern_colors').select('*').order('sort_order');
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
@@ -856,7 +856,7 @@ async function loadAll(){
     photos:(photos||[]).filter(ph=>ph.pattern_id===p.id),
     fits:(fits||[]).filter(f=>f.pattern_id_a===p.id||f.pattern_id_b===p.id),
     status:p.status||'unreviewed',
-    confirmed_by:p.confirmed_by,
+    confirmed_by_id:p.confirmed_by,
     confirmed_at:p.confirmed_at,
   }));
   buildSidebar();
@@ -1050,7 +1050,7 @@ function renderInfoTab(p){
   // Confirmed status bar
   if(p.status==='confirmed'&&p.confirmed_at){
     const when=new Date(p.confirmed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const who=p.confirmed_by?.full_name||'';
+    const who='';
     html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)">
       <span style="font-weight:700">&#10003; Confirmed</span>
       <span style="opacity:0.7">${who?'by '+esc(who)+' · ':''}${when}</span>
@@ -1306,7 +1306,7 @@ async function confirmPattern(){
   await supa.from('patterns').update(update).eq('id',p.id);
   p.status=newStatus;
   p.confirmed_at=newStatus==='confirmed'?now:null;
-  p.confirmed_by=newStatus==='confirmed'?{full_name:'You'}:null;
+  p.confirmed_by_id=newStatus==='confirmed'?user.id:null;
   buildSidebar();
   selectPattern(p.id); // refresh header
   toast(newStatus==='confirmed'?'Pattern confirmed \u2713':'Marked as unreviewed');
