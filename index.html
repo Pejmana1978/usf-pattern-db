@@ -875,23 +875,30 @@ function setSbFilter(f){sbStatusFilter=f;['all','unreviewed','confirmed'].forEac
 function buildSidebar(){
   const grouped={};
   patterns.forEach(p=>{
-    if(!grouped[p.brand])grouped[p.brand]=[];
+    // Status filter
+    const pStatus=p.status||'unreviewed';
+    if(sbStatusFilter!=='all'&&pStatus!==sbStatusFilter)return;
+    // Text filter
     const q=sbFilter;
-    if(!q||p.brand.toLowerCase().includes(q)||p.model.toLowerCase().includes(q)||p.years.includes(q)||(p.trim||'').toLowerCase().includes(q))
+    if(!q||p.brand.toLowerCase().includes(q)||p.model.toLowerCase().includes(q)||p.years.includes(q)||(p.trim||'').toLowerCase().includes(q)){
+      if(!grouped[p.brand])grouped[p.brand]=[];
       grouped[p.brand].push(p);
+    }
   });
   let html='';
   Object.keys(grouped).sort().forEach(brand=>{
     const list=grouped[brand];if(!list.length)return;
-    const isOpen=list.some(p=>p.id===currentId)||!!sbFilter;
+    const isOpen=list.some(p=>p.id===currentId)||!!sbFilter||sbStatusFilter!=='all';
     const bid='bl-'+brand.replace(/[^a-z0-9]/gi,'_');
     html+=`<div><div class="brand-hdr ${isOpen?'open':''}" onclick="toggleBrand(this,'${bid}')">
       <span class="bc ${isOpen?'open':''}">&#9654;</span>
       <span class="bn">${brand}</span><span class="bct">${list.length}</span>
     </div><div class="pl ${isOpen?'open':''}" id="${bid}">`;
     list.forEach(p=>{
-      html+=`<div class="pi ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')">
-        ${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}
+      const confirmed=(p.status||'unreviewed')==='confirmed';
+      html+=`<div class="pi ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')" style="display:flex;align-items:center;gap:7px">
+        <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${confirmed?'var(--green)':'var(--border2)'}" title="${confirmed?'Confirmed':'Unreviewed'}"></span>
+        <span>${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}</span>
       </div>`;
     });
     html+='</div></div>';
