@@ -134,7 +134,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .color-row:last-child{border-bottom:none}
 .color-row.dragover{background:var(--gold-bg);outline:2px dashed var(--gold);outline-offset:-2px}
 .color-row:hover{background:var(--navy-lighter)}
-.color-swatch{width:28px;height:28px;border-radius:5px;border:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
 .color-name{font-size:14px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .color-code{font-size:13px;color:var(--navy);background:var(--bg3);padding:3px 8px;border-radius:4px;border:1px solid var(--border);white-space:nowrap}
 .color-years{font-size:13px;color:var(--text2);white-space:nowrap;min-width:80px}
@@ -154,6 +153,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .sub-name::placeholder{color:var(--text3)}
 .sub-years{width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--text2);outline:none}
 .sub-years:focus{border-color:var(--gold-border)}
+
+.color-note{font-size:12px;color:var(--text3);background:transparent;border:none;outline:none;font-family:var(--font);width:120px;padding:2px 4px;border-radius:4px;transition:all 0.15s;cursor:pointer}
+.color-note:hover{background:var(--bg3);color:var(--text2)}
+.color-note:focus{background:var(--bg2);border:1px solid var(--gold-border);color:var(--navy);cursor:text}
+.color-note::placeholder{color:var(--text3);font-style:italic}
+.fits-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.fits-row:last-child{border-bottom:none}
+.fits-brand{font-size:14px;font-weight:600;color:var(--navy);min-width:100px}
+.fits-model{font-size:14px;color:var(--text2);flex:1}
+.fits-years{font-size:13px;color:var(--text3);white-space:nowrap}
+.fits-colors{display:flex;gap:4px;flex-wrap:wrap}
+.fits-color-tag{font-size:11px;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold2);padding:2px 7px;border-radius:10px;font-weight:500}
+.fits-dir{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:8px}
 .notes-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:80px;outline:none;line-height:1.6;transition:all 0.2s}
 .notes-textarea:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
 .rich-toolbar{display:flex;gap:3px;padding:8px 10px;border:1px solid var(--border);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0;background:var(--bg2);flex-wrap:wrap;align-items:center}
@@ -380,12 +392,37 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <div class="form-group"><label class="form-label">Trim Code</label><input class="form-input" id="c-code" placeholder="e.g. LA00, FE1..."></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Approximate color</label><input type="color" id="c-hex" value="#2c2c2c"></div>
       <div class="form-group"><label class="form-label">Year note</label><input class="form-input" id="c-years" placeholder="All years"></div>
     </div>
+    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Material exception note</label><input class="form-input" id="c-note" placeholder="e.g. Leather only, Not available in Vinyl Perf..."></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeColorModal()">Cancel</button>
       <button class="btn btn-navy" onclick="addColor()">Add Color</button>
+    </div>
+  </div>
+</div>
+
+<!-- ALSO FITS MODAL -->
+<div class="modal-overlay" id="fits-modal" style="display:none" onclick="if(event.target===this)closeFitsModal()">
+  <div class="modal" style="width:580px">
+    <div class="modal-title">Also fits — link patterns</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6">
+      Link this pattern to another that uses the same seat cover. Both patterns will show the link automatically.
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Search for pattern to link</label>
+      <input class="form-input" id="fits-search" placeholder="e.g. Sierra, F-150..." oninput="searchFitsPatterns(this.value)">
+    </div>
+    <div id="fits-search-results" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;display:none"></div>
+    <div id="fits-selected" style="display:none;margin-bottom:14px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Linked pattern</div>
+      <div id="fits-selected-name" style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:10px"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Shared colors (select which colors apply to both)</div>
+      <div id="fits-color-picker" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeFitsModal()">Cancel</button>
+      <button class="btn btn-navy" id="fits-save-btn" onclick="saveFitsLink()" style="display:none">Save link</button>
     </div>
   </div>
 </div>
@@ -760,12 +797,14 @@ async function loadAll(){
   const {data:colors}=await supa.from('pattern_colors').select('*').order('sort_order');
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
   const {data:photos}=await supa.from('pattern_photos').select('*').order('created_at');
+  const {data:fits}=await supa.from('pattern_fits').select('*').order('created_at');
   patterns=(pats||[]).map(p=>({...p,
     submodels:p.submodels||[],materials:p.materials||[],
     positions:p.positions||{},other_positions:p.other_positions||[],
     colors:(colors||[]).filter(c=>c.pattern_id===p.id),
     pdfs:(pdfs||[]).filter(f=>f.pattern_id===p.id),
     photos:(photos||[]).filter(ph=>ph.pattern_id===p.id),
+    fits:(fits||[]).filter(f=>f.pattern_id_a===p.id||f.pattern_id_b===p.id),
   }));
   buildSidebar();
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
@@ -903,10 +942,11 @@ function renderInfoTab(p){
     p.colors.forEach(c=>{
       const thumb=c.thumb_url||'';
       html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')">
-        <div class="color-swatch" style="background:${c.hex||'#888'}"></div>
         <span class="color-name">${esc(c.name)}</span>
         ${c.code?`<span class="color-code">${esc(c.code)}</span>`:''}
         <span class="color-years">${esc(c.year_note||'All years')}</span>
+        <input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." title="e.g. Leather only, Not in Vinyl Perf"
+          oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)">
         <div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${su(thumb)}',event)`:``}">
           ${thumb?`<img src="${thumb}" alt=""><button class="color-photo-x" onclick="confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico">&#128247;</span><div class="color-photo-hov">&#128247; drop or click</div>`}
         </div>
@@ -933,6 +973,11 @@ function renderInfoTab(p){
   html+='</div>';
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, caveats, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
   html+='</div></div>'; // end right col + info-grid
+
+  // Also fits section — full width below the grid
+  const fitsHtml=renderAlsoFits(p);
+  html+=fitsHtml;
+
   return html;
 }
 
@@ -1146,16 +1191,150 @@ function initEditorImgResize(){
   });
 }
 
+
+// ── COLOR NOTE ────────────────────────────────────────────
+function updateColorNote(id,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c.note=val;}
+async function saveColorNote(id,val){
+  await supa.from('pattern_colors').update({note:val}).eq('id',id);
+}
+
+// ── ALSO FITS ─────────────────────────────────────────────
+function renderAlsoFits(p){
+  const fits=p.fits||[];
+  // Resolve linked pattern names
+  const rows=fits.map(f=>{
+    const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;
+    const other=patterns.find(x=>x.id===otherId);
+    if(!other)return null;
+    const shared=(f.shared_colors||[]);
+    const dir=f.pattern_id_a===p.id?'→':'←';
+    return{f,other,shared,dir};
+  }).filter(Boolean);
+
+  let html=`<div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Also fits</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openFitsModal()">+ Link pattern</button></div>`;
+  if(rows.length){
+    rows.forEach(({f,other,shared,dir})=>{
+      html+=`<div class="fits-row">
+        <span class="fits-dir">${dir}</span>
+        <span class="fits-brand">${esc(other.brand)}</span>
+        <span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span>
+        <div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div>
+        <button class="btn-ico" onclick="confirmAction('Remove this also-fits link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button>
+      </div>`;
+    });
+  } else {
+    html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:14px">No linked patterns yet.</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+let fitsSelectedId=null,fitsSelectedColors=new Set();
+
+function openFitsModal(){
+  fitsSelectedId=null;fitsSelectedColors=new Set();
+  document.getElementById('fits-search').value='';
+  document.getElementById('fits-search-results').style.display='none';
+  document.getElementById('fits-search-results').innerHTML='';
+  document.getElementById('fits-selected').style.display='none';
+  document.getElementById('fits-save-btn').style.display='none';
+  document.getElementById('fits-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('fits-search').focus(),100);
+}
+function closeFitsModal(){document.getElementById('fits-modal').style.display='none';}
+
+function searchFitsPatterns(q){
+  const p=getP();
+  const res=document.getElementById('fits-search-results');
+  if(!q||q.length<2){res.style.display='none';return;}
+  const ql=q.toLowerCase();
+  const matches=patterns.filter(x=>x.id!==p.id&&(
+    x.brand.toLowerCase().includes(ql)||x.model.toLowerCase().includes(ql)||
+    (x.years&&x.years.includes(ql))||(x.trim||'').toLowerCase().includes(ql)
+  )).slice(0,8);
+  if(!matches.length){res.innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">No matches</div>';res.style.display='block';return;}
+  res.innerHTML=matches.map(x=>`
+    <div onclick="selectFitsPattern('${x.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+      <div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(x.brand)} ${esc(x.model)} ${esc(x.years)}${x.trim?' · '+esc(x.trim):''}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${x.colors.length} color${x.colors.length!==1?'s':''} · ${x.materials.join(', ')||'—'}</div>
+    </div>`).join('');
+  res.style.display='block';
+}
+
+function selectFitsPattern(id){
+  const p=getP();
+  fitsSelectedId=id;
+  const other=patterns.find(x=>x.id===id);
+  document.getElementById('fits-search-results').style.display='none';
+  document.getElementById('fits-selected').style.display='block';
+  document.getElementById('fits-save-btn').style.display='';
+  document.getElementById('fits-selected-name').textContent=`${other.brand} ${other.model} ${other.years}${other.trim?' · '+other.trim:''}`;
+  // Build color picker — show all colors from BOTH patterns, let user pick shared ones
+  const allColors=[...new Set([...p.colors.map(c=>c.name),...other.colors.map(c=>c.name)])].sort();
+  fitsSelectedColors=new Set();
+  document.getElementById('fits-color-picker').innerHTML=allColors.map(name=>`
+    <button id="fcp-${name.replace(/[^a-z0-9]/gi,'_')}" onclick="toggleFitsColor('${name.replace(/'/g,"\'")}',this)"
+      style="padding:5px 12px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s">
+      ${esc(name)}
+    </button>`).join('');
+}
+
+function toggleFitsColor(name,btn){
+  if(fitsSelectedColors.has(name)){
+    fitsSelectedColors.delete(name);
+    btn.style.background='var(--bg2)';btn.style.borderColor='var(--border)';btn.style.color='var(--text2)';
+  } else {
+    fitsSelectedColors.add(name);
+    btn.style.background='var(--navy)';btn.style.borderColor='var(--navy)';btn.style.color='#fff';
+  }
+}
+
+async function saveFitsLink(){
+  const p=getP();
+  if(!fitsSelectedId){toast('Select a pattern first','err');return;}
+  // Check not already linked
+  const exists=(p.fits||[]).some(f=>f.pattern_id_a===fitsSelectedId||f.pattern_id_b===fitsSelectedId);
+  if(exists){toast('These patterns are already linked','err');return;}
+  const shared=[...fitsSelectedColors];
+  const {data,error}=await supa.from('pattern_fits').insert({
+    pattern_id_a:p.id,pattern_id_b:fitsSelectedId,shared_colors:shared
+  }).select().single();
+  if(error){toast('Error: '+error.message,'err');return;}
+  // Update local state for both patterns
+  p.fits=[...(p.fits||[]),data];
+  const other=patterns.find(x=>x.id===fitsSelectedId);
+  if(other)other.fits=[...(other.fits||[]),data];
+  closeFitsModal();
+  renderPattern();
+  toast('Link saved \u2713');
+}
+
+async function removeFitsLink(fitId){
+  const p=getP();
+  const {error}=await supa.from('pattern_fits').delete().eq('id',fitId);
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.fits=(p.fits||[]).filter(f=>f.id!==fitId);
+  // Also remove from other pattern in memory
+  patterns.forEach(x=>{if(x.fits)x.fits=x.fits.filter(f=>f.id!==fitId);});
+  renderPattern();toast('Link removed');
+}
 // ── COLORS ────────────────────────────────────────────────
 function openColorModal(){document.getElementById('color-modal').style.display='flex';}
 function closeColorModal(){document.getElementById('color-modal').style.display='none';}
 async function addColor(){
   const name=document.getElementById('c-name').value.trim();if(!name){alert('Color name required.');return;}
   const p=getP();
-  const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:document.getElementById('c-hex').value,year_note:document.getElementById('c-years').value.trim()||'All years',sort_order:p.colors.length}).select().single();
+  const {data,error}=await supa.from('pattern_colors').insert({
+    pattern_id:p.id,name,
+    code:document.getElementById('c-code').value.trim(),
+    hex:'#888888',
+    year_note:document.getElementById('c-years').value.trim()||'All years',
+    note:document.getElementById('c-note').value.trim(),
+    sort_order:p.colors.length
+  }).select().single();
   if(error){toast('Error: '+error.message,'err');return;}
   p.colors.push(data);closeColorModal();
-  ['c-name','c-code','c-years'].forEach(id=>document.getElementById(id).value='');
+  ['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
   buildSidebar();renderPattern();toast('Color added \u2713');
 }
 async function removeColor(id){const p=getP();await supa.from('pattern_colors').delete().eq('id',id);p.colors=p.colors.filter(c=>c.id!==id);buildSidebar();renderPattern();toast('Removed');}
