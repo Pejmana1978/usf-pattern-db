@@ -709,31 +709,24 @@ function renderPattern(){
 // ── CHANNELS TAB ──────────────────────────────────────────
 function renderChannelsTab(p){
   const ch=p.channels||{};
-  // Build unique channel columns across all brands
-  const allChannels=['ebay','website'];
-  const channelLabels={ebay:'eBay',website:'Website'};
-
   let html='<div class="sec" style="margin-bottom:16px">';
   html+='<div class="sec-hdr"><span class="sec-title">Channels</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Toggles save instantly</span></div>';
-  html+='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>Brand</th>';
-  allChannels.forEach(c=>{ html+=`<th>${channelLabels[c]}</th>`; });
-  html+='</tr></thead><tbody>';
-
+  html+='<table class="ch-table"><thead><tr><th style="width:160px">Brand</th><th>eBay</th><th>Website</th></tr></thead><tbody>';
   BRANDS_CONFIG.forEach(brand=>{
     html+=`<tr><td>${brand.name}</td>`;
-    allChannels.forEach(channel=>{
+    ['ebay','website'].forEach(channel=>{
       const hasChannel=brand.channels.some(c=>c.id===channel);
       if(!hasChannel){
         html+=`<td><span class="ch-na">&mdash;</span></td>`;
       } else {
         const key=brand.id+'_'+channel;
         const isOn=!!(ch[key]);
-        html+=`<td><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)" title="${brand.name} ${channelLabels[channel]}"></button></td>`;
+        html+=`<td style="text-align:left"><label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span style="font-size:13px;color:${isOn?'var(--green)':'var(--text3)'}" id="chl_${key}">${isOn?'Listed':'Not listed'}</span></label></td>`;
       }
     });
     html+='</tr>';
   });
-  html+='</tbody></table></div></div>';
+  html+='</tbody></table></div>';
   html+=renderPricingSection(p);
   return html;
 }
@@ -744,6 +737,8 @@ async function toggleChannel(key,btn){
   p.channels[key]=!p.channels[key];
   const isOn=p.channels[key];
   btn.classList.toggle('on',isOn);
+  const labelEl=document.getElementById('chl_'+key);
+  if(labelEl){labelEl.textContent=isOn?'Listed':'Not listed';labelEl.style.color=isOn?'var(--green)':'var(--text3)';}
   await supa.from('patterns').update({channels:p.channels,updated_at:new Date().toISOString()}).eq('id',p.id);
   toast(isOn?'Listed ✓':'Removed');
 }
@@ -757,17 +752,16 @@ function renderPricingSection(p){
   MATERIALS_PRICE.forEach(mat=>{
     const matKey=mat.replace(/[^a-z0-9]/gi,'_').toLowerCase();
     html+=`<div class="price-section"><div class="price-section-title">${mat}</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>`;
-    PRICE_BRANDS.forEach(b=>{const disc=BRAND_DISCOUNTS[b.id]||0.05;html+=`<th>${b.name}<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">${Math.round(disc*100)}% off</span></th>`;});
+    [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+=`<th>${col.label}<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">${Math.round(col.disc*100)}% off</span></th>`;});
     html+=`</tr></thead><tbody>`;
     POSITIONS_PRICE.forEach(pos=>{
       const posKey=pos.replace(/[^a-z0-9]/gi,'_').toLowerCase();
       const priceKey=matKey+'__'+posKey;
-      const target=pricing[priceKey]||'';
+      const target=(pricing[priceKey]&&pricing[priceKey]>0)?pricing[priceKey]:'';
       html+=`<tr><td class="price-pos">${pos}</td><td><input class="price-input" type="number" min="0" step="0.01" placeholder="0.00" value="${target}" oninput="updatePricing('${priceKey}',this.value)" id="pi_${priceKey}"></td>`;
-      PRICE_BRANDS.forEach(b=>{
-        const disc=BRAND_DISCOUNTS[b.id]||0.05;
-        const calc=target?calcPreDiscount(parseFloat(target),disc):null;
-        html+=`<td><span class="price-calc" id="pc_${b.id}_${priceKey}" onclick="copyPrice(this,'${b.id}','${priceKey}')">${calc?fmtPrice(calc):'<span class=\"price-na\">&mdash;</span>'}</span></td>`;
+      [{id:'usasc',disc:0.15},{id:'others',disc:0.05}].forEach(col=>{
+        const calc=(target&&parseFloat(target)>0)?calcPreDiscount(parseFloat(target),col.disc):null;
+        html+=`<td><span class="price-calc" id="pc_${col.id}_${priceKey}" onclick="copyPrice(this,'${col.id}','${priceKey}','${col.disc}')">${calc?fmtPrice(calc):'<span class=\"price-na\">&mdash;</span>'}</span></td>`;
       });
       html+=`</tr>`;
     });
@@ -780,9 +774,9 @@ function renderPricingSection(p){
 function updatePricing(key,val){
   const p=getP();if(!p)return;
   if(!p.pricing)p.pricing={};
-  p.pricing[key]=val?parseFloat(val):null;
+  const numVal=parseFloat(val);p.pricing[key]=(val&&numVal>0)?numVal:null;
   [{id:'usasc',disc:0.15},{id:'others',disc:0.05}].forEach(col=>{
-    const calc=val?calcPreDiscount(parseFloat(val),col.disc):null;
+    const calc=(val&&parseFloat(val)>0)?calcPreDiscount(parseFloat(val),col.disc):null;
     const cell=document.getElementById('pc_'+col.id+'_'+key);
     if(cell){cell.innerHTML=calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>';cell.classList.remove('copied');}
   });
