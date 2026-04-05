@@ -9,18 +9,15 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#17183B;--navy2:#1f2048;
-  --navy-light:rgba(23,24,59,0.06);--navy-lighter:rgba(23,24,59,0.03);
+  --navy:#17183B;--navy2:#1f2048;--navy-light:rgba(23,24,59,0.06);--navy-lighter:rgba(23,24,59,0.03);
   --gold:#C9B27E;--gold2:#b89d68;--gold-bg:rgba(201,178,126,0.1);--gold-border:rgba(201,178,126,0.3);
   --red:#AF0129;--red-bg:rgba(175,1,41,0.06);--red-border:rgba(175,1,41,0.2);
-  --bg:#ffffff;--bg2:#f8f7f5;--bg3:#f1eeea;
-  --border:#e5e0d8;--border2:#d0c9be;
+  --bg:#ffffff;--bg2:#f8f7f5;--bg3:#f1eeea;--border:#e5e0d8;--border2:#d0c9be;
   --text2:rgba(23,24,59,0.6);--text3:rgba(23,24,59,0.4);
-  --green:#1a6e42;
+  --green:#1a6e42;--green-bg:rgba(26,110,66,0.08);--green-border:rgba(26,110,66,0.25);
   --sb-bg:#eef0f6;--sb-border:#dde0ec;
   --radius:8px;--font:'DM Sans',sans-serif;
-  --shadow:0 1px 3px rgba(23,24,59,0.07);--shadow-md:0 4px 16px rgba(23,24,59,0.11);
-  --thumb:90px;
+  --shadow:0 1px 3px rgba(23,24,59,0.07);--shadow-md:0 4px 16px rgba(23,24,59,0.11);--thumb:90px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:100vh;font-size:15px;line-height:1.55}
 .app{display:grid;grid-template-columns:264px 1fr;height:100vh;overflow:hidden}
@@ -84,7 +81,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .pef-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
 .pef-input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none;width:150px;transition:all 0.2s}
 .pef-input:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg)}
-.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:22px;overflow-x:auto}
 .tab{padding:10px 18px;font-size:14px;font-weight:500;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--navy);border-bottom-color:var(--gold)}
@@ -102,7 +99,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .var-btn{padding:9px 22px;border-radius:var(--radius);font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s;user-select:none}
 .var-btn:hover{border-color:var(--navy);color:var(--navy)}
 .var-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;box-shadow:0 2px 8px rgba(23,24,59,0.25)}
-.var-drop-hint{display:none}
 .var-photo-placeholder{position:relative;width:52px;height:52px;border-radius:8px;flex-shrink:0;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;overflow:hidden}
 .var-photo-placeholder:hover{border-color:var(--gold);background:var(--gold-bg)}
 .var-photo-placeholder-ico{font-size:16px;opacity:0.22}
@@ -136,14 +132,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .color-row:last-child{border-bottom:none}
 .color-row.dragover{background:var(--gold-bg);outline:2px dashed var(--gold);outline-offset:-2px}
 .color-row:hover{background:var(--navy-lighter)}
-.color-name{font-size:14px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.color-code{font-size:13px;color:var(--navy);background:var(--bg3);padding:3px 8px;border-radius:4px;border:1px solid var(--border);white-space:nowrap}
-.color-years{font-size:13px;color:var(--text2);white-space:nowrap;min-width:80px}
 .color-photo{position:relative;width:52px;height:52px;border-radius:8px;overflow:hidden;flex-shrink:0;cursor:pointer;background:var(--bg3);border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:border-color 0.15s}
 .color-photo:hover{border-color:var(--gold)}
 .color-photo.filled{width:var(--thumb);height:var(--thumb);border-style:solid;border-color:var(--border)}
 .color-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.color-photo-ico{font-size:16px;opacity:0.22}
 .color-photo-hov{position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:12px;color:#fff;text-align:center}
 .color-photo:hover .color-photo-hov{display:flex}
 .color-photo-x{position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;z-index:2}
@@ -155,8 +147,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .sub-name::placeholder{color:var(--text3)}
 .sub-years{width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--text2);outline:none}
 .sub-years:focus{border-color:var(--gold-border)}
-
-
 .color-name-edit{font-size:14px;font-weight:500;flex:1;min-width:0;background:transparent;border:none;outline:none;font-family:var(--font);color:var(--navy);padding:2px 4px;border-radius:4px;transition:all 0.15s;cursor:pointer}
 .color-name-edit:hover{background:var(--bg3)}
 .color-name-edit:focus{background:var(--bg2);border:1px solid var(--gold-border);cursor:text}
@@ -174,7 +164,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .fits-row:last-child{border-bottom:none}
 .fits-brand{font-size:14px;font-weight:600;color:var(--navy);min-width:100px}
 .fits-model{font-size:14px;color:var(--text2);flex:1}
-.fits-years{font-size:13px;color:var(--text3);white-space:nowrap}
 .fits-colors{display:flex;gap:4px;flex-wrap:wrap}
 .fits-color-tag{font-size:11px;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold2);padding:2px 7px;border-radius:10px;font-weight:500}
 .fits-dir{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;font-weight:600;background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:8px}
@@ -202,7 +191,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .sq-photo-overlay{position:absolute;inset:0;background:rgba(23,24,59,0.48);display:none;align-items:center;justify-content:center}
 .sq-photo-wrap:hover .sq-photo-overlay{display:flex}
 .sq-photo-view-btn{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:5px;color:#fff;cursor:pointer;padding:6px 12px;font-size:13px;font-family:var(--font)}
-.sq-photo-view-btn:hover{background:rgba(255,255,255,0.28)}
 .sq-photo-x{position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;z-index:2}
 .sq-photo-x:hover{background:var(--red)}
 .sq-photo-wrap:hover .sq-photo-x{display:flex}
@@ -240,6 +228,37 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 .empty-ico{font-size:52px;opacity:0.15}
 .empty-title{font-size:17px;font-weight:600;color:var(--text2)}
 .empty-sub{font-size:14px;max-width:250px;line-height:1.7}
+/* CHANNELS */
+.ch-brand-block{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.ch-brand-hdr{display:flex;align-items:center;padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.ch-brand-name{font-size:13px;font-weight:700;color:var(--navy);flex:1;text-transform:uppercase;letter-spacing:0.04em}
+.ch-channel-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.ch-channel-row:last-child{border-bottom:none}
+.ch-channel-label{font-size:13px;color:var(--text2);font-weight:500;width:80px;flex-shrink:0}
+.ch-toggle{width:36px;height:22px;border-radius:11px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
+.ch-toggle.on{background:var(--green)}
+.ch-toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.18s;box-shadow:0 1px 2px rgba(0,0,0,0.18)}
+.ch-toggle.on::after{left:17px}
+.ch-status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0}
+.ch-status-badge.listed{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.ch-status-badge.unlisted{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+/* PRICING */
+.price-section{margin-bottom:28px}
+.price-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.price-matrix{width:100%;border-collapse:collapse;font-size:13px}
+.price-matrix th{text-align:left;padding:7px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid var(--border);background:var(--bg2);white-space:nowrap}
+.price-matrix td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.price-matrix tr:last-child td{border-bottom:none}
+.price-matrix tr:hover td{background:var(--navy-lighter)}
+.price-pos{font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap}
+.price-input{width:84px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;text-align:right;transition:border-color 0.15s}
+.price-input:focus{border-color:var(--gold-border);background:var(--bg);box-shadow:0 0 0 2px var(--gold-bg)}
+.price-calc{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;transition:all 0.15s;user-select:none;white-space:nowrap;min-width:76px}
+.price-calc:hover{background:var(--gold-bg);border-color:var(--gold-border)}
+.price-calc.copied{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.price-na{font-size:12px;color:var(--border2);font-style:italic;font-weight:400}
+.price-save-btn{margin-top:16px;padding:9px 22px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s}
+.price-save-btn:hover{background:var(--navy2)}
 </style>
 </head>
 <body>
@@ -251,11 +270,11 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     <div style="font-size:12px;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;font-weight:600;margin-bottom:28px">Pattern Database</div>
     <div style="text-align:left;margin-bottom:12px">
       <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Email</div>
-      <input id="login-email" type="email" placeholder="your@email.com" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key===&apos;Enter&apos;)doLogin()">
+      <input id="login-email" type="email" placeholder="your@email.com" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div style="text-align:left;margin-bottom:18px">
       <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px">Password</div>
-      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key===&apos;Enter&apos;)doLogin()">
+      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--navy);outline:none" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <div id="login-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;border:1px solid var(--red-border);text-align:left"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer">Sign in</button>
@@ -264,7 +283,6 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     </div>
   </div>
 </div>
-
 <!-- USER MANAGEMENT MODAL -->
 <div class="modal-overlay" id="users-modal" style="display:none" onclick="if(event.target===this)closeUsersModal()">
   <div class="modal" style="width:640px;max-width:95vw">
@@ -273,30 +291,20 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <button class="btn btn-navy btn-sm" id="add-user-btn" onclick="showAddUser()">+ Add User</button>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">
-      <strong style="color:var(--navy)">How to add users:</strong> Create the auth account in 
-      <a href="https://supabase.com/dashboard/project/doommgfawoqiptgqadwd/auth/users" target="_blank" style="color:var(--gold2);font-weight:500">Supabase &rarr; Authentication &rarr; Users &rarr; Add user</a>, 
-      then paste their User UID below to assign them a role and name. This keeps your service key secure.
+      <strong style="color:var(--navy)">How to add users:</strong> Create the auth account in
+      <a href="https://supabase.com/dashboard/project/doommgfawoqiptgqadwd/auth/users" target="_blank" style="color:var(--gold2);font-weight:500">Supabase &rarr; Auth &rarr; Users &rarr; Add user</a>,
+      then paste their User UID below.
     </div>
     <div id="users-list"><div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div></div>
     <div id="add-user-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
       <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Register existing Supabase user</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="nu-name" placeholder="e.g. Sarah Jones"></div>
-        <div class="form-group"><label class="form-label">Email (for display) *</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
+        <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Supabase User UID *</label>
-          <input class="form-input" id="nu-uid" placeholder="e.g. 1ced8b54-8ece-4e0b-b20c-...">
-          <div style="font-size:11px;color:var(--text3);margin-top:4px">Find in Supabase &rarr; Auth &rarr; Users &rarr; click user &rarr; copy UID</div>
-        </div>
-        <div class="form-group"><label class="form-label">Role *</label>
-          <select class="form-input" id="nu-role" style="cursor:pointer">
-            <option value="viewer">Viewer &mdash; read only</option>
-            <option value="editor">Editor &mdash; add, edit, delete</option>
-            <option value="manager">Manager &mdash; + manage users</option>
-          </select>
-        </div>
+        <div class="form-group"><label class="form-label">Supabase User UID *</label><input class="form-input" id="nu-uid" placeholder="e.g. 1ced8b54-..."><div style="font-size:11px;color:var(--text3);margin-top:4px">Find in Supabase &rarr; Auth &rarr; Users &rarr; click user &rarr; copy UID</div></div>
+        <div class="form-group"><label class="form-label">Role *</label><select class="form-input" id="nu-role" style="cursor:pointer"><option value="viewer">Viewer &mdash; read only</option><option value="editor">Editor &mdash; add, edit, delete</option><option value="manager">Manager &mdash; + manage users</option></select></div>
       </div>
       <div id="add-user-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:10px;padding:10px 14px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -310,31 +318,17 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     </div>
   </div>
 </div>
-
 <!-- CHANGE PASSWORD MODAL -->
 <div class="modal-overlay" id="change-pass-modal" style="display:none" onclick="if(event.target===this)closeChangePass()">
   <div class="modal" style="width:420px">
     <div class="modal-title">Change password</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">
-      Password must be at least <strong style="color:var(--navy)">8 characters</strong> with at least one <strong style="color:var(--navy)">uppercase letter</strong>, one <strong style="color:var(--navy)">number</strong>, and one <strong style="color:var(--navy)">special character</strong>.
-    </div>
-    <div class="form-group" style="margin-bottom:12px">
-      <label class="form-label">New password</label>
-      <input class="form-input" id="cp-pass" type="password" placeholder="Min 8 chars, 1 uppercase, 1 number, 1 special" oninput="checkPassStrength(this.value)">
-      <div id="cp-strength" style="margin-top:6px;font-size:12px"></div>
-    </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <label class="form-label">Confirm new password</label>
-      <input class="form-input" id="cp-confirm" type="password" placeholder="Repeat password">
-    </div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px;line-height:1.6;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">Min 8 chars, 1 uppercase, 1 number, 1 special character.</div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">New password</label><input class="form-input" id="cp-pass" type="password" oninput="checkPassStrength(this.value)"><div id="cp-strength" style="margin-top:6px;font-size:12px"></div></div>
+    <div class="form-group" style="margin-bottom:16px"><label class="form-label">Confirm new password</label><input class="form-input" id="cp-confirm" type="password"></div>
     <div id="cp-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:12px;padding:10px 14px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeChangePass()">Cancel</button>
-      <button class="btn btn-navy" onclick="doChangePass()">Update password</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeChangePass()">Cancel</button><button class="btn btn-navy" onclick="doChangePass()">Update password</button></div>
   </div>
 </div>
-
 <div class="loading-overlay" id="loading-overlay">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
     <svg width="28" height="28" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="#17183B"/><path d="M20 28h60v8H20zM28 40h44v22H28zM32 66h36v8H32z" fill="#C9B27E"/></svg>
@@ -350,7 +344,7 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
         <svg width="28" height="28" viewBox="0 0 100 100"><rect width="100" height="100" rx="10" fill="rgba(23,24,59,0.1)"/><path d="M18 26h64v9H18zM26 39h48v24H26zM30 67h40v9H30z" fill="#17183B"/></svg>
         <div><div class="logo-text">United Seat Factory</div><div class="logo-sub">Pattern Database</div></div>
       </div>
-      <div class="sw"><span class="sw-ico">⌕</span><input type="text" placeholder="Search patterns..." oninput="filterSidebar(this.value)"></div>
+      <div class="sw"><span class="sw-ico">&#8981;</span><input type="text" placeholder="Search patterns..." oninput="filterSidebar(this.value)"></div>
       <div style="display:flex;gap:4px;margin-top:8px">
         <button class="filter-chip active" id="fc-all" onclick="setSbFilter('all')">All</button>
         <button class="filter-chip" id="fc-unreviewed" onclick="setSbFilter('unreviewed')">Unreviewed</button>
@@ -367,9 +361,9 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <div style="flex:1"></div>
       <div class="hdr-actions" id="hdr-actions" style="display:none">
         <span class="hdr-status" id="hdr-status"></span>
-        <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">&#x21A9; Undo</button>
-        <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">&#x21AA; Redo</button>
-        <button class="btn btn-danger btn-sm" id="delete-btn" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
+        <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo">&#x21A9; Undo</button>
+        <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo">&#x21AA; Redo</button>
+        <button class="btn btn-danger btn-sm" id="delete-btn" onclick="confirmAction('Delete this pattern?',doDelete)">Delete</button>
         <button class="btn btn-navy btn-sm" id="save-btn-hdr" onclick="saveAll()">Save changes</button>
       </div>
       <div id="user-bar" style="display:none;align-items:center;gap:10px;flex-shrink:0">
@@ -381,10 +375,11 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       </div>
     </div>
     <div class="content" id="content">
-      <div class="empty-state"><div class="empty-ico">🪑</div><div class="empty-title">No pattern selected</div><div class="empty-sub">Choose a pattern from the sidebar or add a new one.</div></div>
+      <div class="empty-state"><div class="empty-ico">&#129681;</div><div class="empty-title">No pattern selected</div><div class="empty-sub">Choose a pattern from the sidebar or add a new one.</div></div>
     </div>
   </div>
 </div>
+<!-- ADD PATTERN MODAL -->
 <div class="modal-overlay" id="add-modal" style="display:none" onclick="if(event.target===this)closeAddModal()">
   <div class="modal">
     <div class="modal-title">Add new pattern</div>
@@ -396,91 +391,52 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <div class="form-group"><label class="form-label">Year Range *</label><input class="form-input" id="nm-years" placeholder="e.g. 2004-2009"></div>
       <div class="form-group"><label class="form-label">Trim / Version</label><input class="form-input" id="nm-trim" placeholder="e.g. GT, Base, V6..."></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
-      <button class="btn btn-navy" id="add-confirm-btn" onclick="addPattern()">Add Pattern</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button><button class="btn btn-navy" id="add-confirm-btn" onclick="addPattern()">Add Pattern</button></div>
   </div>
 </div>
+<!-- ADD COLOR MODAL -->
 <div class="modal-overlay" id="color-modal" style="display:none" onclick="if(event.target===this)closeColorModal()">
   <div class="modal">
     <div class="modal-title">Add color</div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Color Name *</label><input class="form-input" id="c-name" placeholder="e.g. Black, Tan, Ivory..."></div>
+      <div class="form-group"><label class="form-label">Color Name *</label><input class="form-input" id="c-name" placeholder="e.g. Black, Tan..."></div>
       <div class="form-group"><label class="form-label">Trim Code</label><input class="form-input" id="c-code" placeholder="e.g. LA00, FE1..."></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Year note</label><input class="form-input" id="c-years" placeholder="All years"></div>
-    </div>
-    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Material exception note</label><input class="form-input" id="c-note" placeholder="e.g. Leather only, Not available in Vinyl Perf..."></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeColorModal()">Cancel</button>
-      <button class="btn btn-navy" onclick="addColor()">Add Color</button>
-    </div>
+    <div class="form-row"><div class="form-group"><label class="form-label">Year note</label><input class="form-input" id="c-years" placeholder="All years"></div></div>
+    <div class="form-group" style="margin-bottom:4px"><label class="form-label">Material exception note</label><input class="form-input" id="c-note" placeholder="e.g. Leather only..."></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeColorModal()">Cancel</button><button class="btn btn-navy" onclick="addColor()">Add Color</button></div>
   </div>
 </div>
-
 <!-- ALSO FITS MODAL -->
 <div class="modal-overlay" id="fits-modal" style="display:none" onclick="if(event.target===this)closeFitsModal()">
   <div class="modal" style="width:580px">
-    <div class="modal-title">Also fits — link patterns</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6">
-      Link this pattern to another that uses the same seat cover. Both patterns will show the link automatically.
-    </div>
-    <div class="form-group" style="margin-bottom:12px">
-      <label class="form-label">Search for pattern to link</label>
-      <input class="form-input" id="fits-search" placeholder="e.g. Sierra, F-150..." oninput="searchFitsPatterns(this.value)">
-    </div>
+    <div class="modal-title">Also fits &mdash; link patterns</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6">Link this pattern to another that uses the same seat cover.</div>
+    <div class="form-group" style="margin-bottom:12px"><label class="form-label">Search for pattern to link</label><input class="form-input" id="fits-search" placeholder="e.g. Sierra, F-150..." oninput="searchFitsPatterns(this.value)"></div>
     <div id="fits-search-results" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;display:none"></div>
     <div id="fits-selected" style="display:none;margin-bottom:14px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius)">
       <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Linked pattern</div>
       <div id="fits-selected-name" style="font-size:14px;font-weight:600;color:var(--navy);margin-bottom:10px"></div>
-      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Shared colors (select which colors apply to both)</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Shared colors</div>
       <div id="fits-color-picker" style="display:flex;flex-wrap:wrap;gap:5px"></div>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeFitsModal()">Cancel</button>
-      <button class="btn btn-navy" id="fits-save-btn" onclick="saveFitsLink()" style="display:none">Save link</button>
-    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeFitsModal()">Cancel</button><button class="btn btn-navy" id="fits-save-btn" onclick="saveFitsLink()" style="display:none">Save link</button></div>
   </div>
 </div>
-
 <!-- COLOR PHOTO URL MODAL -->
 <div class="modal-overlay" id="color-url-modal" style="display:none" onclick="if(event.target===this)closeColorUrlModal()">
   <div class="modal" style="width:480px">
     <div class="modal-title">Add color photo</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:14px">Paste the image URL from your website or photo library.</div>
-    <div class="form-group" style="margin-bottom:10px">
-      <label class="form-label">Upload image file</label>
-      <input type="file" id="color-file-input" accept="image/*" style="font-family:var(--font);font-size:13px;color:var(--navy)" onchange="saveColorFile(this)">
-    </div>
-    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:10px">— or paste URL —</div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Image URL</label>
-      <input class="form-input" id="color-url-input" type="text" placeholder="https://seatfactory.com/wp-content/uploads/..." onkeydown="if(event.key==='Enter')saveColorUrl()">
-    </div>
-    <div id="color-url-preview" style="display:none;margin-bottom:14px;text-align:center">
-      <img id="color-url-preview-img" src="" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'" onload="this.style.display='block'">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeColorUrlModal()">Cancel</button>
-      <button class="btn btn-navy" onclick="saveColorUrl()">Save photo</button>
-    </div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Upload image file</label><input type="file" id="color-file-input" accept="image/*" style="font-family:var(--font);font-size:13px;color:var(--navy)" onchange="saveColorFile(this)"></div>
+    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:10px">&mdash; or paste URL &mdash;</div>
+    <div class="form-group" style="margin-bottom:14px"><label class="form-label">Image URL</label><input class="form-input" id="color-url-input" type="text" placeholder="https://..." onkeydown="if(event.key==='Enter')saveColorUrl()"></div>
+    <div id="color-url-preview" style="display:none;margin-bottom:14px;text-align:center"><img id="color-url-preview-img" src="" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'" onload="this.style.display='block'"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeColorUrlModal()">Cancel</button><button class="btn btn-navy" onclick="saveColorUrl()">Save photo</button></div>
   </div>
 </div>
-<div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()">
-  <button class="lb-close" onclick="closeLightbox()">&#x2715;</button>
-  <img id="lb-img" src="" alt="">
-</div>
+<div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()"><button class="lb-close" onclick="closeLightbox()">&#x2715;</button><img id="lb-img" src="" alt=""></div>
 <div class="confirm-overlay" id="confirm-overlay" style="display:none">
-  <div class="confirm-box">
-    <div class="confirm-title" id="confirm-title">Are you sure?</div>
-    <div class="confirm-msg" id="confirm-msg"></div>
-    <div class="confirm-actions">
-      <button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-danger btn-sm" id="confirm-ok-btn">Confirm</button>
-    </div>
-  </div>
+  <div class="confirm-box"><div class="confirm-title" id="confirm-title">Are you sure?</div><div class="confirm-msg" id="confirm-msg"></div><div class="confirm-actions"><button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-ok-btn">Confirm</button></div></div>
 </div>
 <input type="file" id="photo-file" style="display:none" accept="image/*" multiple onchange="handlePhotoFiles(event)">
 <input type="file" id="research-img-file" style="display:none" accept="image/*" onchange="handleResearchImg(event)">
@@ -497,358 +453,165 @@ const VAR_GROUPS=[
   {id:'rear',label:'Rear',btns:[{id:'rear_bottom',label:'Bottoms'},{id:'rear_top',label:'Tops'}]},
 ];
 
+// ── CHANNELS & PRICING CONFIG ─────────────────────────────
+const BRANDS_CONFIG=[
+  {id:'usf',    name:'United Seat Factory',      channels:[{id:'website',label:'Website'}]},
+  {id:'usasc',  name:'USASC',                    channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'usan',   name:'USAN',                     channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'diy',    name:'DIY Auto Upholstery',      channels:[{id:'ebay',label:'eBay'}]},
+  {id:'asf',    name:'Auto Seat Factory',        channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'master', name:'Master Auto Upholstery',   channels:[{id:'ebay',label:'eBay'}]},
+  {id:'premium',name:'Premium Auto Seat Covers', channels:[{id:'ebay',label:'eBay'}]},
+  {id:'dsa',    name:'DSA Seat Factory',         channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+];
+const POSITIONS_PRICE=['1 Bottom','1 Top','2 Bottoms','1 Bottom & Top','2 Tops','Full Set','Other'];
+const MATERIALS_PRICE=['Genuine Leather','Leather Perf','Leatherette Perf','Leatherette','Vinyl','Alcantara','Cloth'];
+const BRAND_DISCOUNTS={usasc:0.15,usan:0.05,diy:0.05,asf:0.05,master:0.05,premium:0.05,dsa:0.05};
+const PRICE_BRANDS=BRANDS_CONFIG.filter(b=>b.channels.some(c=>c.id==='ebay'));
+
+function naturalCents(base){
+  let cents=Math.round(base*100);
+  const lastTwo=cents%100;
+  const bad=[0,5,10,15,20,25,30,35,40,45,49,50,55,60,65,70,75,80,85,90,95,99];
+  if(bad.includes(lastTwo)){
+    const offsets=[3,7,8,13,17,22,27,32,37,42,47,53,57,62,67,72,77,82,87,92,97];
+    const wholeDollar=Math.floor(cents/100)*100;
+    let best=null,bestDist=999;
+    offsets.forEach(o=>{if(!bad.includes(o)&&Math.abs(o-lastTwo)<bestDist){bestDist=Math.abs(o-lastTwo);best=o;}});
+    cents=wholeDollar+(best||3);
+  }
+  return cents/100;
+}
+function calcPreDiscount(target,disc){if(!target||isNaN(target))return null;return naturalCents(target/(1-disc));}
+function fmtPrice(n){if(n===null||n===undefined)return'—';return'$'+n.toFixed(2);}
+
 // ── GLOBALS ───────────────────────────────────────────────
 let patterns=[],currentId=null,activeTab='info',unsaved=false,photoUploadType='product';
 let currentUser=null,currentRole=null,currentProfile=null;
-let undoStack=[],redoStack=[],lastSnapshot='';
-let snapshotTimer=null;
+let undoStack=[],redoStack=[],lastSnapshot='',snapshotTimer=null;
 const ROLE_LEVEL={admin:4,manager:3,editor:2,viewer:1};
 
 function can(action){
   if(!currentRole)return false;
-  if(action==='bulk')return currentRole==='admin';
   if(action==='manage_users')return ROLE_LEVEL[currentRole]>=3;
   if(action==='delete')return ROLE_LEVEL[currentRole]>=2;
   if(action==='edit')return ROLE_LEVEL[currentRole]>=2;
-  return true; // viewers can always read
+  return true;
 }
-
-// ── HELPERS ───────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function su(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"  );}
-function toast(msg,type){
-  type=type||'ok';
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.className='toast '+type;el.classList.add('show');
-  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
-}
-function confirmAction(msg,cb,title){
-  title=title||'Are you sure?';
-  document.getElementById('confirm-title').textContent=title;
-  document.getElementById('confirm-msg').textContent=msg;
-  document.getElementById('confirm-overlay').style.display='flex';
-  document.getElementById('confirm-ok-btn').onclick=()=>{closeConfirm();cb();};
-}
+function toast(msg,type){type=type||'ok';const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
+function confirmAction(msg,cb,title){title=title||'Are you sure?';document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-msg').textContent=msg;document.getElementById('confirm-overlay').style.display='flex';document.getElementById('confirm-ok-btn').onclick=()=>{closeConfirm();cb();};}
 function closeConfirm(){document.getElementById('confirm-overlay').style.display='none';}
-function fileToDataUrl(file){return new Promise(res=>{const r=new FileReader();r.onload=ev=>res(ev.target.result);r.readAsDataURL(file);});}
 function setStatus(m,c){c=c||'';const el=document.getElementById('hdr-status');if(el){el.textContent=m;el.className='hdr-status '+c;}}
+function markDirty(){unsaved=true;setStatus('Unsaved changes');clearTimeout(snapshotTimer);snapshotTimer=setTimeout(snapshot,800);}
 
-function markDirty(){
-  unsaved=true;
-  setStatus('Unsaved changes');
-  clearTimeout(snapshotTimer);
-  snapshotTimer=setTimeout(snapshot,800);
-}
-
-// ── UNDO/REDO ─────────────────────────────────────────────
 function snapshot(){
-  const p=getP();if(!p)return;
-  collectText();
+  const p=getP();if(!p)return;collectText();
   const s=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
   if(s===lastSnapshot)return;
-  undoStack.push(lastSnapshot);
-  if(undoStack.length>40)undoStack.shift();
-  redoStack=[];
-  lastSnapshot=s;
+  undoStack.push(lastSnapshot);if(undoStack.length>40)undoStack.shift();redoStack=[];lastSnapshot=s;
 }
 function applySnapshot(s){
-  const p=getP();if(!p||!s)return;
-  const d=JSON.parse(s);
-  // Restore colors fully (including thumb_url) — sync to DB
-  if(d.colors){
-    d.colors.forEach(dc=>{
-      const existing=p.colors.find(c=>c.id===dc.id);
-      if(existing){
-        const changed=existing.name!==dc.name||existing.code!==dc.code||existing.year_note!==dc.year_note||existing.note!==dc.note||existing.thumb_url!==dc.thumb_url;
-        if(changed){
-          Object.assign(existing,dc);
-          supa.from('pattern_colors').update({name:dc.name,code:dc.code,year_note:dc.year_note,note:dc.note,thumb_url:dc.thumb_url}).eq('id',dc.id);
-        }
-      }
-    });
-  }
-  Object.assign(p,d);
-  renderPattern();markDirty();
+  const p=getP();if(!p||!s)return;const d=JSON.parse(s);
+  if(d.colors){d.colors.forEach(dc=>{const ex=p.colors.find(c=>c.id===dc.id);if(ex){const ch=ex.name!==dc.name||ex.code!==dc.code||ex.year_note!==dc.year_note||ex.note!==dc.note||ex.thumb_url!==dc.thumb_url;if(ch){Object.assign(ex,dc);supa.from('pattern_colors').update({name:dc.name,code:dc.code,year_note:dc.year_note,note:dc.note,thumb_url:dc.thumb_url}).eq('id',dc.id);}}});}
+  Object.assign(p,d);renderPattern();markDirty();
 }
 function undo(){if(!undoStack.length){toast('Nothing to undo','err');return;}const prev=undoStack.pop();redoStack.push(lastSnapshot);lastSnapshot=prev;applySnapshot(prev);toast('Undone');}
 function redo(){if(!redoStack.length){toast('Nothing to redo','err');return;}const next=redoStack.pop();undoStack.push(lastSnapshot);lastSnapshot=next;applySnapshot(next);toast('Redone');}
-
-document.addEventListener('keydown',e=>{
-  const meta=e.metaKey||e.ctrlKey;
-  if(!meta)return;
-  if(e.key==='Escape'){closeLightbox();closeConfirm();}
-  if(e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}
-  else if(e.key==='y'||(e.key==='z'&&e.shiftKey)){e.preventDefault();redo();}
-});
-
-// Autosave every 30s
+document.addEventListener('keydown',e=>{const m=e.metaKey||e.ctrlKey;if(!m)return;if(e.key==='Escape'){closeLightbox();closeConfirm();}if(e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}else if(e.key==='y'||(e.key==='z'&&e.shiftKey)){e.preventDefault();redo();}});
 setInterval(()=>{if(unsaved&&currentId)saveAll();},30000);
 
 // ── AUTH ──────────────────────────────────────────────────
-function validatePassword(pass){
-  const errors=[];
-  if(pass.length<8)errors.push('at least 8 characters');
-  if(!/[A-Z]/.test(pass))errors.push('one uppercase letter');
-  if(!/[0-9]/.test(pass))errors.push('one number');
-  if(!/[^A-Za-z0-9]/.test(pass))errors.push('one special character (!@#$%^&* etc.)');
-  return errors;
-}
-
+function validatePassword(p){const e=[];if(p.length<8)e.push('8+ chars');if(!/[A-Z]/.test(p))e.push('uppercase');if(!/[0-9]/.test(p))e.push('number');if(!/[^A-Za-z0-9]/.test(p))e.push('special char');return e;}
 async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const pass=document.getElementById('login-password').value;
-  const btn=document.getElementById('login-btn');
-  const errEl=document.getElementById('login-error');
-  errEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Please enter email and password.';errEl.style.display='block';return;}
+  const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-password').value;
+  const btn=document.getElementById('login-btn'),errEl=document.getElementById('login-error');
+  errEl.style.display='none';if(!email||!pass){errEl.textContent='Enter email and password.';errEl.style.display='block';return;}
   btn.textContent='Signing in...';btn.disabled=true;
   const {data,error}=await supa.auth.signInWithPassword({email,password:pass});
   btn.textContent='Sign in';btn.disabled=false;
   if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
   await onAuthSuccess(data.user);
 }
-
-async function doLogout(){
-  await supa.auth.signOut();
-  currentUser=null;currentRole=null;currentProfile=null;
-  document.getElementById('user-bar').style.display='none';
-  document.getElementById('hdr-actions').style.display='none';
-  patterns=[];currentId=null;
-  document.getElementById('brand-list').innerHTML='<div style="padding:20px;color:rgba(23,24,59,0.35);font-size:13px;text-align:center">Loading...</div>';
-  document.getElementById('content').innerHTML='<div class="empty-state"><div class="empty-ico">&#129681;</div><div class="empty-title">No pattern selected</div><div class="empty-sub">Choose a pattern from the sidebar or add a new one.</div></div>';
-  showLoginScreen();
-}
-
-function showLoginScreen(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-email').value='';
-  document.getElementById('login-password').value='';
-  document.getElementById('login-error').style.display='none';
-  setTimeout(()=>document.getElementById('login-email').focus(),100);
-}
+async function doLogout(){await supa.auth.signOut();currentUser=null;currentRole=null;patterns=[];currentId=null;document.getElementById('user-bar').style.display='none';document.getElementById('hdr-actions').style.display='none';showLoginScreen();}
+function showLoginScreen(){document.getElementById('login-screen').style.display='flex';setTimeout(()=>document.getElementById('login-email').focus(),100);}
 function hideLoginScreen(){document.getElementById('login-screen').style.display='none';}
-
-async function doForgotPassword(){
-  const email=document.getElementById('login-email').value.trim();
-  const errEl=document.getElementById('login-error');
-  if(!email){errEl.style.background='';errEl.style.borderColor='var(--red-border)';errEl.style.color='var(--red)';errEl.textContent='Enter your email address above first.';errEl.style.display='block';return;}
-  errEl.style.display='none';
-  const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
-  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
-  errEl.style.background='rgba(26,110,66,0.07)';errEl.style.borderColor='var(--green)';errEl.style.color='var(--green)';
-  errEl.textContent='Password reset email sent! Check your inbox.';errEl.style.display='block';
-}
-
-function openChangePass(){
-  document.getElementById('change-pass-modal').style.display='flex';
-  document.getElementById('cp-pass').value='';
-  document.getElementById('cp-confirm').value='';
-  document.getElementById('cp-strength').textContent='';
-  document.getElementById('cp-error').style.display='none';
-  setTimeout(()=>document.getElementById('cp-pass').focus(),100);
-}
+async function doForgotPassword(){const email=document.getElementById('login-email').value.trim(),errEl=document.getElementById('login-error');if(!email){errEl.textContent='Enter email first.';errEl.style.display='block';return;}const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){errEl.textContent=error.message;errEl.style.display='block';return;}errEl.style.color='var(--green)';errEl.textContent='Reset email sent!';errEl.style.display='block';}
+function openChangePass(){document.getElementById('change-pass-modal').style.display='flex';setTimeout(()=>document.getElementById('cp-pass').focus(),100);}
 function closeChangePass(){document.getElementById('change-pass-modal').style.display='none';}
-
-function checkPassStrength(val){
-  const el=document.getElementById('cp-strength');
-  if(!val){el.textContent='';return;}
-  const errors=validatePassword(val);
-  if(errors.length===0){
-    el.style.color='var(--green)';el.textContent='✓ Strong password';
-  } else {
-    el.style.color='var(--red)';el.textContent='Needs: '+errors.join(', ');
-  }
-}
-
+function checkPassStrength(val){const el=document.getElementById('cp-strength');if(!val){el.textContent='';return;}const e=validatePassword(val);el.style.color=e.length?'var(--red)':'var(--green)';el.textContent=e.length?'Needs: '+e.join(', '):'Strong password';}
 async function doChangePass(){
-  const pass=document.getElementById('cp-pass').value;
-  const confirm=document.getElementById('cp-confirm').value;
-  const errEl=document.getElementById('cp-error');
-  errEl.style.display='none';
-  const errors=validatePassword(pass);
-  if(errors.length>0){errEl.textContent='Password must have: '+errors.join(', ')+'.';errEl.style.display='block';return;}
-  if(pass!==confirm){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
-  const {error}=await supa.auth.updateUser({password:pass});
-  if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
-  closeChangePass();
-  toast('Password updated successfully \u2713');
+  const pass=document.getElementById('cp-pass').value,conf=document.getElementById('cp-confirm').value,errEl=document.getElementById('cp-error');errEl.style.display='none';
+  const e=validatePassword(pass);if(e.length){errEl.textContent='Needs: '+e.join(', ');errEl.style.display='block';return;}
+  if(pass!==conf){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
+  const {error}=await supa.auth.updateUser({password:pass});if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+  closeChangePass();toast('Password updated ✓');
 }
-
 async function onAuthSuccess(user){
   currentUser=user;
   const {data:profile,error}=await supa.from('user_profiles').select('*').eq('id',user.id).single();
-  if(error||!profile){
-    await supa.auth.signOut();
-    const el=document.getElementById('login-error');
-    el.textContent='No profile found. Contact your administrator.';
-    el.style.display='block';
-    document.getElementById('loading-overlay').style.display='none';
-    showLoginScreen();
-    return;
-  }
-  currentProfile=profile;
-  currentRole=profile.role;
-  hideLoginScreen();
-  // Show user bar
+  if(error||!profile){await supa.auth.signOut();document.getElementById('login-error').textContent='No profile found.';document.getElementById('login-error').style.display='block';document.getElementById('loading-overlay').style.display='none';showLoginScreen();return;}
+  currentProfile=profile;currentRole=profile.role;hideLoginScreen();
   document.getElementById('user-bar').style.display='flex';
   document.getElementById('user-bar-name').textContent=profile.full_name||profile.email;
   document.getElementById('user-bar-role').textContent=currentRole;
   if(can('manage_users'))document.getElementById('users-btn').style.display='';
-  // Hide add pattern for viewers
-  const addBtn=document.querySelector('.btn-add-pat');
-  if(addBtn)addBtn.style.display=can('edit')?'':'none';
-  await loadAll();
-  document.getElementById('loading-overlay').style.display='none';
+  const ab=document.querySelector('.btn-add-pat');if(ab)ab.style.display=can('edit')?'':'none';
+  await loadAll();document.getElementById('loading-overlay').style.display='none';
 }
 
 // ── USER MANAGEMENT ───────────────────────────────────────
-async function openUsersModal(){
-  if(!can('manage_users')){toast('Permission denied','err');return;}
-  document.getElementById('users-modal').style.display='flex';
-  await loadUsersList();
-}
+async function openUsersModal(){if(!can('manage_users')){toast('Permission denied','err');return;}document.getElementById('users-modal').style.display='flex';await loadUsersList();}
 function closeUsersModal(){document.getElementById('users-modal').style.display='none';hideAddUser();}
-
 async function loadUsersList(){
-  const el=document.getElementById('users-list');
-  el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div>';
+  const el=document.getElementById('users-list');el.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
   const {data:users,error}=await supa.from('user_profiles').select('*').order('created_at');
-  if(error){el.innerHTML='<div style="color:var(--red);font-size:13px">Error loading users</div>';return;}
-  const roleColors={admin:'var(--navy)',manager:'var(--gold2)',editor:'var(--green)',viewer:'var(--text3)'};
-  let html='<table style="width:100%;border-collapse:collapse">';
-  html+='<thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Name</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Email</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em">Role</th><th></th></tr></thead><tbody>';
+  if(error){el.innerHTML='<div style="color:var(--red);font-size:13px">Error</div>';return;}
+  const rc={admin:'var(--navy)',manager:'var(--gold2)',editor:'var(--green)',viewer:'var(--text3)'};
+  let html='<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Name</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Email</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Role</th><th></th></tr></thead><tbody>';
   (users||[]).forEach(u=>{
     const isMe=u.id===currentUser.id;
     const canEdit=can('manage_users')&&!isMe&&(currentRole==='admin'||ROLE_LEVEL[u.role]<ROLE_LEVEL[currentRole]);
     const roles=currentRole==='admin'?['viewer','editor','manager','admin']:['viewer','editor','manager'];
-    html+=`<tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:10px 8px;font-size:14px;font-weight:500">${esc(u.full_name||'—')}${isMe?' <span style="font-size:11px;color:var(--text3)">(you)</span>':''}</td>
-      <td style="padding:10px 8px;font-size:13px;color:var(--text2)">${esc(u.email)}</td>
-      <td style="padding:10px 8px">${canEdit
-        ?`<select onchange="changeUserRole('${u.id}',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;cursor:pointer">${roles.map(r=>`<option value="${r}"${u.role===r?' selected':''}>${r}</option>`).join('')}</select>`
-        :`<span style="font-size:12px;font-weight:700;color:${roleColors[u.role]};text-transform:uppercase;letter-spacing:0.04em">${u.role}</span>`
-      }</td>
-      <td style="padding:10px 8px;text-align:right;white-space:nowrap">${canEdit?`
-        <button onclick="sendReset('${esc(u.email)}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font);margin-right:4px" title="Send password reset email">Reset pw</button>
-        <button onclick="editUserName('${u.id}','${su(u.full_name||'')}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font);margin-right:4px">Edit</button>
-        <button onclick="removeUser('${u.id}','${su(u.full_name||u.email)}')" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font)">Remove</button>
-      `:''}</td>
-    </tr>`;
+    html+=`<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;font-size:14px;font-weight:500">${esc(u.full_name||'—')}${isMe?' <span style="font-size:11px;color:var(--text3)">(you)</span>':''}</td><td style="padding:10px 8px;font-size:13px;color:var(--text2)">${esc(u.email)}</td><td style="padding:10px 8px">${canEdit?`<select onchange="changeUserRole('${u.id}',this.value)" style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;cursor:pointer">${roles.map(r=>`<option value="${r}"${u.role===r?' selected':''}>${r}</option>`).join('')}</select>`:`<span style="font-size:12px;font-weight:700;color:${rc[u.role]};text-transform:uppercase">${u.role}</span>`}</td><td style="padding:10px 8px;text-align:right">${canEdit?`<button onclick="sendReset('${esc(u.email)}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font);margin-right:4px">Reset pw</button><button onclick="removeUser('${u.id}','${u.full_name||u.email}')" style="background:transparent;border:1px solid var(--red-border);color:var(--red);border-radius:5px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:var(--font)">Remove</button>`:''}</td></tr>`;
   });
-  html+='</tbody></table>';
-  el.innerHTML=html;
+  html+='</tbody></table>';el.innerHTML=html;
 }
-
-async function sendReset(email){
-  const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
-  if(error){toast('Error: '+error.message,'err');return;}
-  toast('Password reset email sent to '+email+' ✓');
-}
-
-async function editUserName(uid,currentName){
-  const name=prompt('Enter new name for this user:',currentName);
-  if(!name||!name.trim())return;
-  const {error}=await supa.from('user_profiles').update({full_name:name.trim()}).eq('id',uid);
-  if(error){toast('Error: '+error.message,'err');return;}
-  toast('Name updated ✓');
-  await loadUsersList();
-}
-
-async function changeUserRole(uid,role){
-  const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);
-  if(error){toast('Error: '+error.message,'err');return;}
-  toast('Role updated ✓');
-  await loadUsersList();
-}
-
-async function removeUser(uid,name){
-  confirmAction(`Remove ${name}? They will no longer be able to log in. Their auth account in Supabase will need to be deleted separately.`,async()=>{
-    const {error}=await supa.from('user_profiles').delete().eq('id',uid);
-    if(error){toast('Error: '+error.message,'err');return;}
-    toast('User removed from app');
-    await loadUsersList();
-  });
-}
-
-function showAddUser(){
-  if(!can('manage_users')){toast('Permission denied','err');return;}
-  document.getElementById('add-user-form').style.display='block';
-  document.getElementById('add-user-btn').style.display='none';
-  const sel=document.getElementById('nu-role');
-  Array.from(sel.options).forEach(o=>{
-    if(currentRole!=='admin'&&(o.value==='manager'||o.value==='admin'))o.style.display='none';
-  });
-}
-function hideAddUser(){
-  document.getElementById('add-user-form').style.display='none';
-  document.getElementById('add-user-btn').style.display='';
-  document.getElementById('add-user-error').style.display='none';
-  ['nu-name','nu-email','nu-uid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-}
-
+async function sendReset(email){const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){toast('Error: '+error.message,'err');return;}toast('Reset email sent ✓');}
+async function changeUserRole(uid,role){const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);if(error){toast('Error','err');return;}toast('Role updated ✓');await loadUsersList();}
+async function removeUser(uid,name){confirmAction(`Remove ${name}?`,async()=>{await supa.from('user_profiles').delete().eq('id',uid);toast('Removed');await loadUsersList();});}
+function showAddUser(){document.getElementById('add-user-form').style.display='block';document.getElementById('add-user-btn').style.display='none';}
+function hideAddUser(){document.getElementById('add-user-form').style.display='none';document.getElementById('add-user-btn').style.display='';['nu-name','nu-email','nu-uid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 async function registerUser(){
-  const name=document.getElementById('nu-name').value.trim();
-  const email=document.getElementById('nu-email').value.trim();
-  const uid=document.getElementById('nu-uid').value.trim();
-  const role=document.getElementById('nu-role').value;
-  const errEl=document.getElementById('add-user-error');
-  errEl.style.display='none';
-  if(!name||!email||!uid){errEl.textContent='All fields are required.';errEl.style.display='block';return;}
-  // Validate UUID format
-  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)){
-    errEl.textContent='Invalid UID format. It should look like: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';errEl.style.display='block';return;
-  }
-  if(currentRole==='manager'&&(role==='manager'||role==='admin')){errEl.textContent='Managers can only register editors and viewers.';errEl.style.display='block';return;}
-  const btn=document.getElementById('create-user-btn');btn.textContent='Registering...';btn.disabled=true;
-  // Check if profile already exists
-  const {data:existing}=await supa.from('user_profiles').select('id').eq('id',uid).single();
-  if(existing){btn.textContent='Register User';btn.disabled=false;errEl.textContent='A profile for this UID already exists.';errEl.style.display='block';return;}
+  const name=document.getElementById('nu-name').value.trim(),email=document.getElementById('nu-email').value.trim(),uid=document.getElementById('nu-uid').value.trim(),role=document.getElementById('nu-role').value;
+  const errEl=document.getElementById('add-user-error');errEl.style.display='none';
+  if(!name||!email||!uid){errEl.textContent='All fields required.';errEl.style.display='block';return;}
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)){errEl.textContent='Invalid UID format.';errEl.style.display='block';return;}
+  const btn=document.getElementById('create-user-btn');btn.disabled=true;btn.textContent='Registering...';
   const {error}=await supa.from('user_profiles').insert({id:uid,email,full_name:name,role,created_by:currentUser.id});
-  btn.textContent='Register User';btn.disabled=false;
+  btn.disabled=false;btn.textContent='Register User';
   if(error){errEl.textContent='Error: '+error.message;errEl.style.display='block';return;}
-  toast('User registered ✓');
-  hideAddUser();
-  await loadUsersList();
+  toast('User registered ✓');hideAddUser();await loadUsersList();
 }
 
 // ── INIT ──────────────────────────────────────────────────
 async function init(){
-  try {
+  try{
     const {data:{session}}=await supa.auth.getSession();
-    if(session?.user){
-      await onAuthSuccess(session.user);
-    } else {
-      document.getElementById('loading-overlay').style.display='none';
-      showLoginScreen();
-    }
+    if(session?.user)await onAuthSuccess(session.user);
+    else{document.getElementById('loading-overlay').style.display='none';showLoginScreen();}
     supa.auth.onAuthStateChange(async(event,session)=>{
-      if(event==='SIGNED_OUT'){showLoginScreen();}
-      if(event==='PASSWORD_RECOVERY'){
-        // User clicked reset link — show change password modal immediately
-        document.getElementById('loading-overlay').style.display='none';
-        hideLoginScreen();
-        if(session?.user)await onAuthSuccess(session.user);
-        setTimeout(()=>{
-          openChangePass();
-          toast('Please set a new password to continue','');
-        },500);
-      }
+      if(event==='SIGNED_OUT')showLoginScreen();
+      if(event==='PASSWORD_RECOVERY'){document.getElementById('loading-overlay').style.display='none';hideLoginScreen();if(session?.user)await onAuthSuccess(session.user);setTimeout(()=>{openChangePass();toast('Set a new password','');},500);}
     });
-  } catch(e){
-    console.error('Init error:',e);
-    document.getElementById('loading-overlay').style.display='none';
-    showLoginScreen();
-  }
+  }catch(e){document.getElementById('loading-overlay').style.display='none';showLoginScreen();}
 }
 
 // ── DATA ──────────────────────────────────────────────────
-function showSql(){
-  document.getElementById('loading-overlay').innerHTML='<div style="text-align:center;max-width:520px;padding:24px"><div style="font-size:15px;font-weight:600;margin-bottom:12px">Database setup needed</div><div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.7">Go to Supabase SQL Editor and run the setup SQL.</div><button onclick="location.reload()" style="background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer">Reload</button></div>';
-}
-
 async function loadAll(){
   const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
-  if(error){if(error.code==='42P01'){showSql();}return;}
+  if(error){return;}
   const {data:colors}=await supa.from('pattern_colors').select('*').order('sort_order');
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
   const {data:photos}=await supa.from('pattern_photos').select('*').order('created_at');
@@ -856,13 +619,12 @@ async function loadAll(){
   patterns=(pats||[]).map(p=>({...p,
     submodels:p.submodels||[],materials:p.materials||[],
     positions:p.positions||{},other_positions:p.other_positions||[],
+    channels:p.channels||{},pricing:p.pricing||{},
     colors:(colors||[]).filter(c=>c.pattern_id===p.id),
     pdfs:(pdfs||[]).filter(f=>f.pattern_id===p.id),
     photos:(photos||[]).filter(ph=>ph.pattern_id===p.id),
     fits:(fits||[]).filter(f=>f.pattern_id_a===p.id||f.pattern_id_b===p.id),
     status:p.status||'unreviewed',
-    confirmed_by_id:p.confirmed_by,
-    confirmed_at:p.confirmed_at,
   }));
   buildSidebar();
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
@@ -875,14 +637,11 @@ function setSbFilter(f){sbStatusFilter=f;['all','unreviewed','confirmed'].forEac
 function buildSidebar(){
   const grouped={};
   patterns.forEach(p=>{
-    // Status filter
     const pStatus=p.status||'unreviewed';
     if(sbStatusFilter!=='all'&&pStatus!==sbStatusFilter)return;
-    // Text filter
     const q=sbFilter;
     if(!q||p.brand.toLowerCase().includes(q)||p.model.toLowerCase().includes(q)||p.years.includes(q)||(p.trim||'').toLowerCase().includes(q)){
-      if(!grouped[p.brand])grouped[p.brand]=[];
-      grouped[p.brand].push(p);
+      if(!grouped[p.brand])grouped[p.brand]=[];grouped[p.brand].push(p);
     }
   });
   let html='';
@@ -890,31 +649,20 @@ function buildSidebar(){
     const list=grouped[brand];if(!list.length)return;
     const isOpen=list.some(p=>p.id===currentId)||!!sbFilter||sbStatusFilter!=='all';
     const bid='bl-'+brand.replace(/[^a-z0-9]/gi,'_');
-    html+=`<div><div class="brand-hdr ${isOpen?'open':''}" onclick="toggleBrand(this,'${bid}')">
-      <span class="bc ${isOpen?'open':''}">&#9654;</span>
-      <span class="bn">${brand}</span><span class="bct">${list.length}</span>
-    </div><div class="pl ${isOpen?'open':''}" id="${bid}">`;
+    html+=`<div><div class="brand-hdr ${isOpen?'open':''}" onclick="toggleBrand(this,'${bid}')"><span class="bc ${isOpen?'open':''}">&#9654;</span><span class="bn">${brand}</span><span class="bct">${list.length}</span></div><div class="pl ${isOpen?'open':''}" id="${bid}">`;
     list.forEach(p=>{
       const confirmed=(p.status||'unreviewed')==='confirmed';
-      html+=`<div class="pi ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')" style="display:flex;align-items:center;gap:7px">
-        <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${confirmed?'var(--green)':'var(--border2)'}" title="${confirmed?'Confirmed':'Unreviewed'}"></span>
-        <span>${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}</span>
-      </div>`;
+      html+=`<div class="pi ${p.id===currentId?'active':''}" onclick="selectPattern('${p.id}')" style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${confirmed?'var(--green)':'var(--border2)'}"></span><span>${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}</span></div>`;
     });
     html+='</div></div>';
   });
   document.getElementById('brand-list').innerHTML=html||'<div style="padding:16px;color:rgba(23,24,59,0.35);font-size:13px">No patterns found</div>';
 }
 function toggleBrand(el,id){const l=document.getElementById(id),c=el.querySelector('.bc');l.classList.toggle('open');c.classList.toggle('open');el.classList.toggle('open');}
-
 function selectPattern(id){
-  currentId=id;activeTab='info';unsaved=false;
-  undoStack=[];redoStack=[];
-  buildSidebar();renderPattern();
-  document.getElementById('hdr-actions').style.display='flex';
-  setStatus('');
+  currentId=id;activeTab='info';unsaved=false;undoStack=[];redoStack=[];
+  buildSidebar();renderPattern();document.getElementById('hdr-actions').style.display='flex';setStatus('');
   setTimeout(snapshot,100);
-  // Force confirm button visibility immediately
   const cb=document.getElementById('confirm-pattern-btn');
   if(cb&&(currentRole==='admin'||currentRole==='manager'))cb.style.display='';
 }
@@ -926,263 +674,215 @@ function renderPattern(){
   document.getElementById('breadcrumb').innerHTML=`<span style="color:var(--text3)">${p.brand}</span><span class="bcs"> &rsaquo; </span><span style="font-weight:500">${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}</span>`;
   const prod=(p.photos||[]).filter(ph=>ph.type==='product');
   const ba=(p.photos||[]).filter(ph=>ph.type==='before_after');
-  const tabs=[{id:'info',label:'Info'},{id:'photos',label:`Photos (${prod.length})`},{id:'before_after',label:`Before &amp; After (${ba.length})`},{id:'research',label:'Research'}];
-
-  let html=`
-  <div class="pat-hdr">
-    <div class="pat-title-block">
-      <div class="pat-title" id="pat-title-display">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
-      <div class="pat-edit-row" id="pat-edit-row" style="display:none">
-        <div class="pef"><div class="pef-label">Years</div><input class="pef-input" id="edit-years" value="${esc(p.years)}" oninput="markDirty()"></div>
-        <div class="pef"><div class="pef-label">Brand</div><input class="pef-input" id="edit-brand" value="${esc(p.brand)}" list="brand-dl" oninput="markDirty()"></div>
-        <div class="pef"><div class="pef-label">Model</div><input class="pef-input" id="edit-model" value="${esc(p.model)}" oninput="markDirty()"></div>
-        <div class="pef"><div class="pef-label">Trim</div><input class="pef-input" id="edit-trim" value="${esc(p.trim||'')}" placeholder="e.g. GT, V6..." oninput="markDirty()"></div>
-      </div>
+  const tabs=[
+    {id:'info',label:'Info'},
+    {id:'channels',label:'Channels &amp; Pricing'},
+    {id:'photos',label:`Photos (${prod.length})`},
+    {id:'before_after',label:`Before &amp; After (${ba.length})`},
+    {id:'research',label:'Research'}
+  ];
+  let html=`<div class="pat-hdr"><div class="pat-title-block">
+    <div class="pat-title" id="pat-title-display">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
+    <div class="pat-edit-row" id="pat-edit-row" style="display:none">
+      <div class="pef"><div class="pef-label">Years</div><input class="pef-input" id="edit-years" value="${esc(p.years)}" oninput="markDirty()"></div>
+      <div class="pef"><div class="pef-label">Brand</div><input class="pef-input" id="edit-brand" value="${esc(p.brand)}" list="brand-dl" oninput="markDirty()"></div>
+      <div class="pef"><div class="pef-label">Model</div><input class="pef-input" id="edit-model" value="${esc(p.model)}" oninput="markDirty()"></div>
+      <div class="pef"><div class="pef-label">Trim</div><input class="pef-input" id="edit-trim" value="${esc(p.trim||'')}" placeholder="e.g. GT..." oninput="markDirty()"></div>
     </div>
-    <button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">&#9998; Edit</button>
-  </div>
+  </div><button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">&#9998; Edit</button></div>
   <div class="tabs">${tabs.map(t=>`<div class="tab ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</div>`).join('')}</div>`;
 
-  if(activeTab==='info') html+=renderInfoTab(p);
-  else if(activeTab==='photos') html+=buildPhotoTab('Product photos','prod-drop','product',prod);
-  else if(activeTab==='before_after') html+=buildPhotoTab('Before &amp; after &mdash; customer photos','ba-drop','before_after',ba);
-  else if(activeTab==='research') html+=renderResearchTab(p);
+  if(activeTab==='info')html+=renderInfoTab(p);
+  else if(activeTab==='channels')html+=renderChannelsTab(p);
+  else if(activeTab==='photos')html+=buildPhotoTab('Product photos','prod-drop','product',prod);
+  else if(activeTab==='before_after')html+=buildPhotoTab('Before &amp; After','ba-drop','before_after',ba);
+  else if(activeTab==='research')html+=renderResearchTab(p);
 
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
-
-  // Role restrictions
-  if(!can('edit')){
-    document.querySelectorAll('.btn-add-other,.var-btn,.rich-editor').forEach(el=>{
-      if(el.classList.contains('rich-editor'))el.setAttribute('contenteditable','false');
-      else{el.disabled=true;el.style.opacity='0.4';el.style.cursor='not-allowed';}
-    });
-    const ta=document.getElementById('ta-notes');if(ta)ta.disabled=true;
-  }
+  if(!can('edit')){document.querySelectorAll('.btn-add-other,.var-btn,.rich-editor').forEach(el=>{if(el.classList.contains('rich-editor'))el.setAttribute('contenteditable','false');else{el.disabled=true;el.style.opacity='0.4';}});const ta=document.getElementById('ta-notes');if(ta)ta.disabled=true;}
   const delBtn=document.getElementById('delete-btn');if(delBtn)delBtn.style.display=can('delete')?'':'none';
   const saveBtn=document.getElementById('save-btn-hdr');if(saveBtn)saveBtn.style.display=can('edit')?'':'none';
-  // Confirm button — Admin/Manager only
-  const confirmBtn=document.getElementById('confirm-pattern-btn');
-  if(confirmBtn){
-    const canConfirm=currentRole==='admin'||currentRole==='manager';
-    confirmBtn.style.display=canConfirm?'':'none';
-    const confirmed=p.status==='confirmed';
-    confirmBtn.textContent=confirmed?'\u2713 Confirmed':'\u2713 Confirm';
-    confirmBtn.style.background=confirmed?'var(--green)':'';
-    confirmBtn.style.color=confirmed?'#fff':'';
-    confirmBtn.style.borderColor=confirmed?'var(--green)':'';
-    confirmBtn.style.fontWeight=confirmed?'700':'';
-  }
+  const cb=document.getElementById('confirm-pattern-btn');
+  if(cb){const ok=currentRole==='admin'||currentRole==='manager';cb.style.display=ok?'':'none';const confirmed=p.status==='confirmed';cb.textContent=confirmed?'✓ Confirmed':'✓ Confirm';cb.style.background=confirmed?'var(--green)':'';cb.style.color=confirmed?'#fff':'';cb.style.borderColor=confirmed?'var(--green)':'';cb.style.fontWeight=confirmed?'700':'';}
 }
 
+// ── CHANNELS TAB ──────────────────────────────────────────
+function renderChannelsTab(p){
+  const ch=p.channels||{};
+  let html='<div style="margin-bottom:20px">';
+  html+='<div style="font-size:13px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.6">Toggle which brands and channels carry this pattern. Changes save instantly.</div>';
+  BRANDS_CONFIG.forEach(brand=>{
+    html+=`<div class="ch-brand-block"><div class="ch-brand-hdr"><span class="ch-brand-name">${brand.name}</span></div>`;
+    brand.channels.forEach(channel=>{
+      const key=brand.id+'_'+channel.id;
+      const isOn=!!(ch[key]);
+      html+=`<div class="ch-channel-row"><span class="ch-channel-label">${channel.label}</span><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span class="ch-status-badge ${isOn?'listed':'unlisted'}">${isOn?'Listed':'Not listed'}</span></div>`;
+    });
+    html+='</div>';
+  });
+  html+='</div>';
+  html+=renderPricingSection(p);
+  return html;
+}
+
+async function toggleChannel(key,btn){
+  const p=getP();if(!p)return;
+  if(!p.channels)p.channels={};
+  p.channels[key]=!p.channels[key];
+  const isOn=p.channels[key];
+  btn.classList.toggle('on',isOn);
+  const badge=btn.nextElementSibling;
+  if(badge){badge.className='ch-status-badge '+(isOn?'listed':'unlisted');badge.textContent=isOn?'Listed':'Not listed';}
+  await supa.from('patterns').update({channels:p.channels,updated_at:new Date().toISOString()}).eq('id',p.id);
+  toast(isOn?'Marked as listed ✓':'Marked as not listed');
+}
+
+// ── PRICING SECTION ───────────────────────────────────────
+function renderPricingSection(p){
+  const pricing=p.pricing||{};
+  let html=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Pricing</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Enter target → click any calculated price to copy it</span></div><div class="sec-body">`;
+  html+=`<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.7"><strong style="color:var(--navy)">Target price</strong> = what you want to receive after the sale discount. The calculated pre-discount price is what you enter in the eBay listing. <strong style="color:var(--navy)">USASC: 15% off. All others: 5% off.</strong> Prices land on natural-looking cents. <strong style="color:var(--navy)">Click any price to copy it.</strong></div>`;
+
+  MATERIALS_PRICE.forEach(mat=>{
+    const matKey=mat.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+    html+=`<div class="price-section"><div class="price-section-title">${mat}</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>`;
+    PRICE_BRANDS.forEach(b=>{const disc=BRAND_DISCOUNTS[b.id]||0.05;html+=`<th>${b.name}<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">${Math.round(disc*100)}% off</span></th>`;});
+    html+=`</tr></thead><tbody>`;
+    POSITIONS_PRICE.forEach(pos=>{
+      const posKey=pos.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+      const priceKey=matKey+'__'+posKey;
+      const target=pricing[priceKey]||'';
+      html+=`<tr><td class="price-pos">${pos}</td><td><input class="price-input" type="number" min="0" step="0.01" placeholder="0.00" value="${target}" oninput="updatePricing('${priceKey}',this.value)" id="pi_${priceKey}"></td>`;
+      PRICE_BRANDS.forEach(b=>{
+        const disc=BRAND_DISCOUNTS[b.id]||0.05;
+        const calc=target?calcPreDiscount(parseFloat(target),disc):null;
+        html+=`<td><span class="price-calc" id="pc_${b.id}_${priceKey}" onclick="copyPrice(this,'${b.id}','${priceKey}')">${calc?fmtPrice(calc):'<span class=\"price-na\">&mdash;</span>'}</span></td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  });
+  html+=`<button class="price-save-btn" onclick="savePricing()">&#128190; Save pricing</button></div></div>`;
+  return html;
+}
+
+function updatePricing(key,val){
+  const p=getP();if(!p)return;
+  if(!p.pricing)p.pricing={};
+  p.pricing[key]=val?parseFloat(val):null;
+  PRICE_BRANDS.forEach(b=>{
+    const disc=BRAND_DISCOUNTS[b.id]||0.05;
+    const calc=val?calcPreDiscount(parseFloat(val),disc):null;
+    const cell=document.getElementById('pc_'+b.id+'_'+key);
+    if(cell){cell.innerHTML=calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>';cell.classList.remove('copied');}
+  });
+}
+
+function copyPrice(el,brandId,priceKey){
+  const p=getP();if(!p)return;
+  const disc=BRAND_DISCOUNTS[brandId]||0.05;
+  const target=p.pricing?.[priceKey];
+  if(!target){toast('Enter a target price first','err');return;}
+  const calc=calcPreDiscount(parseFloat(target),disc);
+  if(!calc)return;
+  const text=calc.toFixed(2);
+  const doCopy=()=>{el.classList.add('copied');el.textContent='✓ Copied!';setTimeout(()=>{el.innerHTML=fmtPrice(calc);el.classList.remove('copied');},1500);};
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(doCopy).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();});}
+  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();}
+}
+
+async function savePricing(){
+  const p=getP();if(!p){toast('No pattern selected','err');return;}
+  const {error}=await supa.from('patterns').update({pricing:p.pricing||{},updated_at:new Date().toISOString()}).eq('id',p.id);
+  if(error){toast('Save failed: '+error.message,'err');return;}
+  toast('Pricing saved ✓');
+}
+
+// ── INFO TAB ──────────────────────────────────────────────
 function renderInfoTab(p){
-  // Variations
   let html='<div class="info-grid">';
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>';
   VAR_GROUPS.forEach(g=>{
     const thumb=p.positions[g.id+'_thumb']||'';
-    // Only show photo slot if at least one button in this group is active
     const groupActive=g.btns.some(b=>p.positions[b.id]);
-    html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')">
-      <span class="var-row-label">${g.label}</span>
-      <div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>
-      ${groupActive
-        ?(thumb
-          ?`<div class="var-photo" onclick="openLB('${su(thumb)}',event)"><img src="${thumb}" alt=""><button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button></div>`
-          :`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`)
-        :'<div style="width:var(--thumb)"></div>'
-      }
-    </div>`;
+    html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')"><span class="var-row-label">${g.label}</span><div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>${groupActive?(thumb?`<div class="var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt=""><button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button></div>`:`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`):'<div style="width:var(--thumb)"></div>'}</div>`;
   });
   (p.other_positions||[]).forEach((op,i)=>{
     const thumb=op.thumb||'';
-    html+=`<div class="other-var-row" id="orow-${i}" ondragover="onOtherOver(event,${i})" ondragleave="onOtherLeave(${i})" ondrop="onOtherDrop(event,${i})">
-      <button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle this variation?',()=>toggleOtherVar(${i}))"></button>
-      <input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console, Foam cushion..." oninput="updateOtherLabel(${i},this.value)">
-      ${thumb
-        ?`<div class="other-var-photo" onclick="openLB('${su(thumb)}',event)"><img src="${thumb}" alt=""><button class="other-var-photo-x" onclick="confirmAction('Remove photo?',()=>removeOtherThumb(${i}))">&#x2715;</button></div>`
-        :`<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById('ovp-${i}').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-${i}" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,${i})">`
-      }
-      <button class="btn-ico" onclick="confirmAction('Remove this variation?',()=>removeOtherVar(${i}))">&#x2715;</button>
-    </div>`;
+    html+=`<div class="other-var-row" id="orow-${i}" ondragover="onOtherOver(event,${i})" ondragleave="onOtherLeave(${i})" ondrop="onOtherDrop(event,${i})"><button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle?',()=>toggleOtherVar(${i}))"></button><input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console..." oninput="updateOtherLabel(${i},this.value)">${thumb?`<div class="other-var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt=""><button class="other-var-photo-x" onclick="confirmAction('Remove?',()=>removeOtherThumb(${i}))">&#x2715;</button></div>`:`<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById('ovp-${i}').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-${i}" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,${i})">`}<button class="btn-ico" onclick="confirmAction('Remove variation?',()=>removeOtherVar(${i}))">&#x2715;</button></div>`;
   });
   html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button></div>';
 
-  // Materials
   const mats=p.materials||[];
   const stdMats=MATERIALS.slice(0,-1);
   const otherCustom=mats.find(m=>!stdMats.includes(m)&&m!=='Other')||'';
   const hasOther=mats.includes('Other')||!!otherCustom;
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body">
-    <div class="toggle-group">
-      ${stdMats.map(m=>`<button class="tog-btn ${mats.includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}
-      <button class="tog-btn ${hasOther?'on':''}" onclick="toggleMaterial('Other')">${otherCustom||'Other'}</button>
-    </div>
-    ${hasOther?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2);white-space:nowrap">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene, Suede..." value="${esc(otherCustom)}" oninput="setOtherMaterial(this.value)"></div>`:''}
-  </div></div>`;
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body"><div class="toggle-group">${stdMats.map(m=>`<button class="tog-btn ${mats.includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}<button class="tog-btn ${hasOther?'on':''}" onclick="toggleMaterial('Other')">${otherCustom||'Other'}</button></div>${hasOther?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2)">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene..." value="${esc(otherCustom)}" oninput="setOtherMaterial(this.value)"></div>`:''}</div></div>`;
 
-  // Colors
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button></div>';
   if(p.colors.length){
     p.colors.forEach(c=>{
       const thumb=c.thumb_url||'';
-      html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')">
-        <input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name"
-          onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)">
-        <input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code"
-          onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)">
-        <input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note"
-          onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)">
-        <input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..."
-          oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)">
-        <div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${su(thumb)}',event)`:``}" title="${thumb?'Click to enlarge':'Paste a URL to add photo'}">
-          ${thumb?`<img src="${thumb}" alt="" onerror="this.style.display='none'"><button class="color-photo-x" onclick="snapshot();confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">&#128279; Paste URL</div>`}
-        </div>
-        <button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button>
-      </div>`;
+      html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')"><input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name" onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)"><input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code" onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)"><input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note" onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)"><input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)"><div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${thumb}',event)`:''}"><img src="${thumb}" alt="" onerror="this.style.display='none'" ${thumb?'':'style="display:none"'}><span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="${thumb?'display:none':''}cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">${thumb?'&#128247; Change':'&#128279; Paste URL'}</div>${thumb?`<button class="color-photo-x" onclick="snapshot();confirmAction('Remove?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:''}</div><button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button></div>`;
     });
-  } else {
-    html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet. Click &quot;+ Add&quot;.</div>';
-  }
+  }else{html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet.</div>';}
   html+='</div>';
 
-  // Submodels + Notes
   html+='<div style="display:flex;flex-direction:column;gap:16px">';
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button></div>';
-  if((p.submodels||[]).length){
-    (p.submodels||[]).forEach((s,i)=>{
-      const name=typeof s==='string'?s:(s.name||'');
-      const years=typeof s==='string'?'All years':(s.years||'All years');
-      html+=`<div class="sub-row"><input class="sub-name" value="${esc(name)}" placeholder="Submodel name..." oninput="updateSubmodel(${i},'name',this.value)"><input class="sub-years" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)"><button class="btn-ico" onclick="confirmAction('Remove this submodel?',()=>removeSubmodel(${i}))">&#x2715;</button></div>`;
-    });
-  } else {
-    html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';
-  }
+  if((p.submodels||[]).length){(p.submodels||[]).forEach((s,i)=>{const name=typeof s==='string'?s:(s.name||'');const years=typeof s==='string'?'All years':(s.years||'All years');html+=`<div class="sub-row"><input class="sub-name" value="${esc(name)}" placeholder="Submodel name..." oninput="updateSubmodel(${i},'name',this.value)"><input class="sub-years" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)"><button class="btn-ico" onclick="confirmAction('Remove?',()=>removeSubmodel(${i}))">&#x2715;</button></div>`;});}
+  else{html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';}
   html+='</div>';
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, caveats, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
-  html+='</div></div>'; // end right col + info-grid
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
+  html+='</div></div>';
 
-  // Confirmed status bar
   if(p.status==='confirmed'&&p.confirmed_at){
     const when=new Date(p.confirmed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const who='';
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)">
-      <span style="font-weight:700">&#10003; Confirmed</span>
-      <span style="opacity:0.7">${who?'by '+esc(who)+' · ':''}${when}</span>
-    </div>`;
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)"><span style="font-weight:700">&#10003; Confirmed</span><span style="opacity:0.7">${when}</span></div>`;
   }
-  // Also fits section — full width below the grid
-  const fitsHtml=renderAlsoFits(p);
-  html+=fitsHtml;
-
+  html+=renderAlsoFits(p);
   return html;
 }
 
 function renderResearchTab(p){
-  let html=`<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">Research summary</span>
-    <span style="margin-left:auto;font-size:12px;color:var(--text3)">Drag images in &middot; Click image then drag corner to resize</span></div>
-  <div>
-    <div class="rich-toolbar">
-      <button class="rich-btn" onclick="fmt('bold')"><b>B</b></button>
-      <button class="rich-btn" onclick="fmt('italic')"><i>I</i></button>
-      <button class="rich-btn" onclick="fmt('underline')"><u>U</u></button>
-      <div class="rich-sep"></div>
-      <button class="rich-btn" onclick="fmt('insertUnorderedList')">&bull; List</button>
-      <button class="rich-btn" onclick="fmt('insertOrderedList')">1. List</button>
-      <div class="rich-sep"></div>
-      <button class="rich-btn" onclick="document.getElementById('research-img-file').click()">&#128247; Image</button>
-      <div class="rich-sep"></div>
-      <button class="rich-btn hl" onclick="doHighlight()">&#9998; Highlight</button>
-      <button class="rich-btn" onclick="removeHighlight()">&#x2715; HL</button>
-      <div class="rich-sep"></div>
-      <span style="font-size:12px;color:var(--text3);padding:0 2px">Resize:</span>
-      <button class="rich-btn" onclick="resizeImg(0.3)">S</button>
-      <button class="rich-btn" onclick="resizeImg(0.6)">M</button>
-      <button class="rich-btn" onclick="resizeImg(1.0)">L</button>
-      <button class="rich-btn" onclick="resizeImg('px')">Custom</button>
-    </div>
-    <div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()"
-      ondragover="event.preventDefault()" ondrop="onResearchDrop(event)"
-      onpaste="onResearchPaste(event)" onclick="onEditorClick(event)"
-      onmousedown="onEditorMouseDown(event)">${p.research||'<p>Add research notes here...</p>'}</div>
-  </div></div>`;
-
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">PDF brochures &amp; research docs</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button></div><div class="sec-body">
-    ${p.pdfs.length?`<div style="margin-bottom:12px">${p.pdfs.map(f=>`<div class="pdf-item">
-      <span style="font-size:20px">&#128196;</span><span class="pdf-name">${esc(f.name)}</span>
-      ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:500">Open &#x2197;</a>`:''}
-      <button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button>
-    </div>`).join('')}</div>`:'<div style="color:var(--text3);font-size:14px;margin-bottom:12px">No PDFs yet.</div>'}
-    <div class="photo-drop-zone" onclick="openPdfInput()">
-      <div class="drop-ico">&#128196;</div><div class="drop-txt">Add PDF reference</div>
-      <div class="drop-sub">Enter name + Google Drive or Dropbox URL</div>
-    </div>
-  </div></div>`;
-  return html;
+  return `<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">Research summary</span><span style="margin-left:auto;font-size:12px;color:var(--text3)">Drag images in &middot; Click image then drag corner to resize</span></div><div><div class="rich-toolbar"><button class="rich-btn" onclick="fmt('bold')"><b>B</b></button><button class="rich-btn" onclick="fmt('italic')"><i>I</i></button><button class="rich-btn" onclick="fmt('underline')"><u>U</u></button><div class="rich-sep"></div><button class="rich-btn" onclick="fmt('insertUnorderedList')">&bull; List</button><button class="rich-btn" onclick="fmt('insertOrderedList')">1. List</button><div class="rich-sep"></div><button class="rich-btn" onclick="document.getElementById('research-img-file').click()">&#128247; Image</button><div class="rich-sep"></div><button class="rich-btn hl" onclick="doHighlight()">&#9998; Highlight</button><button class="rich-btn" onclick="removeHighlight()">&#x2715; HL</button><div class="rich-sep"></div><span style="font-size:12px;color:var(--text3);padding:0 2px">Resize:</span><button class="rich-btn" onclick="resizeImg(0.3)">S</button><button class="rich-btn" onclick="resizeImg(0.6)">M</button><button class="rich-btn" onclick="resizeImg(1.0)">L</button><button class="rich-btn" onclick="resizeImg('px')">Custom</button></div><div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()" ondragover="event.preventDefault()" ondrop="onResearchDrop(event)" onpaste="onResearchPaste(event)" onclick="onEditorClick(event)" onmousedown="onEditorMouseDown(event)">${p.research||'<p>Add research notes here...</p>'}</div></div></div>
+  <div class="sec"><div class="sec-hdr"><span class="sec-title">PDF brochures &amp; research docs</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button></div><div class="sec-body">${p.pdfs.length?`<div style="margin-bottom:12px">${p.pdfs.map(f=>`<div class="pdf-item"><span style="font-size:20px">&#128196;</span><span class="pdf-name">${esc(f.name)}</span>${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:500">Open &#x2197;</a>`:''}<button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button></div>`).join('')}</div>`:'<div style="color:var(--text3);font-size:14px;margin-bottom:12px">No PDFs yet.</div>'}<div class="photo-drop-zone" onclick="openPdfInput()"><div class="drop-ico">&#128196;</div><div class="drop-txt">Add PDF reference</div><div class="drop-sub">Enter name + URL</div></div></div></div>`;
 }
 
 function buildPhotoTab(title,dropId,type,photos){
-  return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body">
-    <div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')">
-      <div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div>
-      <div class="drop-txt">Drag &amp; drop or click to browse</div>
-      <div class="drop-sub">JPG, PNG, WEBP</div>
-    </div>
-    ${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card">
-      <div class="sq-photo-wrap">
-        <img src="${ph.url}" onerror="this.style.display='none'" alt="">
-        <button class="sq-photo-x" onclick="confirmAction('Remove this photo?',()=>removePhoto('${ph.id}'))">&#x2715;</button>
-        <div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${su(ph.url)}',event)">&#128269; View</button></div>
-      </div>
-      <div class="sq-photo-label">${esc(ph.caption||'Photo')}</div>
-    </div>`).join('')}</div>`:''}
-  </div></div>`;
+  return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body"><div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')"><div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="${ph.url}" onerror="this.style.display='none'" alt=""><button class="sq-photo-x" onclick="confirmAction('Remove?',()=>removePhoto('${ph.id}'))">&#x2715;</button><div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${ph.url}',event)">&#128269; View</button></div></div><div class="sq-photo-label">${esc(ph.caption||'Photo')}</div></div>`).join('')}</div>`:''}</div></div>`;
 }
 
 function switchTab(t){collectText();activeTab=t;renderPattern();}
-
 function collectText(){
   const p=getP();if(!p)return;
   const r=document.getElementById('rich-editor'),n=document.getElementById('ta-notes');
   const ey=document.getElementById('edit-years'),eb=document.getElementById('edit-brand'),em=document.getElementById('edit-model'),et=document.getElementById('edit-trim');
-  if(r)p.research=r.innerHTML;
-  if(n)p.notes=n.value;
+  if(r)p.research=r.innerHTML;if(n)p.notes=n.value;
   if(ey){p.years=ey.value.trim();p.brand=eb.value.trim();p.model=em.value.trim();p.trim=et.value.trim();}
 }
-
 let editMode=false;
 function toggleEditMode(){
   editMode=!editMode;
   const td=document.getElementById('pat-title-display'),er=document.getElementById('pat-edit-row'),btn=document.getElementById('edit-toggle-btn');
   td.style.display=editMode?'none':'block';er.style.display=editMode?'flex':'none';
-  btn.textContent=editMode?'\u2713 Done':'\u270f\ufe0f Edit';
+  btn.textContent=editMode?'✓ Done':'✏️ Edit';
   if(!editMode){collectText();markDirty();}
 }
 
 // ── VARIATIONS ────────────────────────────────────────────
-async function toggleVarBtn(btnId,groupId){
-  const p=getP();p.positions[btnId]=!p.positions[btnId];
-  await supa.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);
-  buildSidebar();renderPattern();toast('Saved \u2713');
-}
+async function toggleVarBtn(btnId,groupId){const p=getP();p.positions[btnId]=!p.positions[btnId];await supa.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);buildSidebar();renderPattern();toast('Saved ✓');}
 function onVarOver(e,id){e.preventDefault();document.getElementById('varrow-'+id)?.classList.add('dragover');}
 function onVarLeave(id){document.getElementById('varrow-'+id)?.classList.remove('dragover');}
-function onVarDrop(e,id){
-  e.preventDefault();document.getElementById('varrow-'+id)?.classList.remove('dragover');
-  const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url)saveGroupThumb(id,url);});}
-}
+function onVarDrop(e,id){e.preventDefault();document.getElementById('varrow-'+id)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url)saveGroupThumb(id,url);});}}
 async function handleVarPhotoFile(e,gid){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url)saveGroupThumb(gid,url);}
-async function saveGroupThumb(gid,url){const p=getP();p.positions[gid+'_thumb']=url;await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Photo saved \u2713');}
+async function saveGroupThumb(gid,url){const p=getP();p.positions[gid+'_thumb']=url;await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Photo saved ✓');}
 async function removeGroupThumb(gid){const p=getP();delete p.positions[gid+'_thumb'];await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Removed');}
 function onOtherOver(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.add('dragover');}
 function onOtherLeave(i){document.getElementById('orow-'+i)?.classList.remove('dragover');}
-function onOtherDrop(e,i){
-  e.preventDefault();document.getElementById('orow-'+i)?.classList.remove('dragover');
-  const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}});}
-}
-async function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}}
+function onOtherDrop(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added ✓');}});}}
+async function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added ✓');}}
 function removeOtherThumb(i){const p=getP();p.other_positions[i].thumb='';markDirty();renderPattern();}
 function toggleOtherVar(i){const p=getP();p.other_positions[i].active=!p.other_positions[i].active;markDirty();renderPattern();}
 function updateOtherLabel(i,v){const p=getP();p.other_positions[i].label=v;markDirty();}
@@ -1190,54 +890,20 @@ function addOtherVar(){const p=getP();p.other_positions.push({label:'',active:tr
 function removeOtherVar(i){const p=getP();p.other_positions.splice(i,1);markDirty();renderPattern();}
 
 // ── MATERIALS ─────────────────────────────────────────────
-function setOtherMaterial(val){
-  const p=getP();
-  const stdMats=MATERIALS.slice(0,-1);
-  p.materials=p.materials.filter(m=>stdMats.includes(m)||m==='Other');
-  if(val.trim())p.materials.push(val.trim());
-  markDirty();
-}
-async function toggleMaterial(mat){
-  const p=getP();
-  const stdMats=MATERIALS.slice(0,-1);
-  if(mat==='Other'){
-    const hasOther=p.materials.some(m=>!stdMats.includes(m));
-    if(hasOther)p.materials=p.materials.filter(m=>stdMats.includes(m));
-    else p.materials.push('Other');
-  } else {
-    const idx=p.materials.indexOf(mat);
-    if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);
-  }
-  await supa.from('patterns').update({materials:p.materials,updated_at:new Date().toISOString()}).eq('id',p.id);
-  renderPattern();toast('Saved \u2713');
-}
+function setOtherMaterial(val){const p=getP();const s=MATERIALS.slice(0,-1);p.materials=p.materials.filter(m=>s.includes(m)||m==='Other');if(val.trim())p.materials.push(val.trim());markDirty();}
+async function toggleMaterial(mat){const p=getP();const s=MATERIALS.slice(0,-1);if(mat==='Other'){const h=p.materials.some(m=>!s.includes(m));if(h)p.materials=p.materials.filter(m=>s.includes(m));else p.materials.push('Other');}else{const idx=p.materials.indexOf(mat);if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);}await supa.from('patterns').update({materials:p.materials,updated_at:new Date().toISOString()}).eq('id',p.id);renderPattern();toast('Saved ✓');}
 
 // ── SUBMODELS ─────────────────────────────────────────────
 function addSubmodel(){const p=getP();p.submodels.push({name:'',years:'All years'});markDirty();renderPattern();}
-function updateSubmodel(i,field,val){
-  const p=getP();
-  if(typeof p.submodels[i]==='string')p.submodels[i]={name:p.submodels[i],years:'All years'};
-  p.submodels[i][field]=val;markDirty();
-}
+function updateSubmodel(i,field,val){const p=getP();if(typeof p.submodels[i]==='string')p.submodels[i]={name:p.submodels[i],years:'All years'};p.submodels[i][field]=val;markDirty();}
 function removeSubmodel(i){const p=getP();p.submodels.splice(i,1);markDirty();renderPattern();}
 
-// ── DRAG HELPERS ──────────────────────────────────────────
+// ── DRAG ──────────────────────────────────────────────────
 function onDragOver(e,id){e.preventDefault();document.getElementById(id)?.classList.add('dragover');}
 function onDragLeave(id){document.getElementById(id)?.classList.remove('dragover');}
 function onColorOver(e,id){e.preventDefault();document.getElementById('crow-'+id)?.classList.add('dragover');}
 function onColorLeave(id){document.getElementById('crow-'+id)?.classList.remove('dragover');}
-async function onColorDrop(e,colorId){
-  e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');
-  const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(!f)return;
-  toast('Uploading...');
-  snapshot();
-  const url=await uploadToStorage(f,'colors');
-  if(!url)return;
-  const p=getP();const c=p.colors.find(c=>c.id===colorId);
-  if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}
-  renderPattern();toast('Color photo saved \u2713');
-}
+async function onColorDrop(e,colorId){e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url)return;const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved ✓');}
 async function removeColorThumb(id){snapshot();const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
 
 // ── LIGHTBOX ──────────────────────────────────────────────
@@ -1247,21 +913,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 
 // ── PHOTOS ────────────────────────────────────────────────
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
-function onPhotoDrop(e,type){
-  e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';
-  document.getElementById(id)?.classList.remove('dragover');
-  uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);
-}
+function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
-async function uploadPhotos(files,type){
-  if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');
-  for(const file of files){
-    const url=await uploadToStorage(file,'photos');if(!url)continue;
-    const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();
-    if(!error&&data)p.photos.push(data);
-  }
-  renderPattern();toast(files.length+' photo(s) added \u2713');
-}
+async function uploadPhotos(files,type){if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');for(const file of files){const url=await uploadToStorage(file,'photos');if(!url)continue;const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();if(!error&&data)p.photos.push(data);}renderPattern();toast(files.length+' photo(s) added ✓');}
 async function removePhoto(id){const p=getP();await supa.from('pattern_photos').delete().eq('id',id);p.photos=p.photos.filter(ph=>ph.id!==id);renderPattern();toast('Removed');}
 
 // ── RESEARCH EDITOR ───────────────────────────────────────
@@ -1275,31 +929,11 @@ async function onResearchDrop(e){e.preventDefault();const f=e.dataTransfer.files
 let selectedImg=null;
 function onEditorClick(e){if(e.target.tagName==='IMG'){selectedImg=e.target;document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));selectedImg.classList.add('img-sel');}else{selectedImg=null;document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));}}
 function onEditorMouseDown(e){if(e.target.tagName==='IMG'){const img=e.target,rect=img.getBoundingClientRect();img.style.cursor=(e.clientX>rect.right-16&&e.clientY>rect.bottom-16)?'nwse-resize':'default';}}
-function resizeImg(factor){
-  if(!selectedImg){toast('Click an image in the editor first','err');return;}
-  const ed=document.getElementById('rich-editor');const edW=(ed?ed.offsetWidth:640)-28;
-  if(factor==='px'){const w=prompt('Width in pixels:');if(!w||isNaN(parseInt(w)))return;selectedImg.style.width=parseInt(w)+'px';selectedImg.style.height='auto';}
-  else{selectedImg.style.width=Math.round(edW*factor)+'px';selectedImg.style.height='auto';}
-  markDirty();
-}
-function initEditorImgResize(){
-  const ed=document.getElementById('rich-editor');if(!ed)return;
-  ed.addEventListener('mousedown',e=>{
-    if(e.target.tagName!=='IMG')return;
-    const img=e.target,rect=img.getBoundingClientRect();
-    if(!(e.clientX>rect.right-16&&e.clientY>rect.bottom-16))return;
-    e.preventDefault();const startX=e.clientX,startW=img.offsetWidth;
-    const move=ev=>{img.style.width=Math.max(60,startW+(ev.clientX-startX))+'px';img.style.height='auto';};
-    const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);markDirty();};
-    document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
-  });
-}
+function resizeImg(factor){if(!selectedImg){toast('Click an image first','err');return;}const ed=document.getElementById('rich-editor');const edW=(ed?ed.offsetWidth:640)-28;if(factor==='px'){const w=prompt('Width in pixels:');if(!w||isNaN(parseInt(w)))return;selectedImg.style.width=parseInt(w)+'px';selectedImg.style.height='auto';}else{selectedImg.style.width=Math.round(edW*factor)+'px';selectedImg.style.height='auto';}markDirty();}
+function initEditorImgResize(){const ed=document.getElementById('rich-editor');if(!ed)return;ed.addEventListener('mousedown',e=>{if(e.target.tagName!=='IMG')return;const img=e.target,rect=img.getBoundingClientRect();if(!(e.clientX>rect.right-16&&e.clientY>rect.bottom-16))return;e.preventDefault();const startX=e.clientX,startW=img.offsetWidth;const move=ev=>{img.style.width=Math.max(60,startW+(ev.clientX-startX))+'px';img.style.height='auto';};const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);markDirty();};document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);});}
 
-
-
-
-// ── SUPABASE STORAGE UPLOAD ───────────────────────────────────
-async function uploadToStorage(file, folder){
+// ── STORAGE ───────────────────────────────────────────────
+async function uploadToStorage(file,folder){
   const ext=file.name.split('.').pop()||'jpg';
   const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
   const {data,error}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:file.type});
@@ -1308,235 +942,68 @@ async function uploadToStorage(file, folder){
   return publicUrl;
 }
 
-// ── PATTERN CONFIRMATION ──────────────────────────────────────
+// ── CONFIRMATION ──────────────────────────────────────────
 async function confirmPattern(){
   const p=getP();if(!p)return;
   const {data:{user}}=await supa.auth.getUser();
   const isConfirmed=p.status==='confirmed';
   const newStatus=isConfirmed?'unreviewed':'confirmed';
   const now=new Date().toISOString();
-  const update=newStatus==='confirmed'
-    ?{status:'confirmed',confirmed_by:user.id,confirmed_at:now}
-    :{status:'unreviewed',confirmed_by:null,confirmed_at:null};
+  const update=newStatus==='confirmed'?{status:'confirmed',confirmed_by:user.id,confirmed_at:now}:{status:'unreviewed',confirmed_by:null,confirmed_at:null};
   await supa.from('patterns').update(update).eq('id',p.id);
-  p.status=newStatus;
-  p.confirmed_at=newStatus==='confirmed'?now:null;
-  p.confirmed_by_id=newStatus==='confirmed'?user.id:null;
-  buildSidebar();
-  selectPattern(p.id); // refresh header
-  toast(newStatus==='confirmed'?'Pattern confirmed \u2713':'Marked as unreviewed');
+  p.status=newStatus;p.confirmed_at=newStatus==='confirmed'?now:null;p.confirmed_by_id=newStatus==='confirmed'?user.id:null;
+  buildSidebar();selectPattern(p.id);
+  toast(newStatus==='confirmed'?'Pattern confirmed ✓':'Marked as unreviewed');
 }
-// ── COLOR PHOTO URL ──────────────────────────────────────────
+
+// ── COLOR PHOTO URL ───────────────────────────────────────
 let _colorUrlTargetId=null;
-function openColorUrlInput(colorId, e){
-  if(e)e.stopPropagation();
-  _colorUrlTargetId=colorId;
-  document.getElementById('color-url-input').value='';
-  document.getElementById('color-url-preview').style.display='none';
-  document.getElementById('color-url-modal').style.display='flex';
-  setTimeout(()=>document.getElementById('color-url-input').focus(),100);
-}
+function openColorUrlInput(colorId,e){if(e)e.stopPropagation();_colorUrlTargetId=colorId;document.getElementById('color-url-input').value='';document.getElementById('color-url-preview').style.display='none';document.getElementById('color-url-modal').style.display='flex';setTimeout(()=>document.getElementById('color-url-input').focus(),100);}
 function closeColorUrlModal(){document.getElementById('color-url-modal').style.display='none';_colorUrlTargetId=null;}
+document.addEventListener('DOMContentLoaded',()=>{document.getElementById('color-url-input')?.addEventListener('input',function(){const url=this.value.trim();const preview=document.getElementById('color-url-preview');const img=document.getElementById('color-url-preview-img');if(url){img.src=url;preview.style.display='block';}else{preview.style.display='none';}});});
+async function saveColorFile(input){const f=input.files[0];if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url){input.value='';return;}const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);}closeColorUrlModal();renderPattern();toast('Color photo saved ✓');}
+async function saveColorUrl(){const url=document.getElementById('color-url-input').value.trim();if(!url){toast('Enter a URL','err');return;}if(!_colorUrlTargetId){closeColorUrlModal();return;}snapshot();const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);closeColorUrlModal();renderPattern();toast('Color photo saved ✓');}}
 
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('color-url-input')?.addEventListener('input',function(){
-    const url=this.value.trim();
-    const preview=document.getElementById('color-url-preview');
-    const img=document.getElementById('color-url-preview-img');
-    if(url){img.src=url;preview.style.display='block';}
-    else{preview.style.display='none';}
-  });
-});
-
-async function saveColorFile(input){
-  const f=input.files[0];if(!f)return;
-  toast('Uploading...');
-  snapshot();
-  const url=await uploadToStorage(f,'colors');
-  if(!url){input.value='';return;}
-  const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);
-  if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);}
-  closeColorUrlModal();renderPattern();toast('Color photo saved \u2713');
-}
-
-async function saveColorUrl(){
-  const url=document.getElementById('color-url-input').value.trim();
-  if(!url){toast('Please enter a URL','err');return;}
-  if(!_colorUrlTargetId){closeColorUrlModal();return;}
-  snapshot();
-  const p=getP();
-  const c=p.colors.find(c=>c.id===_colorUrlTargetId);
-  if(c){
-    c.thumb_url=url;
-    await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);
-    closeColorUrlModal();
-    renderPattern();
-    toast('Color photo saved \u2713');
-  }
-}
-// ── COLOR NOTE ────────────────────────────────────────────
-
-function updateColorField(id,field,val){
-  const p=getP();const c=p.colors.find(c=>c.id===id);
-  if(c)c[field]=val;
-}
-async function saveColorField(id,field,val){
-  const p=getP();const c=p.colors.find(c=>c.id===id);
-  if(c){
-    c[field]=val;
-    await supa.from('pattern_colors').update({[field]:val}).eq('id',id);
-    if(field==='name')buildSidebar(); // refresh sidebar if name changed
-  }
-}
+// ── COLOR FIELDS ──────────────────────────────────────────
+function updateColorField(id,field,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c[field]=val;}
+async function saveColorField(id,field,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c[field]=val;await supa.from('pattern_colors').update({[field]:val}).eq('id',id);if(field==='name')buildSidebar();}}
 function updateColorNote(id,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c.note=val;}
-async function saveColorNote(id,val){
-  await supa.from('pattern_colors').update({note:val}).eq('id',id);
-}
+async function saveColorNote(id,val){await supa.from('pattern_colors').update({note:val}).eq('id',id);}
 
 // ── ALSO FITS ─────────────────────────────────────────────
 function renderAlsoFits(p){
   const fits=p.fits||[];
-  // Resolve linked pattern names
-  const rows=fits.map(f=>{
-    const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;
-    const other=patterns.find(x=>x.id===otherId);
-    if(!other)return null;
-    const shared=(f.shared_colors||[]);
-    const dir=f.pattern_id_a===p.id?'→':'←';
-    return{f,other,shared,dir};
-  }).filter(Boolean);
-
+  const rows=fits.map(f=>{const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;const other=patterns.find(x=>x.id===otherId);if(!other)return null;return{f,other,shared:f.shared_colors||[],dir:f.pattern_id_a===p.id?'→':'←'};}).filter(Boolean);
   let html=`<div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Also fits</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openFitsModal()">+ Link pattern</button></div>`;
-  if(rows.length){
-    rows.forEach(({f,other,shared,dir})=>{
-      html+=`<div class="fits-row">
-        <span class="fits-dir">${dir}</span>
-        <span class="fits-brand">${esc(other.brand)}</span>
-        <span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span>
-        <div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div>
-        <button class="btn-ico" onclick="confirmAction('Remove this also-fits link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button>
-      </div>`;
-    });
-  } else {
-    html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:14px">No linked patterns yet.</div>';
-  }
-  html+='</div>';
-  return html;
+  if(rows.length){rows.forEach(({f,other,shared,dir})=>{html+=`<div class="fits-row"><span class="fits-dir">${dir}</span><span class="fits-brand">${esc(other.brand)}</span><span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span><div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div><button class="btn-ico" onclick="confirmAction('Remove link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button></div>`;});}
+  else{html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:14px">No linked patterns yet.</div>';}
+  return html+'</div>';
 }
-
 let fitsSelectedId=null,fitsSelectedColors=new Set();
-
-function openFitsModal(){
-  fitsSelectedId=null;fitsSelectedColors=new Set();
-  document.getElementById('fits-search').value='';
-  document.getElementById('fits-search-results').style.display='none';
-  document.getElementById('fits-search-results').innerHTML='';
-  document.getElementById('fits-selected').style.display='none';
-  document.getElementById('fits-save-btn').style.display='none';
-  document.getElementById('fits-modal').style.display='flex';
-  setTimeout(()=>document.getElementById('fits-search').focus(),100);
-}
+function openFitsModal(){fitsSelectedId=null;fitsSelectedColors=new Set();document.getElementById('fits-search').value='';document.getElementById('fits-search-results').style.display='none';document.getElementById('fits-search-results').innerHTML='';document.getElementById('fits-selected').style.display='none';document.getElementById('fits-save-btn').style.display='none';document.getElementById('fits-modal').style.display='flex';setTimeout(()=>document.getElementById('fits-search').focus(),100);}
 function closeFitsModal(){document.getElementById('fits-modal').style.display='none';}
+function searchFitsPatterns(q){const p=getP();const res=document.getElementById('fits-search-results');if(!q||q.length<2){res.style.display='none';return;}const ql=q.toLowerCase();const matches=patterns.filter(x=>x.id!==p.id&&(x.brand.toLowerCase().includes(ql)||x.model.toLowerCase().includes(ql)||(x.years&&x.years.includes(ql))||(x.trim||'').toLowerCase().includes(ql))).slice(0,8);if(!matches.length){res.innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">No matches</div>';res.style.display='block';return;}res.innerHTML=matches.map(x=>`<div onclick="selectFitsPattern('${x.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''"><div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(x.brand)} ${esc(x.model)} ${esc(x.years)}${x.trim?' · '+esc(x.trim):''}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${x.colors.length} colors · ${x.materials.join(', ')||'—'}</div></div>`).join('');res.style.display='block';}
+function selectFitsPattern(id){const p=getP();fitsSelectedId=id;const other=patterns.find(x=>x.id===id);document.getElementById('fits-search-results').style.display='none';document.getElementById('fits-selected').style.display='block';document.getElementById('fits-save-btn').style.display='';document.getElementById('fits-selected-name').textContent=`${other.brand} ${other.model} ${other.years}${other.trim?' · '+other.trim:''}`;const allColors=[...new Set([...p.colors.map(c=>c.name),...other.colors.map(c=>c.name)])].sort();fitsSelectedColors=new Set();document.getElementById('fits-color-picker').innerHTML=allColors.map(name=>`<button onclick="toggleFitsColor('${name}',this)" style="padding:5px 12px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s">${esc(name)}</button>`).join('');}
+function toggleFitsColor(name,btn){if(fitsSelectedColors.has(name)){fitsSelectedColors.delete(name);btn.style.background='var(--bg2)';btn.style.borderColor='var(--border)';btn.style.color='var(--text2)';}else{fitsSelectedColors.add(name);btn.style.background='var(--navy)';btn.style.borderColor='var(--navy)';btn.style.color='#fff';}}
+async function saveFitsLink(){const p=getP();if(!fitsSelectedId){toast('Select a pattern first','err');return;}const exists=(p.fits||[]).some(f=>f.pattern_id_a===fitsSelectedId||f.pattern_id_b===fitsSelectedId);if(exists){toast('Already linked','err');return;}const shared=[...fitsSelectedColors];const {data,error}=await supa.from('pattern_fits').insert({pattern_id_a:p.id,pattern_id_b:fitsSelectedId,shared_colors:shared}).select().single();if(error){toast('Error: '+error.message,'err');return;}p.fits=[...(p.fits||[]),data];const other=patterns.find(x=>x.id===fitsSelectedId);if(other)other.fits=[...(other.fits||[]),data];closeFitsModal();renderPattern();toast('Link saved ✓');}
+async function removeFitsLink(fitId){const p=getP();await supa.from('pattern_fits').delete().eq('id',fitId);p.fits=(p.fits||[]).filter(f=>f.id!==fitId);patterns.forEach(x=>{if(x.fits)x.fits=x.fits.filter(f=>f.id!==fitId);});renderPattern();toast('Link removed');}
 
-function searchFitsPatterns(q){
-  const p=getP();
-  const res=document.getElementById('fits-search-results');
-  if(!q||q.length<2){res.style.display='none';return;}
-  const ql=q.toLowerCase();
-  const matches=patterns.filter(x=>x.id!==p.id&&(
-    x.brand.toLowerCase().includes(ql)||x.model.toLowerCase().includes(ql)||
-    (x.years&&x.years.includes(ql))||(x.trim||'').toLowerCase().includes(ql)
-  )).slice(0,8);
-  if(!matches.length){res.innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">No matches</div>';res.style.display='block';return;}
-  res.innerHTML=matches.map(x=>`
-    <div onclick="selectFitsPattern('${x.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
-      <div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(x.brand)} ${esc(x.model)} ${esc(x.years)}${x.trim?' · '+esc(x.trim):''}</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px">${x.colors.length} color${x.colors.length!==1?'s':''} · ${x.materials.join(', ')||'—'}</div>
-    </div>`).join('');
-  res.style.display='block';
-}
-
-function selectFitsPattern(id){
-  const p=getP();
-  fitsSelectedId=id;
-  const other=patterns.find(x=>x.id===id);
-  document.getElementById('fits-search-results').style.display='none';
-  document.getElementById('fits-selected').style.display='block';
-  document.getElementById('fits-save-btn').style.display='';
-  document.getElementById('fits-selected-name').textContent=`${other.brand} ${other.model} ${other.years}${other.trim?' · '+other.trim:''}`;
-  // Build color picker — show all colors from BOTH patterns, let user pick shared ones
-  const allColors=[...new Set([...p.colors.map(c=>c.name),...other.colors.map(c=>c.name)])].sort();
-  fitsSelectedColors=new Set();
-  document.getElementById('fits-color-picker').innerHTML=allColors.map(name=>`
-    <button id="fcp-${name.replace(/[^a-z0-9]/gi,'_')}" onclick="toggleFitsColor('${name.replace(/'/g,"\'")}',this)"
-      style="padding:5px 12px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s">
-      ${esc(name)}
-    </button>`).join('');
-}
-
-function toggleFitsColor(name,btn){
-  if(fitsSelectedColors.has(name)){
-    fitsSelectedColors.delete(name);
-    btn.style.background='var(--bg2)';btn.style.borderColor='var(--border)';btn.style.color='var(--text2)';
-  } else {
-    fitsSelectedColors.add(name);
-    btn.style.background='var(--navy)';btn.style.borderColor='var(--navy)';btn.style.color='#fff';
-  }
-}
-
-async function saveFitsLink(){
-  const p=getP();
-  if(!fitsSelectedId){toast('Select a pattern first','err');return;}
-  // Check not already linked
-  const exists=(p.fits||[]).some(f=>f.pattern_id_a===fitsSelectedId||f.pattern_id_b===fitsSelectedId);
-  if(exists){toast('These patterns are already linked','err');return;}
-  const shared=[...fitsSelectedColors];
-  const {data,error}=await supa.from('pattern_fits').insert({
-    pattern_id_a:p.id,pattern_id_b:fitsSelectedId,shared_colors:shared
-  }).select().single();
-  if(error){toast('Error: '+error.message,'err');return;}
-  // Update local state for both patterns
-  p.fits=[...(p.fits||[]),data];
-  const other=patterns.find(x=>x.id===fitsSelectedId);
-  if(other)other.fits=[...(other.fits||[]),data];
-  closeFitsModal();
-  renderPattern();
-  toast('Link saved \u2713');
-}
-
-async function removeFitsLink(fitId){
-  const p=getP();
-  const {error}=await supa.from('pattern_fits').delete().eq('id',fitId);
-  if(error){toast('Error: '+error.message,'err');return;}
-  p.fits=(p.fits||[]).filter(f=>f.id!==fitId);
-  // Also remove from other pattern in memory
-  patterns.forEach(x=>{if(x.fits)x.fits=x.fits.filter(f=>f.id!==fitId);});
-  renderPattern();toast('Link removed');
-}
 // ── COLORS ────────────────────────────────────────────────
 function openColorModal(){document.getElementById('color-modal').style.display='flex';}
 function closeColorModal(){document.getElementById('color-modal').style.display='none';}
 async function addColor(){
   const name=document.getElementById('c-name').value.trim();if(!name){alert('Color name required.');return;}
   const p=getP();
-  const {data,error}=await supa.from('pattern_colors').insert({
-    pattern_id:p.id,name,
-    code:document.getElementById('c-code').value.trim(),
-    hex:'#888888',
-    year_note:document.getElementById('c-years').value.trim()||'All years',
-    note:document.getElementById('c-note').value.trim(),
-    sort_order:p.colors.length
-  }).select().single();
+  const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:'#888888',year_note:document.getElementById('c-years').value.trim()||'All years',note:document.getElementById('c-note').value.trim(),sort_order:p.colors.length}).select().single();
   if(error){toast('Error: '+error.message,'err');return;}
-  p.colors.push(data);closeColorModal();
-  ['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
-  buildSidebar();renderPattern();toast('Color added \u2713');
+  p.colors.push(data);closeColorModal();['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
+  buildSidebar();renderPattern();toast('Color added ✓');
 }
 async function removeColor(id){const p=getP();await supa.from('pattern_colors').delete().eq('id',id);p.colors=p.colors.filter(c=>c.id!==id);buildSidebar();renderPattern();toast('Removed');}
 
 // ── PDFS ──────────────────────────────────────────────────
 function openPdfInput(){const name=prompt('PDF name:');if(!name)return;const url=prompt('URL (optional):');savePdf(name.trim(),url?url.trim():null);}
-async function savePdf(name,url){const p=getP();const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();if(error){toast('Error: '+error.message,'err');return;}p.pdfs.push(data);renderPattern();toast('PDF added \u2713');}
+async function savePdf(name,url){const p=getP();const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();if(error){toast('Error','err');return;}p.pdfs.push(data);renderPattern();toast('PDF added ✓');}
 async function removePdf(id){const p=getP();await supa.from('pattern_pdfs').delete().eq('id',id);p.pdfs=p.pdfs.filter(f=>f.id!==id);renderPattern();toast('Removed');}
 
 // ── SAVE ──────────────────────────────────────────────────
@@ -1545,13 +1012,10 @@ async function saveAll(){
   collectText();const p=getP();if(!p)return;setStatus('Saving...','saving');
   const {error}=await supa.from('patterns').update({brand:p.brand,model:p.model,years:p.years,trim:p.trim,research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,updated_at:new Date().toISOString()}).eq('id',p.id);
   if(error){toast('Save failed: '+error.message,'err');setStatus('Save failed');return;}
-  unsaved=false;setStatus('Saved \u2713','saved');buildSidebar();
-  const td=document.getElementById('pat-title-display');
-  if(td)td.textContent=`${p.years} ${p.brand} ${p.model}${p.trim?' '+p.trim:''}`;
-  toast('Saved \u2713');
+  unsaved=false;setStatus('Saved ✓','saved');buildSidebar();toast('Saved ✓');
 }
 
-// ── ADD / DELETE PATTERN ──────────────────────────────────
+// ── ADD / DELETE ──────────────────────────────────────────
 function openAddModal(){document.getElementById('add-modal').style.display='flex';}
 function closeAddModal(){document.getElementById('add-modal').style.display='none';}
 async function addPattern(){
@@ -1560,20 +1024,20 @@ async function addPattern(){
   if(!brand||!model||!years){alert('Brand, Model and Years are required.');return;}
   const btn=document.getElementById('add-confirm-btn');btn.disabled=true;btn.textContent='Adding...';
   const defPos={front_bottom:false,front_top:false,rear_bottom:false,rear_top:false};
-  const {data,error}=await supa.from('patterns').insert({brand,model,years,trim,research:'',notes:'',submodels:[],materials:[],positions:defPos,other_positions:[]}).select().single();
+  const {data,error}=await supa.from('patterns').insert({brand,model,years,trim,research:'',notes:'',submodels:[],materials:[],positions:defPos,other_positions:[],channels:{},pricing:{}}).select().single();
   btn.disabled=false;btn.textContent='Add Pattern';
   if(error){toast('Error: '+error.message,'err');return;}
-  const full={...data,colors:[],pdfs:[],photos:[],submodels:[],materials:[],positions:defPos,other_positions:[]};
+  const full={...data,colors:[],pdfs:[],photos:[],fits:[],submodels:[],materials:[],positions:defPos,other_positions:[],channels:{},pricing:{}};
   patterns.push(full);patterns.sort((a,b)=>a.brand.localeCompare(b.brand)||a.model.localeCompare(b.model));
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
   closeAddModal();['nm-brand','nm-model','nm-years','nm-trim'].forEach(id=>document.getElementById(id).value='');
-  selectPattern(data.id);toast('Pattern added \u2713');
+  selectPattern(data.id);toast('Pattern added ✓');
 }
 async function doDelete(){
   if(!can('delete')){toast('Permission denied','err');return;}
   const p=getP();await supa.from('patterns').delete().eq('id',p.id);
   patterns=patterns.filter(x=>x.id!==p.id);currentId=null;buildSidebar();
-  document.getElementById('content').innerHTML='<div class="empty-state"><div class="empty-ico">&#129681;</div><div class="empty-title">Pattern deleted</div><div class="empty-sub">Select another or add a new one.</div></div>';
+  document.getElementById('content').innerHTML='<div class="empty-state"><div class="empty-ico">&#129681;</div><div class="empty-title">Pattern deleted</div></div>';
   document.getElementById('hdr-actions').style.display='none';
   document.getElementById('breadcrumb').innerHTML='<span>Select a pattern</span>';
   toast('Deleted');
