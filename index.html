@@ -25,6 +25,8 @@
 body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:100vh;font-size:15px;line-height:1.55}
 .app{display:grid;grid-template-columns:264px 1fr;height:100vh;overflow:hidden}
 .sidebar{background:var(--sb-bg);border-right:1px solid var(--sb-border);display:flex;flex-direction:column;overflow:hidden}
+.filter-chip{flex:1;padding:4px 6px;border-radius:5px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--sb-border);background:var(--bg);color:var(--text3);transition:all 0.15s;text-align:center}
+.filter-chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
 .sb-hdr{padding:18px 16px 14px;border-bottom:1px solid var(--sb-border);flex-shrink:0}
 .logo{display:flex;align-items:center;gap:9px;margin-bottom:13px}
 .logo-text{font-size:13px;font-weight:700;color:var(--navy);line-height:1.2}
@@ -359,6 +361,7 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <div style="flex:1"></div>
       <div class="hdr-actions" id="hdr-actions" style="display:none">
         <span class="hdr-status" id="hdr-status"></span>
+        <button class="btn btn-ghost btn-sm" id="confirm-pattern-btn" onclick="confirmPattern()" title="Mark as confirmed" style="display:none">&#10003; Confirm</button>
         <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">&#x21A9; Undo</button>
         <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">&#x21AA; Redo</button>
         <button class="btn btn-danger btn-sm" id="delete-btn" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
@@ -839,7 +842,7 @@ function showSql(){
 }
 
 async function loadAll(){
-  const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
+  const {data:pats,error}=await supa.from('patterns').select('*,confirmed_by(full_name)').order('brand').order('model').order('years');
   if(error){if(error.code==='42P01'){showSql();}return;}
   const {data:colors}=await supa.from('pattern_colors').select('*').order('sort_order');
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
@@ -852,14 +855,18 @@ async function loadAll(){
     pdfs:(pdfs||[]).filter(f=>f.pattern_id===p.id),
     photos:(photos||[]).filter(ph=>ph.pattern_id===p.id),
     fits:(fits||[]).filter(f=>f.pattern_id_a===p.id||f.pattern_id_b===p.id),
+    status:p.status||'unreviewed',
+    confirmed_by:p.confirmed_by,
+    confirmed_at:p.confirmed_at,
   }));
   buildSidebar();
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────
-let sbFilter='';
+let sbFilter='',sbStatusFilter='all';
 function filterSidebar(v){sbFilter=v.toLowerCase();buildSidebar();}
+function setSbFilter(f){sbStatusFilter=f;['all','unreviewed','confirmed'].forEach(x=>document.getElementById('fc-'+x)?.classList.toggle('active',x===f));buildSidebar();}
 function buildSidebar(){
   const grouped={};
   patterns.forEach(p=>{
@@ -1024,6 +1031,15 @@ function renderInfoTab(p){
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, caveats, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
   html+='</div></div>'; // end right col + info-grid
 
+  // Confirmed status bar
+  if(p.status==='confirmed'&&p.confirmed_at){
+    const when=new Date(p.confirmed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const who=p.confirmed_by?.full_name||'';
+    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)">
+      <span style="font-weight:700">&#10003; Confirmed</span>
+      <span style="opacity:0.7">${who?'by '+esc(who)+' · ':''}${when}</span>
+    </div>`;
+  }
   // Also fits section — full width below the grid
   const fitsHtml=renderAlsoFits(p);
   html+=fitsHtml;
@@ -1259,6 +1275,25 @@ async function uploadToStorage(file, folder){
   if(error){toast('Upload error: '+error.message,'err');return null;}
   const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
   return publicUrl;
+}
+
+// ── PATTERN CONFIRMATION ──────────────────────────────────────
+async function confirmPattern(){
+  const p=getP();if(!p)return;
+  const {data:{user}}=await supa.auth.getUser();
+  const isConfirmed=p.status==='confirmed';
+  const newStatus=isConfirmed?'unreviewed':'confirmed';
+  const now=new Date().toISOString();
+  const update=newStatus==='confirmed'
+    ?{status:'confirmed',confirmed_by:user.id,confirmed_at:now}
+    :{status:'unreviewed',confirmed_by:null,confirmed_at:null};
+  await supa.from('patterns').update(update).eq('id',p.id);
+  p.status=newStatus;
+  p.confirmed_at=newStatus==='confirmed'?now:null;
+  p.confirmed_by=newStatus==='confirmed'?{full_name:'You'}:null;
+  buildSidebar();
+  selectPattern(p.id); // refresh header
+  toast(newStatus==='confirmed'?'Pattern confirmed \u2713':'Marked as unreviewed');
 }
 // ── COLOR PHOTO URL ──────────────────────────────────────────
 let _colorUrlTargetId=null;
