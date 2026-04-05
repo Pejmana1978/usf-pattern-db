@@ -179,7 +179,7 @@ body{font-family:var(--font);background:var(--bg2);color:var(--navy);min-height:
   <button onclick="supa.auth.signOut().then(()=>{location.reload()})" style="background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:11px;text-decoration:underline;font-family:var(--font)">Sign out</button>
 </div>
 <button class="btn btn-ghost" id="btn-detect" onclick="showDuplicates()" disabled style="width:100%;margin-bottom:4px">&#128279; Detect also-fits</button>
-<button class="btn btn-ghost" id="btn-import-all" onclick="importAllRemaining()" disabled style="width:100%;margin-bottom:4px;border-color:var(--gold-border);color:var(--gold2)">&#9889; Import all pending</button>
+<button class="btn btn-ghost" id="btn-import-all" onclick="importAllRemaining()" style="width:100%;margin-bottom:4px;border-color:var(--gold-border);color:var(--gold2)">&#9889; Import all pending</button>
 <button class="btn-import" id="btn-import" onclick="startImport()" disabled>Import Approved to Database</button>
     </div>
   </div>
@@ -484,26 +484,38 @@ function parseProduct(row){
   const rawTitle=(row.Name||'').split('|')[0].trim();
   const name=rawTitle; // full title kept for reference
   // Extract trim level from title: "Brand Model [TRIM] YYYY-YYYY"
+  // Also checks after-pipe suffix for material variants like (Cloth), (Rear), etc.
+  const MATERIAL_VARIANTS=new Set(['cloth','leather','vinyl','premium','premium cloth','suede',
+    'rear','sport','with leg extension','2-panel','4-panel','rear only']);
   let trimLevel='';
   try{
-    let t=rawTitle;
+    // Check after-pipe suffix
+    const afterPipe=rawTitle.includes('|')?rawTitle.split('|')[1].trim():'';
+    let matSuffix='';
+    const apMatch=afterPipe.match(/\(([^)]+)\)\s*$/);
+    if(apMatch&&MATERIAL_VARIANTS.has(apMatch[1].trim().toLowerCase()))matSuffix=apMatch[1].trim();
+
+    let t=rawTitle.split('|')[0].trim();
+    // Extract parenthetical from main title before stripping
+    let parenVal='';
+    const parenMatch=t.match(/\s*\(([^)]+)\)\s*$/);
+    if(parenMatch){parenVal=parenMatch[1].trim();t=t.slice(0,parenMatch.index).trim();}
     // Strip brand
     t=t.replace(new RegExp('^'+brand.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*','i'),'').trim();
     // Strip model
     const modelEsc=(model||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
     t=t.replace(new RegExp('^'+modelEsc+'\\s*','i'),'').trim();
-    // Strip trailing year range (YYYY-YYYY or YYYY)
+    // Strip trailing year range
     t=t.replace(/\s*\d{4}[-\u2013]\d{4}\s*$/, '').trim();
     t=t.replace(/\s*\d{4}\s*$/, '').trim();
-    // Strip trailing parentheticals like (Cloth), (2-Panel), (Rear), (Advance Package)
-    t=t.replace(/\s*\([^)]+\)\s*$/, '').trim();
-    // Strip trailing descriptor like "Rear Seat 60-40" if it contains a year
-    if(/\d{4}/.test(t))t='';
-    // Sanity check: trim should not be same as model or brand
-    if(t.toLowerCase()===model.toLowerCase()||t.toLowerCase()===brand.toLowerCase())t='';
-    // Should not be empty words or just numbers  
-    if(/^[\d\s-]+$/.test(t))t='';
-    trimLevel=t;
+    // Discard paren if it's just a year range or numbers
+    if(/^\d{4}[-\u2013]\d{4}$/.test(parenVal)||/^[\d\s]+$/.test(parenVal))parenVal='';
+    // Combine
+    const parts=[t,parenVal,matSuffix].filter(Boolean);
+    let result=parts.join(' ').trim();
+    if(/^[\d\s-]+$/.test(result))result='';
+    if(result.toLowerCase()===model.toLowerCase()||result.toLowerCase()===brand.toLowerCase())result='';
+    trimLevel=result;
   }catch(e){trimLevel='';}
 
 function parseMaterials(matRaw){
@@ -904,11 +916,19 @@ async function runImport(){
       // Build submodels list from comma-separated submodel string
       const submodelList=(p.submodel||'').split(',').map(s=>s.trim()).filter(Boolean)
         .map(s=>({name:s,years:'All years'}));
+      // Build other_positions from accessories
+      const accTypeLabels={armrest:'Armrest Cover',foam:'Foam Cushion',
+        console:'Center Console Cover',headrest:'Headrest Cover',steering_wheel:'Steering Wheel Cover'};
+      const otherPositions=(p.accessories||[]).map(acc=>({
+        label:accTypeLabels[acc.type]||acc.type,
+        active:true,
+        thumb:(acc.images&&acc.images.length)?acc.images[0]:''
+      }));
       const{data:pat,error:pe}=await supa.from('patterns').insert({
         brand:p.brand,model:p.model,years:p.years,trim:p.trim||'',
         research:'',notes:'',
         submodels:submodelList,
-        materials:p.materials,positions:posWithPhotos,other_positions:[]
+        materials:p.materials,positions:posWithPhotos,other_positions:otherPositions
       }).select().single();
       if(pe){logLine('  ERROR '+p.brand+' '+p.years+' '+p.model+': '+pe.message,'err');errors++;continue;}
       for(let ci=0;ci<p.colors.length;ci++){
