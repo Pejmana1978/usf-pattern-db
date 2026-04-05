@@ -230,10 +230,9 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 .empty-sub{font-size:14px;max-width:250px;line-height:1.7}
 /* CHANNELS */
 .ch-table{width:100%;border-collapse:collapse}
-.ch-table th{text-align:center;padding:7px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid var(--border);background:var(--bg2)}
-.ch-table th:first-child{text-align:left}
-.ch-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
-.ch-table td:first-child{text-align:left;font-size:13px;font-weight:600;color:var(--navy)}
+.ch-table th{text-align:left;padding:8px 16px;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em;border-bottom:2px solid var(--border);background:var(--bg2)}
+.ch-table td{padding:9px 16px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
+.ch-table td:first-child{font-size:13px;font-weight:600;color:var(--navy);width:160px}
 .ch-table tr:last-child td{border-bottom:none}
 .ch-table tr:hover td{background:var(--navy-lighter)}
 .ch-toggle{width:36px;height:22px;border-radius:11px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s;display:inline-block;vertical-align:middle}
@@ -245,17 +244,17 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 .price-section{margin-bottom:28px}
 .price-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 .price-matrix{width:100%;border-collapse:collapse;font-size:13px}
-.price-matrix th{text-align:left;padding:7px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid var(--border);background:var(--bg2);white-space:nowrap}
-.price-matrix td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.price-matrix th{text-align:left;padding:8px 12px;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em;border-bottom:2px solid var(--border);background:var(--bg2);white-space:nowrap}
+.price-matrix td{padding:7px 12px;border-bottom:1px solid var(--border);vertical-align:middle;text-align:left}
 .price-matrix tr:last-child td{border-bottom:none}
 .price-matrix tr:hover td{background:var(--navy-lighter)}
 .price-pos{font-size:13px;font-weight:600;color:var(--navy);white-space:nowrap}
 .price-input{width:84px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none;text-align:right;transition:border-color 0.15s}
 .price-input:focus{border-color:var(--gold-border);background:var(--bg);box-shadow:0 0 0 2px var(--gold-bg)}
-.price-calc{display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;transition:all 0.15s;user-select:none;white-space:nowrap;min-width:76px}
+.price-calc{display:inline-flex;align-items:center;justify-content:center;padding:5px 12px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;transition:all 0.15s;user-select:none;white-space:nowrap;min-width:80px}
 .price-calc:hover{background:var(--gold-bg);border-color:var(--gold-border)}
 .price-calc.copied{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
-.price-na{font-size:12px;color:var(--border2);font-style:italic;font-weight:400}
+.price-na{font-size:14px;color:var(--border2);font-weight:400}
 .price-save-btn{margin-top:16px;padding:9px 22px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s}
 .price-save-btn:hover{background:var(--navy2)}
 </style>
@@ -721,7 +720,7 @@ function renderChannelsTab(p){
       } else {
         const key=brand.id+'_'+channel;
         const isOn=!!(ch[key]);
-        html+=`<td style="text-align:left"><label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span style="font-size:13px;color:${isOn?'var(--green)':'var(--text3)'}" id="chl_${key}">${isOn?'Listed':'Not listed'}</span></label></td>`;
+        html+=`<td><label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span style="font-size:13px;color:${isOn?'var(--green)':'var(--text3)'}" id="chl_${key}">${isOn?'Listed':'Not listed'}</span></label></td>`;
       }
     });
     html+='</tr>';
@@ -752,7 +751,7 @@ function renderPricingSection(p){
   MATERIALS_PRICE.forEach(mat=>{
     const matKey=mat.replace(/[^a-z0-9]/gi,'_').toLowerCase();
     html+=`<div class="price-section"><div class="price-section-title">${mat}</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>`;
-    [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+=`<th>${col.label}<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">${Math.round(col.disc*100)}% off</span></th>`;});
+    [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+=`<th>${col.label}<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">${Math.round(col.disc*100)}% off</span></th>`;});
     html+=`</tr></thead><tbody>`;
     POSITIONS_PRICE.forEach(pos=>{
       const posKey=pos.replace(/[^a-z0-9]/gi,'_').toLowerCase();
