@@ -946,6 +946,18 @@ function renderPattern(){
   }
   const delBtn=document.getElementById('delete-btn');if(delBtn)delBtn.style.display=can('delete')?'':'none';
   const saveBtn=document.getElementById('save-btn-hdr');if(saveBtn)saveBtn.style.display=can('edit')?'':'none';
+  // Confirm button — Admin/Manager only
+  const confirmBtn=document.getElementById('confirm-pattern-btn');
+  if(confirmBtn){
+    const canConfirm=currentRole==='admin'||currentRole==='manager';
+    confirmBtn.style.display=canConfirm?'':'none';
+    const confirmed=p.status==='confirmed';
+    confirmBtn.textContent=confirmed?'\u2713 Confirmed':'\u2713 Confirm';
+    confirmBtn.style.background=confirmed?'var(--green)':'';
+    confirmBtn.style.color=confirmed?'#fff':'';
+    confirmBtn.style.borderColor=confirmed?'var(--green)':'';
+    confirmBtn.style.fontWeight=confirmed?'700':'';
+  }
 }
 
 function renderInfoTab(p){
