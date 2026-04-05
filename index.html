@@ -358,10 +358,10 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
   <div class="main">
     <div class="main-hdr">
       <div class="breadcrumb" id="breadcrumb"><span>Select a pattern</span></div>
+      <button class="btn btn-ghost btn-sm" id="confirm-pattern-btn" onclick="confirmPattern()" style="display:none;margin-left:12px;flex-shrink:0">&#10003; Confirm</button>
       <div style="flex:1"></div>
       <div class="hdr-actions" id="hdr-actions" style="display:none">
         <span class="hdr-status" id="hdr-status"></span>
-        <button class="btn btn-ghost btn-sm" id="confirm-pattern-btn" onclick="confirmPattern()" title="Mark as confirmed" style="display:none">&#10003; Confirm</button>
         <button class="btn btn-ghost btn-sm" onclick="undo()" title="Undo (Cmd+Z)">&#x21A9; Undo</button>
         <button class="btn btn-ghost btn-sm" onclick="redo()" title="Redo (Cmd+Shift+Z)">&#x21AA; Redo</button>
         <button class="btn btn-danger btn-sm" id="delete-btn" onclick="confirmAction('Delete this pattern and all its data? This cannot be undone.',doDelete)">Delete</button>
@@ -902,6 +902,9 @@ function selectPattern(id){
   document.getElementById('hdr-actions').style.display='flex';
   setStatus('');
   setTimeout(snapshot,100);
+  // Force confirm button visibility immediately
+  const cb=document.getElementById('confirm-pattern-btn');
+  if(cb&&(currentRole==='admin'||currentRole==='manager'))cb.style.display='';
 }
 function getP(){return patterns.find(p=>p.id===currentId);}
 
