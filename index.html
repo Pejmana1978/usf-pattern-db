@@ -154,6 +154,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .sub-years{width:110px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--text2);outline:none}
 .sub-years:focus{border-color:var(--gold-border)}
 
+
+.color-name-edit{font-size:14px;font-weight:500;flex:1;min-width:0;background:transparent;border:none;outline:none;font-family:var(--font);color:var(--navy);padding:2px 4px;border-radius:4px;transition:all 0.15s;cursor:pointer}
+.color-name-edit:hover{background:var(--bg3)}
+.color-name-edit:focus{background:var(--bg2);border:1px solid var(--gold-border);cursor:text}
+.color-code-edit{font-size:13px;color:var(--navy);background:var(--bg3);padding:3px 8px;border-radius:4px;border:1px solid var(--border);white-space:nowrap;font-family:var(--font);outline:none;width:90px;transition:border-color 0.15s}
+.color-code-edit:focus{border-color:var(--gold-border);background:var(--bg2)}
+.color-code-edit::placeholder{color:var(--text3);font-style:italic}
+.color-years-edit{font-size:13px;color:var(--text2);white-space:nowrap;width:90px;background:transparent;border:none;outline:none;font-family:var(--font);padding:2px 4px;border-radius:4px;transition:all 0.15s;cursor:pointer}
+.color-years-edit:hover{background:var(--bg3)}
+.color-years-edit:focus{background:var(--bg2);border:1px solid var(--gold-border);color:var(--navy);cursor:text}
 .color-note{font-size:12px;color:var(--text3);background:transparent;border:none;outline:none;font-family:var(--font);width:120px;padding:2px 4px;border-radius:4px;transition:all 0.15s;cursor:pointer}
 .color-note:hover{background:var(--bg3);color:var(--text2)}
 .color-note:focus{background:var(--bg2);border:1px solid var(--gold-border);color:var(--navy);cursor:text}
@@ -502,7 +512,7 @@ function markDirty(){
 function snapshot(){
   const p=getP();if(!p)return;
   collectText();
-  const s=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions});
+  const s=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
   if(s===lastSnapshot)return;
   undoStack.push(lastSnapshot);
   if(undoStack.length>40)undoStack.shift();
@@ -512,6 +522,19 @@ function snapshot(){
 function applySnapshot(s){
   const p=getP();if(!p||!s)return;
   const d=JSON.parse(s);
+  // Restore colors fully (including thumb_url) — sync to DB
+  if(d.colors){
+    d.colors.forEach(dc=>{
+      const existing=p.colors.find(c=>c.id===dc.id);
+      if(existing){
+        const changed=existing.name!==dc.name||existing.code!==dc.code||existing.year_note!==dc.year_note||existing.note!==dc.note||existing.thumb_url!==dc.thumb_url;
+        if(changed){
+          Object.assign(existing,dc);
+          supa.from('pattern_colors').update({name:dc.name,code:dc.code,year_note:dc.year_note,note:dc.note,thumb_url:dc.thumb_url}).eq('id',dc.id);
+        }
+      }
+    });
+  }
   Object.assign(p,d);
   renderPattern();markDirty();
 }
@@ -942,13 +965,16 @@ function renderInfoTab(p){
     p.colors.forEach(c=>{
       const thumb=c.thumb_url||'';
       html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')">
-        <span class="color-name">${esc(c.name)}</span>
-        ${c.code?`<span class="color-code">${esc(c.code)}</span>`:''}
-        <span class="color-years">${esc(c.year_note||'All years')}</span>
-        <input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." title="e.g. Leather only, Not in Vinyl Perf"
+        <input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name"
+          onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)">
+        <input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code"
+          onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)">
+        <input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note"
+          onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)">
+        <input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..."
           oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)">
         <div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${su(thumb)}',event)`:``}">
-          ${thumb?`<img src="${thumb}" alt=""><button class="color-photo-x" onclick="confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico">&#128247;</span><div class="color-photo-hov">&#128247; drop or click</div>`}
+          ${thumb?`<img src="${thumb}" alt=""><button class="color-photo-x" onclick="snapshot();confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico">&#128247;</span><div class="color-photo-hov">&#128247; drop or click</div>`}
         </div>
         <button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button>
       </div>`;
@@ -1134,7 +1160,7 @@ function onColorDrop(e,colorId){
   const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
   if(f)fileToDataUrl(f).then(url=>{const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved \u2713');});
 }
-async function removeColorThumb(id){const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
+async function removeColorThumb(id){snapshot();const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
 
 // ── LIGHTBOX ──────────────────────────────────────────────
 function openLB(url,e){if(e)e.stopPropagation();document.getElementById('lb-img').src=url;document.getElementById('lightbox').style.display='flex';}
@@ -1193,6 +1219,19 @@ function initEditorImgResize(){
 
 
 // ── COLOR NOTE ────────────────────────────────────────────
+
+function updateColorField(id,field,val){
+  const p=getP();const c=p.colors.find(c=>c.id===id);
+  if(c)c[field]=val;
+}
+async function saveColorField(id,field,val){
+  const p=getP();const c=p.colors.find(c=>c.id===id);
+  if(c){
+    c[field]=val;
+    await supa.from('pattern_colors').update({[field]:val}).eq('id',id);
+    if(field==='name')buildSidebar(); // refresh sidebar if name changed
+  }
+}
 function updateColorNote(id,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c.note=val;}
 async function saveColorNote(id,val){
   await supa.from('pattern_colors').update({note:val}).eq('id',id);
