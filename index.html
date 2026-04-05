@@ -229,19 +229,18 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 .empty-title{font-size:17px;font-weight:600;color:var(--text2)}
 .empty-sub{font-size:14px;max-width:250px;line-height:1.7}
 /* CHANNELS */
-.ch-brand-block{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
-.ch-brand-hdr{display:flex;align-items:center;padding:11px 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
-.ch-brand-name{font-size:13px;font-weight:700;color:var(--navy);flex:1;text-transform:uppercase;letter-spacing:0.04em}
-.ch-channel-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border)}
-.ch-channel-row:last-child{border-bottom:none}
-.ch-channel-label{font-size:13px;color:var(--text2);font-weight:500;width:80px;flex-shrink:0}
-.ch-toggle{width:36px;height:22px;border-radius:11px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
+.ch-table{width:100%;border-collapse:collapse}
+.ch-table th{text-align:center;padding:7px 10px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;border-bottom:2px solid var(--border);background:var(--bg2)}
+.ch-table th:first-child{text-align:left}
+.ch-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.ch-table td:first-child{text-align:left;font-size:13px;font-weight:600;color:var(--navy)}
+.ch-table tr:last-child td{border-bottom:none}
+.ch-table tr:hover td{background:var(--navy-lighter)}
+.ch-toggle{width:36px;height:22px;border-radius:11px;background:var(--border2);border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s;display:inline-block;vertical-align:middle}
 .ch-toggle.on{background:var(--green)}
 .ch-toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left 0.18s;box-shadow:0 1px 2px rgba(0,0,0,0.18)}
 .ch-toggle.on::after{left:17px}
-.ch-status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0}
-.ch-status-badge.listed{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.ch-status-badge.unlisted{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.ch-na{font-size:16px;color:var(--border2)}
 /* PRICING */
 .price-section{margin-bottom:28px}
 .price-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
@@ -455,14 +454,14 @@ const VAR_GROUPS=[
 
 // ── CHANNELS & PRICING CONFIG ─────────────────────────────
 const BRANDS_CONFIG=[
-  {id:'usf',    name:'United Seat Factory',      channels:[{id:'website',label:'Website'}]},
-  {id:'usasc',  name:'USASC',                    channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
-  {id:'usan',   name:'USAN',                     channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
-  {id:'diy',    name:'DIY Auto Upholstery',      channels:[{id:'ebay',label:'eBay'}]},
-  {id:'asf',    name:'Auto Seat Factory',        channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
-  {id:'master', name:'Master Auto Upholstery',   channels:[{id:'ebay',label:'eBay'}]},
-  {id:'premium',name:'Premium Auto Seat Covers', channels:[{id:'ebay',label:'eBay'}]},
-  {id:'dsa',    name:'DSA Seat Factory',         channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'usf',    name:'United Seat Factory', channels:[{id:'website',label:'Website'}]},
+  {id:'usasc',  name:'USASC',              channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'usan',   name:'USAN',               channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'diy',    name:'DIY',                channels:[{id:'ebay',label:'eBay'}]},
+  {id:'asf',    name:'ASF',                channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
+  {id:'master', name:'Master',             channels:[{id:'ebay',label:'eBay'}]},
+  {id:'premium',name:'Premium',            channels:[{id:'ebay',label:'eBay'}]},
+  {id:'dsa',    name:'DSA',                channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
 ];
 const POSITIONS_PRICE=['1 Bottom','1 Top','2 Bottoms','1 Bottom & Top','2 Tops','Full Set','Other'];
 const MATERIALS_PRICE=['Genuine Leather','Leather Perf','Leatherette Perf','Leatherette','Vinyl','Alcantara','Cloth'];
@@ -710,18 +709,31 @@ function renderPattern(){
 // ── CHANNELS TAB ──────────────────────────────────────────
 function renderChannelsTab(p){
   const ch=p.channels||{};
-  let html='<div style="margin-bottom:20px">';
-  html+='<div style="font-size:13px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.6">Toggle which brands and channels carry this pattern. Changes save instantly.</div>';
+  // Build unique channel columns across all brands
+  const allChannels=['ebay','website'];
+  const channelLabels={ebay:'eBay',website:'Website'};
+
+  let html='<div class="sec" style="margin-bottom:16px">';
+  html+='<div class="sec-hdr"><span class="sec-title">Channels</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Toggles save instantly</span></div>';
+  html+='<div style="overflow-x:auto"><table class="ch-table"><thead><tr><th>Brand</th>';
+  allChannels.forEach(c=>{ html+=`<th>${channelLabels[c]}</th>`; });
+  html+='</tr></thead><tbody>';
+
   BRANDS_CONFIG.forEach(brand=>{
-    html+=`<div class="ch-brand-block"><div class="ch-brand-hdr"><span class="ch-brand-name">${brand.name}</span></div>`;
-    brand.channels.forEach(channel=>{
-      const key=brand.id+'_'+channel.id;
-      const isOn=!!(ch[key]);
-      html+=`<div class="ch-channel-row"><span class="ch-channel-label">${channel.label}</span><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span class="ch-status-badge ${isOn?'listed':'unlisted'}">${isOn?'Listed':'Not listed'}</span></div>`;
+    html+=`<tr><td>${brand.name}</td>`;
+    allChannels.forEach(channel=>{
+      const hasChannel=brand.channels.some(c=>c.id===channel);
+      if(!hasChannel){
+        html+=`<td><span class="ch-na">&mdash;</span></td>`;
+      } else {
+        const key=brand.id+'_'+channel;
+        const isOn=!!(ch[key]);
+        html+=`<td><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)" title="${brand.name} ${channelLabels[channel]}"></button></td>`;
+      }
     });
-    html+='</div>';
+    html+='</tr>';
   });
-  html+='</div>';
+  html+='</tbody></table></div></div>';
   html+=renderPricingSection(p);
   return html;
 }
@@ -732,10 +744,8 @@ async function toggleChannel(key,btn){
   p.channels[key]=!p.channels[key];
   const isOn=p.channels[key];
   btn.classList.toggle('on',isOn);
-  const badge=btn.nextElementSibling;
-  if(badge){badge.className='ch-status-badge '+(isOn?'listed':'unlisted');badge.textContent=isOn?'Listed':'Not listed';}
   await supa.from('patterns').update({channels:p.channels,updated_at:new Date().toISOString()}).eq('id',p.id);
-  toast(isOn?'Marked as listed ✓':'Marked as not listed');
+  toast(isOn?'Listed ✓':'Removed');
 }
 
 // ── PRICING SECTION ───────────────────────────────────────
@@ -771,17 +781,16 @@ function updatePricing(key,val){
   const p=getP();if(!p)return;
   if(!p.pricing)p.pricing={};
   p.pricing[key]=val?parseFloat(val):null;
-  PRICE_BRANDS.forEach(b=>{
-    const disc=BRAND_DISCOUNTS[b.id]||0.05;
-    const calc=val?calcPreDiscount(parseFloat(val),disc):null;
-    const cell=document.getElementById('pc_'+b.id+'_'+key);
+  [{id:'usasc',disc:0.15},{id:'others',disc:0.05}].forEach(col=>{
+    const calc=val?calcPreDiscount(parseFloat(val),col.disc):null;
+    const cell=document.getElementById('pc_'+col.id+'_'+key);
     if(cell){cell.innerHTML=calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>';cell.classList.remove('copied');}
   });
 }
 
-function copyPrice(el,brandId,priceKey){
+function copyPrice(el,brandId,priceKey,discStr){
   const p=getP();if(!p)return;
-  const disc=BRAND_DISCOUNTS[brandId]||0.05;
+  const disc=discStr?parseFloat(discStr):(brandId==='usasc'?0.15:0.05);
   const target=p.pricing?.[priceKey];
   if(!target){toast('Enter a target price first','err');return;}
   const calc=calcPreDiscount(parseFloat(target),disc);
