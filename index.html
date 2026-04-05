@@ -436,6 +436,30 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     </div>
   </div>
 </div>
+
+<!-- COLOR PHOTO URL MODAL -->
+<div class="modal-overlay" id="color-url-modal" style="display:none" onclick="if(event.target===this)closeColorUrlModal()">
+  <div class="modal" style="width:480px">
+    <div class="modal-title">Add color photo</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:14px">Paste the image URL from your website or photo library.</div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Upload image file</label>
+      <input type="file" id="color-file-input" accept="image/*" style="font-family:var(--font);font-size:13px;color:var(--navy)" onchange="saveColorFile(this)">
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:10px">— or paste URL —</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Image URL</label>
+      <input class="form-input" id="color-url-input" type="text" placeholder="https://seatfactory.com/wp-content/uploads/..." onkeydown="if(event.key==='Enter')saveColorUrl()">
+    </div>
+    <div id="color-url-preview" style="display:none;margin-bottom:14px;text-align:center">
+      <img id="color-url-preview-img" src="" style="max-width:100%;max-height:180px;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'" onload="this.style.display='block'">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeColorUrlModal()">Cancel</button>
+      <button class="btn btn-navy" onclick="saveColorUrl()">Save photo</button>
+    </div>
+  </div>
+</div>
 <div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()">
   <button class="lb-close" onclick="closeLightbox()">&#x2715;</button>
   <img id="lb-img" src="" alt="">
@@ -973,8 +997,8 @@ function renderInfoTab(p){
           onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)">
         <input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..."
           oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)">
-        <div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${su(thumb)}',event)`:``}">
-          ${thumb?`<img src="${thumb}" alt=""><button class="color-photo-x" onclick="snapshot();confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico">&#128247;</span><div class="color-photo-hov">&#128247; drop or click</div>`}
+        <div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${su(thumb)}',event)`:``}" title="${thumb?'Click to enlarge':'Paste a URL to add photo'}">
+          ${thumb?`<img src="${thumb}" alt="" onerror="this.style.display='none'"><button class="color-photo-x" onclick="snapshot();confirmAction('Remove color photo?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:`<span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">&#128279; Paste URL</div>`}
         </div>
         <button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button>
       </div>`;
@@ -1099,9 +1123,9 @@ function onVarLeave(id){document.getElementById('varrow-'+id)?.classList.remove(
 function onVarDrop(e,id){
   e.preventDefault();document.getElementById('varrow-'+id)?.classList.remove('dragover');
   const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(f)fileToDataUrl(f).then(url=>saveGroupThumb(id,url));
+  if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url)saveGroupThumb(id,url);});}
 }
-function handleVarPhotoFile(e,gid){const f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(url=>saveGroupThumb(gid,url));}
+async function handleVarPhotoFile(e,gid){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url)saveGroupThumb(gid,url);}
 async function saveGroupThumb(gid,url){const p=getP();p.positions[gid+'_thumb']=url;await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Photo saved \u2713');}
 async function removeGroupThumb(gid){const p=getP();delete p.positions[gid+'_thumb'];await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Removed');}
 function onOtherOver(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.add('dragover');}
@@ -1109,9 +1133,9 @@ function onOtherLeave(i){document.getElementById('orow-'+i)?.classList.remove('d
 function onOtherDrop(e,i){
   e.preventDefault();document.getElementById('orow-'+i)?.classList.remove('dragover');
   const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(f)fileToDataUrl(f).then(url=>{const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');});
+  if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}});}
 }
-function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(url=>{const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');});}
+async function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}}
 function removeOtherThumb(i){const p=getP();p.other_positions[i].thumb='';markDirty();renderPattern();}
 function toggleOtherVar(i){const p=getP();p.other_positions[i].active=!p.other_positions[i].active;markDirty();renderPattern();}
 function updateOtherLabel(i,v){const p=getP();p.other_positions[i].label=v;markDirty();}
@@ -1155,10 +1179,17 @@ function onDragOver(e,id){e.preventDefault();document.getElementById(id)?.classL
 function onDragLeave(id){document.getElementById(id)?.classList.remove('dragover');}
 function onColorOver(e,id){e.preventDefault();document.getElementById('crow-'+id)?.classList.add('dragover');}
 function onColorLeave(id){document.getElementById('crow-'+id)?.classList.remove('dragover');}
-function onColorDrop(e,colorId){
+async function onColorDrop(e,colorId){
   e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');
   const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));
-  if(f)fileToDataUrl(f).then(url=>{const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved \u2713');});
+  if(!f)return;
+  toast('Uploading...');
+  snapshot();
+  const url=await uploadToStorage(f,'colors');
+  if(!url)return;
+  const p=getP();const c=p.colors.find(c=>c.id===colorId);
+  if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}
+  renderPattern();toast('Color photo saved \u2713');
 }
 async function removeColorThumb(id){snapshot();const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
 
@@ -1178,7 +1209,7 @@ function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.val
 async function uploadPhotos(files,type){
   if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');
   for(const file of files){
-    const url=await fileToDataUrl(file);
+    const url=await uploadToStorage(file,'photos');if(!url)continue;
     const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();
     if(!error&&data)p.photos.push(data);
   }
@@ -1190,10 +1221,10 @@ async function removePhoto(id){const p=getP();await supa.from('pattern_photos').
 function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('rich-editor')?.focus();markDirty();}
 function doHighlight(){const sel=window.getSelection();if(!sel||sel.isCollapsed){toast('Select text first','err');return;}document.execCommand('styleWithCSS',false,true);document.execCommand('hiliteColor',false,'#FFF176');markDirty();}
 function removeHighlight(){const sel=window.getSelection();if(!sel||sel.isCollapsed){toast('Select highlighted text first','err');return;}document.execCommand('styleWithCSS',false,true);document.execCommand('hiliteColor',false,'transparent');markDirty();}
-function handleResearchImg(e){const f=e.target.files[0];e.target.value='';if(f)fileToDataUrl(f).then(url=>insertImg(url));}
+async function handleResearchImg(e){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'research');if(url)insertImg(url);}
 function insertImg(url){const ed=document.getElementById('rich-editor');if(ed){ed.focus();document.execCommand('insertImage',false,url);markDirty();}}
-function onResearchPaste(e){for(const item of e.clipboardData.items){if(item.type.startsWith('image/')){e.preventDefault();fileToDataUrl(item.getAsFile()).then(url=>insertImg(url));return;}}}
-function onResearchDrop(e){e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))fileToDataUrl(f).then(url=>insertImg(url));}
+async function onResearchPaste(e){for(const item of e.clipboardData.items){if(item.type.startsWith('image/')){e.preventDefault();const f=item.getAsFile();if(f){toast('Uploading...');const url=await uploadToStorage(f,'research');if(url)insertImg(url);}return;}}}
+async function onResearchDrop(e){e.preventDefault();const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/')){toast('Uploading...');const url=await uploadToStorage(f,'research');if(url)insertImg(url);}}
 let selectedImg=null;
 function onEditorClick(e){if(e.target.tagName==='IMG'){selectedImg=e.target;document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));selectedImg.classList.add('img-sel');}else{selectedImg=null;document.querySelectorAll('.rich-editor img').forEach(img=>img.classList.remove('img-sel'));}}
 function onEditorMouseDown(e){if(e.target.tagName==='IMG'){const img=e.target,rect=img.getBoundingClientRect();img.style.cursor=(e.clientX>rect.right-16&&e.clientY>rect.bottom-16)?'nwse-resize':'default';}}
@@ -1218,6 +1249,65 @@ function initEditorImgResize(){
 }
 
 
+
+
+// ── SUPABASE STORAGE UPLOAD ───────────────────────────────────
+async function uploadToStorage(file, folder){
+  const ext=file.name.split('.').pop()||'jpg';
+  const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const {data,error}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:file.type});
+  if(error){toast('Upload error: '+error.message,'err');return null;}
+  const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
+  return publicUrl;
+}
+// ── COLOR PHOTO URL ──────────────────────────────────────────
+let _colorUrlTargetId=null;
+function openColorUrlInput(colorId, e){
+  if(e)e.stopPropagation();
+  _colorUrlTargetId=colorId;
+  document.getElementById('color-url-input').value='';
+  document.getElementById('color-url-preview').style.display='none';
+  document.getElementById('color-url-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('color-url-input').focus(),100);
+}
+function closeColorUrlModal(){document.getElementById('color-url-modal').style.display='none';_colorUrlTargetId=null;}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('color-url-input')?.addEventListener('input',function(){
+    const url=this.value.trim();
+    const preview=document.getElementById('color-url-preview');
+    const img=document.getElementById('color-url-preview-img');
+    if(url){img.src=url;preview.style.display='block';}
+    else{preview.style.display='none';}
+  });
+});
+
+async function saveColorFile(input){
+  const f=input.files[0];if(!f)return;
+  toast('Uploading...');
+  snapshot();
+  const url=await uploadToStorage(f,'colors');
+  if(!url){input.value='';return;}
+  const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);
+  if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);}
+  closeColorUrlModal();renderPattern();toast('Color photo saved \u2713');
+}
+
+async function saveColorUrl(){
+  const url=document.getElementById('color-url-input').value.trim();
+  if(!url){toast('Please enter a URL','err');return;}
+  if(!_colorUrlTargetId){closeColorUrlModal();return;}
+  snapshot();
+  const p=getP();
+  const c=p.colors.find(c=>c.id===_colorUrlTargetId);
+  if(c){
+    c.thumb_url=url;
+    await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);
+    closeColorUrlModal();
+    renderPattern();
+    toast('Color photo saved \u2713');
+  }
+}
 // ── COLOR NOTE ────────────────────────────────────────────
 
 function updateColorField(id,field,val){
