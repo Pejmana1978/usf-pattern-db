@@ -351,6 +351,11 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
         <div><div class="logo-text">United Seat Factory</div><div class="logo-sub">Pattern Database</div></div>
       </div>
       <div class="sw"><span class="sw-ico">⌕</span><input type="text" placeholder="Search patterns..." oninput="filterSidebar(this.value)"></div>
+      <div style="display:flex;gap:4px;margin-top:8px">
+        <button class="filter-chip active" id="fc-all" onclick="setSbFilter('all')">All</button>
+        <button class="filter-chip" id="fc-unreviewed" onclick="setSbFilter('unreviewed')">Unreviewed</button>
+        <button class="filter-chip" id="fc-confirmed" onclick="setSbFilter('confirmed')">Confirmed</button>
+      </div>
     </div>
     <div class="brand-list" id="brand-list"><div style="padding:20px;color:rgba(23,24,59,0.35);font-size:13px;text-align:center">Loading...</div></div>
     <div class="sb-foot"><button class="btn-add-pat" onclick="openAddModal()">+ Add Pattern</button></div>
