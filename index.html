@@ -916,7 +916,7 @@ function renderPattern(){
   let html=`
   <div class="pat-hdr">
     <div class="pat-title-block">
-      <div class="pat-title" id="pat-title-display">${esc(p.years)} ${esc(p.brand)} ${esc(p.model)}${p.trim?' '+esc(p.trim):''}</div>
+      <div class="pat-title" id="pat-title-display">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
       <div class="pat-edit-row" id="pat-edit-row" style="display:none">
         <div class="pef"><div class="pef-label">Years</div><input class="pef-input" id="edit-years" value="${esc(p.years)}" oninput="markDirty()"></div>
         <div class="pef"><div class="pef-label">Brand</div><input class="pef-input" id="edit-brand" value="${esc(p.brand)}" list="brand-dl" oninput="markDirty()"></div>
@@ -954,12 +954,16 @@ function renderInfoTab(p){
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>';
   VAR_GROUPS.forEach(g=>{
     const thumb=p.positions[g.id+'_thumb']||'';
+    // Only show photo slot if at least one button in this group is active
+    const groupActive=g.btns.some(b=>p.positions[b.id]);
     html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')">
       <span class="var-row-label">${g.label}</span>
       <div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>
-      ${thumb
-        ?`<div class="var-photo" onclick="openLB('${su(thumb)}',event)"><img src="${thumb}" alt=""><button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button></div>`
-        :`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`
+      ${groupActive
+        ?(thumb
+          ?`<div class="var-photo" onclick="openLB('${su(thumb)}',event)"><img src="${thumb}" alt=""><button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button></div>`
+          :`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`)
+        :'<div style="width:var(--thumb)"></div>'
       }
     </div>`;
   });
