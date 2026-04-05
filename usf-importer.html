@@ -338,6 +338,7 @@ function processFile(file){
       buildList();updateCounts();
       document.getElementById('btn-import').disabled=false;
     document.getElementById('btn-detect').disabled=false;
+    document.getElementById('btn-import-all').disabled=false;
       document.getElementById('main-title').textContent='Review Patterns';
       toast('Loaded '+products.length+' patterns','ok');
       if(products.length>0)selectProduct(0);
