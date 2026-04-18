@@ -492,6 +492,7 @@ function can(action){
   if(action==='manage_users')return ROLE_LEVEL[currentRole]>=3;
   if(action==='delete')return ROLE_LEVEL[currentRole]>=2;
   if(action==='edit')return ROLE_LEVEL[currentRole]>=2;
+  if(action==='pricing')return ROLE_LEVEL[currentRole]>=1;
   return true;
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -710,7 +711,7 @@ function renderPattern(){
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
   if(!can('edit')){
-    document.querySelectorAll('.btn-add-other,.var-btn,.tog-btn,.ch-toggle,.price-input,.price-save-btn,.btn-add-pat').forEach(el=>{el.disabled=true;el.style.opacity='0.4';el.style.cursor='not-allowed';});
+    document.querySelectorAll('.btn-add-other,.var-btn,.tog-btn,.ch-toggle,.btn-add-pat').forEach(el=>{el.disabled=true;el.style.opacity='0.4';el.style.cursor='not-allowed';});
     document.querySelectorAll('.rich-editor').forEach(el=>el.setAttribute('contenteditable','false'));
     document.querySelectorAll('.color-name-edit,.color-code-edit,.color-years-edit,.color-note,.sub-name,.sub-years,.other-var-input,.notes-textarea,.pef-input').forEach(el=>{el.disabled=true;el.style.background='transparent';});
     document.querySelectorAll('#edit-toggle-btn').forEach(el=>{el.style.display='none';});
