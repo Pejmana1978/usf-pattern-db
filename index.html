@@ -289,25 +289,23 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
       <button class="btn btn-navy btn-sm" id="add-user-btn" onclick="showAddUser()">+ Add User</button>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:16px;line-height:1.6;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px">
-      <strong style="color:var(--navy)">How to add users:</strong> Create the auth account in
-      <a href="https://supabase.com/dashboard/project/doommgfawoqiptgqadwd/auth/users" target="_blank" style="color:var(--gold2);font-weight:500">Supabase &rarr; Auth &rarr; Users &rarr; Add user</a>,
-      then paste their User UID below.
+      Create users directly from here. They can log in immediately with the email and password you set, and change their password after first login.
     </div>
     <div id="users-list"><div style="color:var(--text3);font-size:13px;padding:8px 0">Loading...</div></div>
     <div id="add-user-form" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Register existing Supabase user</div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px">Create new user</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Full Name *</label><input class="form-input" id="nu-name" placeholder="e.g. Sarah Jones"></div>
         <div class="form-group"><label class="form-label">Email *</label><input class="form-input" id="nu-email" placeholder="sarah@example.com" type="email"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Supabase User UID *</label><input class="form-input" id="nu-uid" placeholder="e.g. 1ced8b54-..."><div style="font-size:11px;color:var(--text3);margin-top:4px">Find in Supabase &rarr; Auth &rarr; Users &rarr; click user &rarr; copy UID</div></div>
+        <div class="form-group"><label class="form-label">Password *</label><input class="form-input" id="nu-pass" type="password" placeholder="Min 8 chars"><div style="font-size:11px;color:var(--text3);margin-top:4px">User can change this after first login</div></div>
         <div class="form-group"><label class="form-label">Role *</label><select class="form-input" id="nu-role" style="cursor:pointer"><option value="viewer">Viewer &mdash; read only</option><option value="editor">Editor &mdash; add, edit, delete</option><option value="manager">Manager &mdash; + manage users</option></select></div>
       </div>
       <div id="add-user-error" style="display:none;color:var(--red);font-size:13px;margin-bottom:10px;padding:10px 14px;background:var(--red-bg);border-radius:var(--radius);border:1px solid var(--red-border)"></div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button class="btn btn-ghost btn-sm" onclick="hideAddUser()">Cancel</button>
-        <button class="btn btn-navy btn-sm" id="create-user-btn" onclick="registerUser()">Register User</button>
+        <button class="btn btn-navy btn-sm" id="create-user-btn" onclick="registerUser()">Create User</button>
       </div>
     </div>
     <div class="modal-actions" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -580,17 +578,30 @@ async function sendReset(email){const {error}=await supa.auth.resetPasswordForEm
 async function changeUserRole(uid,role){const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);if(error){toast('Error','err');return;}toast('Role updated ✓');await loadUsersList();}
 async function removeUser(uid,name){confirmAction(`Remove ${name}?`,async()=>{await supa.from('user_profiles').delete().eq('id',uid);toast('Removed');await loadUsersList();});}
 function showAddUser(){document.getElementById('add-user-form').style.display='block';document.getElementById('add-user-btn').style.display='none';}
-function hideAddUser(){document.getElementById('add-user-form').style.display='none';document.getElementById('add-user-btn').style.display='';['nu-name','nu-email','nu-uid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+function hideAddUser(){document.getElementById('add-user-form').style.display='none';document.getElementById('add-user-btn').style.display='';['nu-name','nu-email','nu-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 async function registerUser(){
-  const name=document.getElementById('nu-name').value.trim(),email=document.getElementById('nu-email').value.trim(),uid=document.getElementById('nu-uid').value.trim(),role=document.getElementById('nu-role').value;
+  const name=document.getElementById('nu-name').value.trim();
+  const email=document.getElementById('nu-email').value.trim();
+  const pass=document.getElementById('nu-pass').value;
+  const role=document.getElementById('nu-role').value;
   const errEl=document.getElementById('add-user-error');errEl.style.display='none';
-  if(!name||!email||!uid){errEl.textContent='All fields required.';errEl.style.display='block';return;}
-  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)){errEl.textContent='Invalid UID format.';errEl.style.display='block';return;}
-  const btn=document.getElementById('create-user-btn');btn.disabled=true;btn.textContent='Registering...';
-  const {error}=await supa.from('user_profiles').insert({id:uid,email,full_name:name,role,created_by:currentUser.id});
-  btn.disabled=false;btn.textContent='Register User';
-  if(error){errEl.textContent='Error: '+error.message;errEl.style.display='block';return;}
-  toast('User registered ✓');hideAddUser();await loadUsersList();
+  if(!name||!email||!pass){errEl.textContent='All fields required.';errEl.style.display='block';return;}
+  if(pass.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='block';return;}
+  const btn=document.getElementById('create-user-btn');btn.disabled=true;btn.textContent='Creating...';
+  try{
+    const res=await fetch('/api/create-user',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,full_name:name,role,created_by:currentUser.id}),
+    });
+    const data=await res.json();
+    btn.disabled=false;btn.textContent='Create User';
+    if(!res.ok){errEl.textContent=data.error||'Failed to create user.';errEl.style.display='block';return;}
+    toast('User created ✓');hideAddUser();await loadUsersList();
+  }catch(e){
+    btn.disabled=false;btn.textContent='Create User';
+    errEl.textContent='Network error. Please try again.';errEl.style.display='block';
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────
