@@ -992,12 +992,12 @@ function renderResearchTab(p){
       if(canEdit){
         imgHtml+='<div style="display:flex;justify-content:center;gap:6px;padding:2px 0">';
         if(idx>0){
-          imgHtml+='<button onclick="moveResImg(\''+phId+'\',-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&larr;</button>';
+          imgHtml+='<button onclick="moveResImg('+idx+',-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&larr;</button>';
         } else {
           imgHtml+='<span style="display:inline-block;width:38px"></span>';
         }
         if(idx<researchPhotos.length-1){
-          imgHtml+='<button onclick="moveResImg(\''+phId+'\',1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&rarr;</button>';
+          imgHtml+='<button onclick="moveResImg('+idx+',1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&rarr;</button>';
         } else {
           imgHtml+='<span style="display:inline-block;width:38px"></span>';
         }
@@ -1126,22 +1126,32 @@ function closeLightbox(){document.getElementById('lightbox').style.display='none
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();closeConfirm();}});
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
-// FIX: moveResImg — await all DB updates before re-rendering so order persists on reload
-async function moveResImg(id,dir){
+// moveResImg: idx is the position in the sorted research photos array
+async function moveResImg(idx,dir){
   const p=getP();if(!p)return;
-  const resPhotos=p.photos.filter(ph=>ph.type==='research');
-  const idx=resPhotos.findIndex(ph=>ph.id===id);
+  // Get research photos in the same sorted order as rendered
+  const resPhotos=p.photos
+    .filter(ph=>ph.type==='research')
+    .slice()
+    .sort(function(a,b){
+      const sa=(a.sort_order!=null?a.sort_order:9999);
+      const sb=(b.sort_order!=null?b.sort_order:9999);
+      return sa!==sb?sa-sb:new Date(a.created_at)-new Date(b.created_at);
+    });
   const newIdx=idx+dir;
   if(newIdx<0||newIdx>=resPhotos.length)return;
+  // Swap
   const tmp=resPhotos[idx];
   resPhotos[idx]=resPhotos[newIdx];
   resPhotos[newIdx]=tmp;
+  // Assign new sort_order values and save to DB
+  await Promise.all(resPhotos.map(function(ph,i){
+    ph.sort_order=i;
+    return supa.from('pattern_photos').update({sort_order:i}).eq('id',ph.id);
+  }));
+  // Rebuild p.photos with updated research order
   const otherPhotos=p.photos.filter(ph=>ph.type!=='research');
   p.photos=[...otherPhotos,...resPhotos];
-  // Await all updates so DB is consistent before next fetch
-  await Promise.all(resPhotos.map((ph,i)=>
-    supa.from('pattern_photos').update({sort_order:i}).eq('id',ph.id)
-  ));
   renderPattern();
   toast('Reordered \u2713');
 }
