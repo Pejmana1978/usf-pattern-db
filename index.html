@@ -442,14 +442,11 @@ const SUPA_URL='https://doommgfawoqiptgqadwd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
 const {createClient}=supabase;
 const supa=createClient(SUPA_URL,SUPA_KEY);
-
 const MATERIALS=['Vinyl','Vinyl Perf','Leather','Leather Perf','Cloth','Alcantara','Other'];
 const VAR_GROUPS=[
   {id:'front',label:'Front',btns:[{id:'front_bottom',label:'Bottoms'},{id:'front_top',label:'Tops'}]},
   {id:'rear',label:'Rear',btns:[{id:'rear_bottom',label:'Bottoms'},{id:'rear_top',label:'Tops'}]},
 ];
-
-// ── CHANNELS & PRICING CONFIG ─────────────────────────────
 const BRANDS_CONFIG=[
   {id:'usf',    name:'United Seat Factory', channels:[{id:'website',label:'Website'}]},
   {id:'usasc',  name:'USASC',              channels:[{id:'ebay',label:'eBay'},{id:'website',label:'Website'}]},
@@ -464,7 +461,6 @@ const POSITIONS_PRICE=['1 Bottom','1 Top','2 Bottoms','1 Bottom & Top','2 Tops',
 const MATERIALS_PRICE=['Genuine Leather','Leather Perf','Leatherette Perf','Leatherette','Vinyl','Alcantara','Cloth'];
 const BRAND_DISCOUNTS={usasc:0.15,usan:0.05,diy:0.05,asf:0.05,master:0.05,premium:0.05,dsa:0.05};
 const PRICE_BRANDS=BRANDS_CONFIG.filter(b=>b.channels.some(c=>c.id==='ebay'));
-
 function naturalCents(base){
   let cents=Math.round(base*100);
   const lastTwo=cents%100;
@@ -480,13 +476,10 @@ function naturalCents(base){
 }
 function calcPreDiscount(target,disc){if(!target||isNaN(target))return null;return naturalCents(target/(1-disc));}
 function fmtPrice(n){if(n===null||n===undefined)return'—';return'$'+n.toFixed(2);}
-
-// ── GLOBALS ───────────────────────────────────────────────
 let patterns=[],currentId=null,activeTab='info',unsaved=false,photoUploadType='product';
 let currentUser=null,currentRole=null,currentProfile=null;
 let undoStack=[],redoStack=[],lastSnapshot='',snapshotTimer=null;
 const ROLE_LEVEL={admin:4,manager:3,editor:2,viewer:1};
-
 function can(action){
   if(!currentRole)return false;
   if(action==='manage_users')return ROLE_LEVEL[currentRole]>=3;
@@ -496,13 +489,12 @@ function can(action){
   return true;
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function su(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"  );}
+function su(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function toast(msg,type){type=type||'ok';const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
 function confirmAction(msg,cb,title){title=title||'Are you sure?';document.getElementById('confirm-title').textContent=title;document.getElementById('confirm-msg').textContent=msg;document.getElementById('confirm-overlay').style.display='flex';document.getElementById('confirm-ok-btn').onclick=()=>{closeConfirm();cb();};}
 function closeConfirm(){document.getElementById('confirm-overlay').style.display='none';}
 function setStatus(m,c){c=c||'';const el=document.getElementById('hdr-status');if(el){el.textContent=m;el.className='hdr-status '+c;}}
 function markDirty(){unsaved=true;setStatus('Unsaved changes');clearTimeout(snapshotTimer);snapshotTimer=setTimeout(snapshot,800);}
-
 function snapshot(){
   const p=getP();if(!p)return;collectText();
   const s=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
@@ -514,7 +506,7 @@ function applySnapshot(s){
   // Restore color field edits (name, code etc) but NEVER overwrite the colors array
   // Colors are added/removed via their own DB calls and must not be affected by undo
   if(d.colors){d.colors.forEach(dc=>{const ex=p.colors.find(c=>c.id===dc.id);if(ex){const ch=ex.name!==dc.name||ex.code!==dc.code||ex.year_note!==dc.year_note||ex.note!==dc.note||ex.thumb_url!==dc.thumb_url;if(ch){Object.assign(ex,dc);supa.from('pattern_colors').update({name:dc.name,code:dc.code,year_note:dc.year_note,note:dc.note,thumb_url:dc.thumb_url}).eq('id',dc.id);}}});}
-  // Apply all fields EXCEPT colors — colors are managed independently via DB
+  // Apply all fields EXCEPT colors array itself — colors membership is managed independently via DB
   const {colors:_c,...rest}=d;
   Object.assign(p,rest);
   renderPattern();markDirty();
@@ -527,8 +519,6 @@ window.addEventListener('beforeunload',e=>{
   if(currentId)releaseLock(currentId);
   if(unsaved){e.preventDefault();e.returnValue='You have unsaved changes. Are you sure you want to leave?';return e.returnValue;}
 });
-
-// ── AUTH ──────────────────────────────────────────────────
 function validatePassword(p){const e=[];if(p.length<8)e.push('8+ chars');if(!/[A-Z]/.test(p))e.push('uppercase');if(!/[0-9]/.test(p))e.push('number');if(!/[^A-Za-z0-9]/.test(p))e.push('special char');return e;}
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim(),pass=document.getElementById('login-password').value;
@@ -552,7 +542,7 @@ async function doChangePass(){
   const e=validatePassword(pass);if(e.length){errEl.textContent='Needs: '+e.join(', ');errEl.style.display='block';return;}
   if(pass!==conf){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
   const {error}=await supa.auth.updateUser({password:pass});if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
-  closeChangePass();toast('Password updated ✓');
+  closeChangePass();toast('Password updated \u2713');
 }
 async function onAuthSuccess(user){
   currentUser=user;
@@ -566,8 +556,6 @@ async function onAuthSuccess(user){
   const ab=document.querySelector('.btn-add-pat');if(ab)ab.style.display=can('edit')?'':'none';
   await loadAll();document.getElementById('loading-overlay').style.display='none';
 }
-
-// ── USER MANAGEMENT ───────────────────────────────────────
 async function openUsersModal(){if(!can('manage_users')){toast('Permission denied','err');return;}document.getElementById('users-modal').style.display='flex';await loadUsersList();}
 function closeUsersModal(){document.getElementById('users-modal').style.display='none';hideAddUser();}
 async function loadUsersList(){
@@ -584,9 +572,9 @@ async function loadUsersList(){
   });
   html+='</tbody></table>';el.innerHTML=html;
 }
-async function sendReset(email){const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){toast('Error: '+error.message,'err');return;}toast('Reset email sent ✓');}
-async function changeUserRole(uid,role){const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);if(error){toast('Error','err');return;}toast('Role updated ✓');await loadUsersList();}
-async function removeUser(uid,name){confirmAction(`Remove ${name}?`,async()=>{await supa.from('user_profiles').delete().eq('id',uid);toast('Removed');await loadUsersList();});}
+async function sendReset(email){const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){toast('Error: '+error.message,'err');return;}toast('Reset email sent \u2713');}
+async function changeUserRole(uid,role){const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);if(error){toast('Error','err');return;}toast('Role updated \u2713');await loadUsersList();}
+async function removeUser(uid,name){confirmAction('Remove '+name+'?',async()=>{await supa.from('user_profiles').delete().eq('id',uid);toast('Removed');await loadUsersList();});}
 function showAddUser(){document.getElementById('add-user-form').style.display='block';document.getElementById('add-user-btn').style.display='none';}
 function hideAddUser(){document.getElementById('add-user-form').style.display='none';document.getElementById('add-user-btn').style.display='';['nu-name','nu-email','nu-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 async function registerUser(){
@@ -599,22 +587,12 @@ async function registerUser(){
   if(pass.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='block';return;}
   const btn=document.getElementById('create-user-btn');btn.disabled=true;btn.textContent='Creating...';
   try{
-    const res=await fetch('/api/create-user',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,password:pass,full_name:name,role,created_by:currentUser.id}),
-    });
-    const data=await res.json();
-    btn.disabled=false;btn.textContent='Create User';
+    const res=await fetch('/api/create-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,full_name:name,role,created_by:currentUser.id})});
+    const data=await res.json();btn.disabled=false;btn.textContent='Create User';
     if(!res.ok){errEl.textContent=data.error||'Failed to create user.';errEl.style.display='block';return;}
-    toast('User created ✓');hideAddUser();await loadUsersList();
-  }catch(e){
-    btn.disabled=false;btn.textContent='Create User';
-    errEl.textContent='Network error. Please try again.';errEl.style.display='block';
-  }
+    toast('User created \u2713');hideAddUser();await loadUsersList();
+  }catch(e){btn.disabled=false;btn.textContent='Create User';errEl.textContent='Network error. Please try again.';errEl.style.display='block';}
 }
-
-// ── INIT ──────────────────────────────────────────────────
 async function init(){
   try{
     const {data:{session}}=await supa.auth.getSession();
@@ -626,8 +604,6 @@ async function init(){
     });
   }catch(e){document.getElementById('loading-overlay').style.display='none';showLoginScreen();}
 }
-
-// ── DATA ──────────────────────────────────────────────────
 async function loadAll(){
   const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
   if(error){return;}
@@ -638,7 +614,7 @@ async function loadAll(){
     submodels:p.submodels||[],materials:p.materials||[],
     positions:p.positions||{},other_positions:p.other_positions||[],
     channels:p.channels||{},pricing:p.pricing||{},
-    colors:[], // loaded on demand when pattern is selected
+    colors:[],
     pdfs:(pdfs||[]).filter(f=>f.pattern_id===p.id),
     photos:(photos||[]).filter(ph=>ph.pattern_id===p.id),
     fits:(fits||[]).filter(f=>f.pattern_id_a===p.id||f.pattern_id_b===p.id),
@@ -651,18 +627,12 @@ async function loadAll(){
 async function loadPhotosForPattern(patternId){
   const {data,error}=await supa.from('pattern_photos').select('*').eq('pattern_id',patternId).order('sort_order',{nullsFirst:true}).order('created_at');
   if(error){console.error('Photos fetch error:',error);return[];}
-  // Deduplicate by URL
   const seen=new Set();
   return (data||[]).filter(ph=>{if(seen.has(ph.url))return false;seen.add(ph.url);return true;});
 }
 async function loadColorsForPattern(patternId){
-  const {data:colors,error}=await supa.from('pattern_colors')
-    .select('*')
-    .eq('pattern_id',patternId)
-    .order('name');
+  const {data:colors,error}=await supa.from('pattern_colors').select('*').eq('pattern_id',patternId).order('name');
   if(error){console.error('Colors fetch error:',error);return[];}
-  // Deduplicate: if same name+code exists multiple times, keep only the most recent
-  // and auto-delete the extras from the DB so users never need to go to Supabase
   const seen=new Map();
   const toDelete=[];
   (colors||[]).forEach(c=>{
@@ -674,15 +644,12 @@ async function loadColorsForPattern(patternId){
       toDelete.push(c.id);
     }
   });
-  // Silently delete duplicates in background
   if(toDelete.length>0){
     console.log('Auto-deleting',toDelete.length,'duplicate color(s)');
     supa.from('pattern_colors').delete().in('id',toDelete).then(()=>{});
   }
   return [...seen.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
-
-// ── SIDEBAR ───────────────────────────────────────────────
 let sbFilter='',sbStatusFilter='all';
 function filterSidebar(v){sbFilter=v.toLowerCase();buildSidebar();}
 function setSbFilter(f){sbStatusFilter=f;['all','unreviewed','confirmed'].forEach(x=>document.getElementById('fc-'+x)?.classList.toggle('active',x===f));buildSidebar();}
@@ -718,7 +685,6 @@ async function selectPattern(id){
   if(currentId&&currentId!==id)releaseLock(currentId);
   currentId=id;activeTab='info';unsaved=false;undoStack=[];redoStack=[];
   buildSidebar();
-  // Always load fresh data from DB when selecting a pattern
   const p=getP();
   if(p){
     p.colors=await loadColorsForPattern(id);
@@ -748,11 +714,8 @@ async function releaseLock(patternId){
   }
 }
 function getP(){return patterns.find(p=>p.id===currentId);}
-
-// ── RENDER ────────────────────────────────────────────────
 function renderPattern(){
   const p=getP();if(!p)return;
-  // Lock warning banner
   const existingBanner=document.getElementById('lock-banner');
   if(existingBanner)existingBanner.remove();
   if(p.locked_by&&p.locked_by!==currentUser?.id&&p.locked_at){
@@ -761,7 +724,7 @@ function renderPattern(){
       const banner=document.createElement('div');
       banner.id='lock-banner';
       banner.style.cssText='position:fixed;top:0;left:264px;right:0;background:#C9B27E;color:#17183B;text-align:center;padding:9px;font-size:13px;font-weight:600;z-index:300;';
-      banner.textContent='⚠️ Another user is currently editing this pattern. Your saves may conflict with theirs.';
+      banner.textContent='\u26a0\ufe0f Another user is currently editing this pattern. Your saves may conflict with theirs.';
       document.body.appendChild(banner);
     }
   }
@@ -771,8 +734,8 @@ function renderPattern(){
   const tabs=[
     {id:'info',label:'Info'},
     {id:'channels',label:'Channels &amp; Pricing'},
-    {id:'photos',label:`Photos (${prod.length})`},
-    {id:'before_after',label:`Before &amp; After (${ba.length})`},
+    {id:'photos',label:'Photos ('+prod.length+')'},
+    {id:'before_after',label:'Before &amp; After ('+ba.length+')'},
     {id:'research',label:'Research'}
   ];
   let html=`<div class="pat-hdr"><div class="pat-title-block">
@@ -783,15 +746,13 @@ function renderPattern(){
       <div class="pef"><div class="pef-label">Model</div><input class="pef-input" id="edit-model" value="${esc(p.model)}" oninput="markDirty()"></div>
       <div class="pef"><div class="pef-label">Trim</div><input class="pef-input" id="edit-trim" value="${esc(p.trim||'')}" placeholder="e.g. GT..." oninput="markDirty()"></div>
     </div>
-  </div><button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">&#9998; Edit</button></div>
+  </div><button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">\u270e Edit</button></div>
   <div class="tabs">${tabs.map(t=>`<div class="tab ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</div>`).join('')}</div>`;
-
   if(activeTab==='info')html+=renderInfoTab(p);
   else if(activeTab==='channels')html+=renderChannelsTab(p);
   else if(activeTab==='photos')html+=buildPhotoTab('Product photos','prod-drop','product',prod);
   else if(activeTab==='before_after')html+=buildPhotoTab('Before &amp; After','ba-drop','before_after',ba);
   else if(activeTab==='research')html+=renderResearchTab(p);
-
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
   if(activeTab==='research')setTimeout(initResearchTextareas,50);
@@ -805,25 +766,23 @@ function renderPattern(){
   const delBtn=document.getElementById('delete-btn');if(delBtn)delBtn.style.display=can('delete')?'':'none';
   const saveBtn=document.getElementById('save-btn-hdr');if(saveBtn)saveBtn.style.display=can('edit')?'':'none';
   const cb=document.getElementById('confirm-pattern-btn');
-  if(cb){const ok=currentRole==='admin'||currentRole==='manager';cb.style.display=ok?'':'none';const confirmed=p.status==='confirmed';cb.textContent=confirmed?'✓ Confirmed':'✓ Confirm';cb.style.background=confirmed?'var(--green)':'';cb.style.color=confirmed?'#fff':'';cb.style.borderColor=confirmed?'var(--green)':'';cb.style.fontWeight=confirmed?'700':'';}
+  if(cb){const ok=currentRole==='admin'||currentRole==='manager';cb.style.display=ok?'':'none';const confirmed=p.status==='confirmed';cb.textContent=confirmed?'\u2713 Confirmed':'\u2713 Confirm';cb.style.background=confirmed?'var(--green)':'';cb.style.color=confirmed?'#fff':'';cb.style.borderColor=confirmed?'var(--green)':'';cb.style.fontWeight=confirmed?'700':'';}
 }
-
-// ── CHANNELS TAB ──────────────────────────────────────────
 function renderChannelsTab(p){
   const ch=p.channels||{};
   let html='<div class="sec" style="margin-bottom:16px">';
   html+='<div class="sec-hdr"><span class="sec-title">Channels</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Toggles save instantly</span></div>';
   html+='<table class="ch-table"><thead><tr><th style="width:160px">Brand</th><th>eBay</th><th>Website</th></tr></thead><tbody>';
   BRANDS_CONFIG.forEach(brand=>{
-    html+=`<tr><td>${brand.name}</td>`;
+    html+='<tr><td>'+brand.name+'</td>';
     ['ebay','website'].forEach(channel=>{
       const hasChannel=brand.channels.some(c=>c.id===channel);
       if(!hasChannel){
-        html+=`<td><span class="ch-na">&mdash;</span></td>`;
+        html+='<td><span class="ch-na">&mdash;</span></td>';
       } else {
         const key=brand.id+'_'+channel;
         const isOn=!!(ch[key]);
-        html+=`<td><label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><button class="ch-toggle ${isOn?'on':''}" onclick="toggleChannel('${key}',this)"></button><span style="font-size:13px;color:${isOn?'var(--green)':'var(--text3)'}" id="chl_${key}">${isOn?'Listed':'Not listed'}</span></label></td>`;
+        html+='<td><label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer"><button class="ch-toggle '+(isOn?'on':'')+'" onclick="toggleChannel(\''+key+'\',this)"></button><span style="font-size:13px;color:'+(isOn?'var(--green)':'var(--text3)')+'" id="chl_'+key+'">'+(isOn?'Listed':'Not listed')+'</span></label></td>';
       }
     });
     html+='</tr>';
@@ -832,7 +791,6 @@ function renderChannelsTab(p){
   html+=renderPricingSection(p);
   return html;
 }
-
 async function toggleChannel(key,btn){if(!can('edit')){toast('View-only access','err');return;}
   const p=getP();if(!p)return;
   if(!p.channels)p.channels={};
@@ -842,37 +800,33 @@ async function toggleChannel(key,btn){if(!can('edit')){toast('View-only access',
   const labelEl=document.getElementById('chl_'+key);
   if(labelEl){labelEl.textContent=isOn?'Listed':'Not listed';labelEl.style.color=isOn?'var(--green)':'var(--text3)';}
   await supa.from('patterns').update({channels:p.channels,updated_at:new Date().toISOString()}).eq('id',p.id);
-  toast(isOn?'Listed ✓':'Removed');
+  toast(isOn?'Listed \u2713':'Removed');
 }
-
-// ── PRICING SECTION ───────────────────────────────────────
 function renderPricingSection(p){
   const pricing=p.pricing||{};
-  let html=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Pricing</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Enter target → click any calculated price to copy it</span></div><div class="sec-body">`;
-  html+=`<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.7"><strong style="color:var(--navy)">Target price</strong> = what you want to receive after the sale discount. The calculated pre-discount price is what you enter in the eBay listing. <strong style="color:var(--navy)">USASC: 15% off. All others: 5% off.</strong> Prices land on natural-looking cents. <strong style="color:var(--navy)">Click any price to copy it.</strong></div>`;
-
+  let html='<div class="sec"><div class="sec-hdr"><span class="sec-title">Pricing</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Enter target \u2192 click any calculated price to copy it</span></div><div class="sec-body">';
+  html+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.7"><strong style="color:var(--navy)">Target price</strong> = what you want to receive after the sale discount. The calculated pre-discount price is what you enter in the eBay listing. <strong style="color:var(--navy)">USASC: 15% off. All others: 5% off.</strong> Prices land on natural-looking cents. <strong style="color:var(--navy)">Click any price to copy it.</strong></div>';
   MATERIALS_PRICE.forEach(mat=>{
     const matKey=mat.replace(/[^a-z0-9]/gi,'_').toLowerCase();
-    html+=`<div class="price-section"><div class="price-section-title">${mat}</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>`;
-    [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+=`<th>${col.label}<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">${Math.round(col.disc*100)}% off</span></th>`;});
-    html+=`</tr></thead><tbody>`;
+    html+='<div class="price-section"><div class="price-section-title">'+mat+'</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>';
+    [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+='<th>'+col.label+'<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">'+Math.round(col.disc*100)+'% off</span></th>';});
+    html+='</tr></thead><tbody>';
     POSITIONS_PRICE.forEach(pos=>{
       const posKey=pos.replace(/[^a-z0-9]/gi,'_').toLowerCase();
       const priceKey=matKey+'__'+posKey;
       const target=(pricing[priceKey]&&pricing[priceKey]>0)?pricing[priceKey]:'';
-      html+=`<tr><td class="price-pos">${pos}</td><td><input class="price-input" type="number" min="0" step="0.01" placeholder="0.00" value="${target}" oninput="updatePricing('${priceKey}',this.value)" id="pi_${priceKey}"></td>`;
+      html+='<tr><td class="price-pos">'+pos+'</td><td><input class="price-input" type="number" min="0" step="0.01" placeholder="0.00" value="'+target+'" oninput="updatePricing(\''+priceKey+'\',this.value)" id="pi_'+priceKey+'"></td>';
       [{id:'usasc',disc:0.15},{id:'others',disc:0.05}].forEach(col=>{
         const calc=(target&&parseFloat(target)>0)?calcPreDiscount(parseFloat(target),col.disc):null;
-        html+=`<td><span class="price-calc" id="pc_${col.id}_${priceKey}" onclick="copyPrice(this,'${col.id}','${priceKey}','${col.disc}')">${calc?fmtPrice(calc):'<span class=\"price-na\">&mdash;</span>'}</span></td>`;
+        html+='<td><span class="price-calc" id="pc_'+col.id+'_'+priceKey+'" onclick="copyPrice(this,\''+col.id+'\',\''+priceKey+'\',\''+col.disc+'\')">'+(calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>')+'</span></td>';
       });
-      html+=`</tr>`;
+      html+='</tr>';
     });
-    html+=`</tbody></table></div>`;
+    html+='</tbody></table></div>';
   });
-  html+=`<button class="price-save-btn" onclick="savePricing()">&#128190; Save pricing</button></div></div>`;
+  html+='<button class="price-save-btn" onclick="savePricing()">\ud83d\udcbe Save pricing</button></div></div>';
   return html;
 }
-
 function updatePricing(key,val){
   const p=getP();if(!p)return;
   if(!p.pricing)p.pricing={};
@@ -883,7 +837,6 @@ function updatePricing(key,val){
     if(cell){cell.innerHTML=calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>';cell.classList.remove('copied');}
   });
 }
-
 function copyPrice(el,brandId,priceKey,discStr){
   const p=getP();if(!p)return;
   const disc=discStr?parseFloat(discStr):(brandId==='usasc'?0.15:0.05);
@@ -892,23 +845,19 @@ function copyPrice(el,brandId,priceKey,discStr){
   const calc=calcPreDiscount(parseFloat(target),disc);
   if(!calc)return;
   const text=calc.toFixed(2);
-  const doCopy=()=>{el.classList.add('copied');el.textContent='✓ Copied!';setTimeout(()=>{el.innerHTML=fmtPrice(calc);el.classList.remove('copied');},1500);};
+  const doCopy=()=>{el.classList.add('copied');el.textContent='\u2713 Copied!';setTimeout(()=>{el.innerHTML=fmtPrice(calc);el.classList.remove('copied');},1500);};
   if(navigator.clipboard){navigator.clipboard.writeText(text).then(doCopy).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();});}
   else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();}
 }
-
 async function savePricing(){
   const p=getP();if(!p){toast('No pattern selected','err');return;}
   const {error}=await supa.from('patterns').update({pricing:p.pricing||{},updated_at:new Date().toISOString()}).eq('id',p.id);
   if(error){toast('Save failed: '+error.message,'err');return;}
-  toast('Pricing saved ✓');
+  toast('Pricing saved \u2713');
 }
-
-// ── INFO TAB ──────────────────────────────────────────────
 function renderInfoTab(p){
   const canEdit=can('edit');
   let html='<div class="info-grid">';
-  // VARIATIONS
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>';
   VAR_GROUPS.forEach(function(g){
     const thumb=p.positions[g.id+'_thumb']||'';
@@ -934,7 +883,6 @@ function renderInfoTab(p){
     }
     html+='</div>';
   });
-  // OTHER POSITIONS
   (p.other_positions||[]).forEach(function(op,i){
     const thumb=op.thumb||'';
     html+='<div class="other-var-row" id="orow-'+i+'" ondragover="onOtherOver(event,'+i+')" ondragleave="onOtherLeave('+i+')" ondrop="onOtherDrop(event,'+i+')">';
@@ -953,7 +901,6 @@ function renderInfoTab(p){
   });
   if(canEdit)html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button>';
   html+='</div>';
-  // MATERIALS
   const mats=p.materials||[];
   const stdMats=MATERIALS.slice(0,-1);
   const otherCustom=mats.find(function(m){return !stdMats.includes(m)&&m!=='Other';})||'';
@@ -966,7 +913,6 @@ function renderInfoTab(p){
   html+='</div>';
   if(hasOther)html+='<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2)">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene..." value="'+esc(otherCustom)+'" oninput="setOtherMaterial(this.value)"></div>';
   html+='</div></div>';
-  // COLORS
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span>';
   if(canEdit)html+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button>';
   html+='</div>';
@@ -992,9 +938,7 @@ function renderInfoTab(p){
     html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet.</div>';
   }
   html+='</div>';
-  // RIGHT COLUMN
   html+='<div style="display:flex;flex-direction:column;gap:16px">';
-  // SUBMODELS
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span>';
   if(canEdit)html+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button>';
   html+='</div>';
@@ -1010,10 +954,8 @@ function renderInfoTab(p){
     html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';
   }
   html+='</div>';
-  // NOTES
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, installation notes..." oninput="markDirty()">'+esc(p.notes||'')+'</textarea></div></div>';
   html+='</div></div>';
-  // CONFIRMED BANNER
   if(p.status==='confirmed'&&p.confirmed_at){
     const when=new Date(p.confirmed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)"><span style="font-weight:700">&#10003; Confirmed</span><span style="opacity:0.7">'+when+'</span></div>';
@@ -1021,13 +963,71 @@ function renderInfoTab(p){
   html+=renderAlsoFits(p);
   return html;
 }
-
+// ── RESEARCH TAB ─────────────────────────────────────────
+// FIX: All string concatenation uses consistent single-quote escaping (no nested backtick issues)
 function renderResearchTab(p){
-  const researchPhotos=(p.photos||[]).filter(ph=>ph.type==='research');
+  const researchPhotos=(p.photos||[]).filter(function(ph){return ph.type==='research';});
   const canEdit=can('edit');
 
-  // DOCUMENTS section
-  let pdfHtml='<div class="sec" style="margin-bottom:16px">';
+  // REFERENCE IMAGES
+  var imgHtml='<div class="sec" style="margin-bottom:16px">';
+  imgHtml+='<div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>';
+  if(canEdit)imgHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button>';
+  imgHtml+='</div><div class="sec-body">';
+
+  if(researchPhotos.length){
+    imgHtml+='<div id="research-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:8px">';
+    researchPhotos.forEach(function(ph,idx){
+      var phId=ph.id;
+      imgHtml+='<div class="res-img-card" data-id="'+phId+'" style="display:flex;flex-direction:column;gap:6px">';
+      // Arrow reorder buttons
+      if(canEdit){
+        imgHtml+='<div style="display:flex;justify-content:center;gap:6px;padding:2px 0">';
+        if(idx>0){
+          imgHtml+='<button onclick="moveResImg(\''+phId+'\',-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&larr;</button>';
+        } else {
+          imgHtml+='<span style="display:inline-block;width:38px"></span>';
+        }
+        if(idx<researchPhotos.length-1){
+          imgHtml+='<button onclick="moveResImg(\''+phId+'\',1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&rarr;</button>';
+        } else {
+          imgHtml+='<span style="display:inline-block;width:38px"></span>';
+        }
+        imgHtml+='</div>';
+      }
+      // Image container
+      imgHtml+='<div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB(\''+su(ph.url)+'\',event)">';
+      imgHtml+='<img src="'+ph.url+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display=\'none\'">';
+      if(canEdit){
+        imgHtml+='<button onclick="event.stopPropagation();confirmRemovePhoto(this)" data-id="'+phId+'" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>';
+      }
+      imgHtml+='</div>';
+      // Caption textarea (auto-resizing)
+      imgHtml+='<textarea id="cap-ta-'+phId+'" placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption(\''+phId+'\',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption(\''+phId+'\',this.value);renderCaptionLinks(\''+phId+'\',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor=\'var(--gold-border)\';document.getElementById(\'cap-view-'+phId+'\').style.display=\'none\';this.style.display=\'block\'">'+esc(ph.caption||'')+'</textarea>';
+      // Caption link-rendered view
+      imgHtml+='<div id="cap-view-'+phId+'" onclick="document.getElementById(\'cap-ta-'+phId+'\').style.display=\'block\';document.getElementById(\'cap-ta-'+phId+'\').focus();this.style.display=\'none\'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">'+(ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>')+'</div>';
+      imgHtml+='</div>';
+    });
+    imgHtml+='</div>';
+    if(canEdit){
+      imgHtml+='<div class="photo-drop-zone" style="padding:16px;margin-top:8px" onclick="triggerResearchPhotoUpload()" id="research-drop2" ondragover="onDragOver(event,\'research-drop2\')" ondragleave="onDragLeave(\'research-drop2\')" ondrop="onResearchImgDrop(event)"><div style="font-size:14px;color:var(--text3)">+ Drop more images here</div></div>';
+    }
+  } else {
+    if(canEdit){
+      imgHtml+='<div class="photo-drop-zone" onclick="triggerResearchPhotoUpload()" id="research-drop" ondragover="onDragOver(event,\'research-drop\')" ondragleave="onDragLeave(\'research-drop\')" ondrop="onResearchImgDrop(event)"><div class="drop-ico">&#128247;</div><div class="drop-txt">Drag &amp; drop or click to add images</div><div class="drop-sub">JPG, PNG, WEBP</div></div>';
+    } else {
+      imgHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No reference images yet.</div>';
+    }
+  }
+  imgHtml+='</div></div>';
+
+  // NOTES
+  var notesHtml='<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">&#128221; Notes</span></div><div class="sec-body">';
+  notesHtml+='<textarea id="ta-research-notes" placeholder="Add research notes, findings, observations..." oninput="markDirty()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:200px;outline:none;line-height:1.7;transition:border-color 0.2s" onfocus="this.style.borderColor=\'var(--gold-border)\'" onblur="this.style.borderColor=\'var(--border)\'">'+esc(p.research||'')+'</textarea>';
+  notesHtml+='</div></div>';
+
+  // DOCUMENTS / PDFs
+  var pdfHtml='<div class="sec" style="margin-bottom:16px">';
   pdfHtml+='<div class="sec-hdr"><span class="sec-title">&#128196; Documents</span>';
   if(canEdit)pdfHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button>';
   pdfHtml+='</div><div class="sec-body">';
@@ -1044,66 +1044,32 @@ function renderResearchTab(p){
     pdfHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No documents yet.</div>';
   }
   if(canEdit){
-    pdfHtml+='<div class="photo-drop-zone" style="margin-top:10px" ondragover="onDragOver(event,'pdf-drop')" ondragleave="onDragLeave('pdf-drop')" ondrop="onPdfDrop(event)" id="pdf-drop" onclick="openPdfInput()">';
+    pdfHtml+='<div class="photo-drop-zone" style="margin-top:10px" id="pdf-drop" ondragover="onDragOver(event,\'pdf-drop\')" ondragleave="onDragLeave(\'pdf-drop\')" ondrop="onPdfDrop(event)" onclick="openPdfInput()">';
     pdfHtml+='<div class="drop-ico">&#128196;</div><div class="drop-txt">Drag &amp; drop PDF or click to add</div><div class="drop-sub">Enter a name and the file will be uploaded</div></div>';
   }
   pdfHtml+='</div></div>';
 
-  // REFERENCE IMAGES section
-  let imgHtml='<div class="sec" style="margin-bottom:16px">';
-  imgHtml+='<div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>';
-  if(canEdit)imgHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button>';
-  imgHtml+='</div><div class="sec-body">';
-  if(researchPhotos.length){
-    imgHtml+='<div id="research-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:8px">';
-    researchPhotos.forEach(function(ph,idx){
-      imgHtml+='<div class="res-img-card" data-id="'+ph.id+'" data-idx="'+idx+'" style="display:flex;flex-direction:column;gap:6px">';
-      // Arrow buttons for reordering
-      if(canEdit){
-        imgHtml+='<div style="display:flex;justify-content:center;gap:6px;padding:2px 0">';
-        if(idx>0) imgHtml+='<button onclick="moveResImg(''+ph.id+'',-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&larr;</button>';
-        else imgHtml+='<span style="display:inline-block;width:38px"></span>';
-        if(idx<researchPhotos.length-1) imgHtml+='<button onclick="moveResImg(''+ph.id+'',1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&rarr;</button>';
-        else imgHtml+='<span style="display:inline-block;width:38px"></span>';
-        imgHtml+='</div>';
-      }
-      // Image
-      imgHtml+='<div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB(''+ph.url+'',event)">';
-      imgHtml+='<img src="'+ph.url+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">';
-      imgHtml+='<div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>';
-      if(canEdit) imgHtml+='<button onclick="event.stopPropagation();confirmRemovePhoto(this)" data-id="'+ph.id+'" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>';
-      imgHtml+='</div>';
-      // Caption textarea
-      imgHtml+='<textarea placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption(''+ph.id+'',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption(''+ph.id+'',this.value);renderCaptionLinks(''+ph.id+'',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)';this.style.display='block';document.getElementById('cap-view-'+ph.id+'').style.display='none'" id="cap-ta-'+ph.id+'">'+esc(ph.caption||'')+'</textarea>';
-      // Caption link view
-      imgHtml+='<div id="cap-view-'+ph.id+'" onclick="document.getElementById('cap-ta-'+ph.id+'').style.display='block';document.getElementById('cap-ta-'+ph.id+'').focus();this.style.display='none'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">'+(ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>')+'</div>';
-      imgHtml+='</div>';
-    });
-    imgHtml+='</div>';
-    if(canEdit){
-      imgHtml+='<div class="photo-drop-zone" style="padding:16px;margin-top:8px" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop2')" ondragleave="onDragLeave('research-drop2')" ondrop="onResearchImgDrop(event)" id="research-drop2"><div style="font-size:14px;color:var(--text3)">+ Drop more images here</div></div>';
-    }
-  } else {
-    if(canEdit){
-      imgHtml+='<div class="photo-drop-zone" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop')" ondragleave="onDragLeave('research-drop')" ondrop="onResearchImgDrop(event)" id="research-drop"><div class="drop-ico">&#128247;</div><div class="drop-txt">Drag &amp; drop or click to add images</div><div class="drop-sub">JPG, PNG, WEBP</div></div>';
-    } else {
-      imgHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No reference images yet.</div>';
-    }
-  }
-  imgHtml+='</div></div>';
-
-  // NOTES section
-  let notesHtml='<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">&#128221; Notes</span></div><div class="sec-body">';
-  notesHtml+='<textarea id="ta-research-notes" placeholder="Add research notes, findings, observations..." oninput="markDirty()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:200px;outline:none;line-height:1.7;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)'">'+esc(p.research||'')+'</textarea>';
-  notesHtml+='</div></div>';
-
   return imgHtml+notesHtml+pdfHtml;
 }
-
 function buildPhotoTab(title,dropId,type,photos){
-  return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body"><div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')"><div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="${ph.url}" onerror="this.style.display='none'" alt="">${can('edit')?`<button class="sq-photo-x" onclick="confirmAction('Remove?',()=>removePhoto('${ph.id}'))">&#x2715;</button>`:''}<div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${ph.url}',event)">&#128269; View</button></div></div><div class="sq-photo-label">${esc(ph.caption||'Photo')}</div></div>`).join('')}</div>`:''}</div></div>`;
+  var canEdit=can('edit');
+  var html='<div class="sec"><div class="sec-hdr"><span class="sec-title">'+title+'</span></div><div class="sec-body">';
+  if(canEdit){
+    html+='<div class="photo-drop-zone" id="'+dropId+'" ondragover="onDragOver(event,\''+dropId+'\')" ondragleave="onDragLeave(\''+dropId+'\')" ondrop="onPhotoDrop(event,\''+type+'\')" onclick="triggerPhotoUpload(\''+type+'\')"><div class="drop-ico">'+(type==='product'?'&#128247;':'&#128260;')+'</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>';
+  }
+  if(photos.length){
+    html+='<div class="sq-photo-grid">';
+    photos.forEach(function(ph){
+      html+='<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="'+ph.url+'" onerror="this.style.display=\'none\'" alt="">';
+      if(canEdit)html+='<button class="sq-photo-x" onclick="confirmAction(\'Remove?\',()=>removePhoto(\''+ph.id+'\'))">&#x2715;</button>';
+      html+='<div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB(\''+su(ph.url)+'\',event)">&#128269; View</button></div></div>';
+      html+='<div class="sq-photo-label">'+esc(ph.caption||'Photo')+'</div></div>';
+    });
+    html+='</div>';
+  }
+  html+='</div></div>';
+  return html;
 }
-
 function switchTab(t){collectText();if(unsaved&&currentId&&can('edit'))saveAll();activeTab=t;renderPattern();}
 function collectText(){
   const p=getP();if(!p)return;
@@ -1117,55 +1083,42 @@ function toggleEditMode(){if(!can('edit')){toast('View-only access','err');retur
   editMode=!editMode;
   const td=document.getElementById('pat-title-display'),er=document.getElementById('pat-edit-row'),btn=document.getElementById('edit-toggle-btn');
   td.style.display=editMode?'none':'block';er.style.display=editMode?'flex':'none';
-  btn.textContent=editMode?'✓ Done':'✏️ Edit';
+  btn.textContent=editMode?'\u2713 Done':'\u270f\ufe0f Edit';
   if(!editMode){collectText();markDirty();}
 }
-
-// ── VARIATIONS ────────────────────────────────────────────
-async function toggleVarBtn(btnId,groupId){if(!can('edit')){toast('View-only access','err');return;}const p=getP();p.positions[btnId]=!p.positions[btnId];await supa.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);buildSidebar();renderPattern();toast('Saved ✓');}
+async function toggleVarBtn(btnId,groupId){if(!can('edit')){toast('View-only access','err');return;}const p=getP();p.positions[btnId]=!p.positions[btnId];await supa.from('patterns').update({positions:p.positions,updated_at:new Date().toISOString()}).eq('id',p.id);buildSidebar();renderPattern();toast('Saved \u2713');}
 function onVarOver(e,id){e.preventDefault();document.getElementById('varrow-'+id)?.classList.add('dragover');}
 function onVarLeave(id){document.getElementById('varrow-'+id)?.classList.remove('dragover');}
 function onVarDrop(e,id){e.preventDefault();document.getElementById('varrow-'+id)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url)saveGroupThumb(id,url);});}}
 async function handleVarPhotoFile(e,gid){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url)saveGroupThumb(gid,url);}
-async function saveGroupThumb(gid,url){const p=getP();p.positions[gid+'_thumb']=url;await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Photo saved ✓');}
+async function saveGroupThumb(gid,url){const p=getP();p.positions[gid+'_thumb']=url;await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Photo saved \u2713');}
 async function removeGroupThumb(gid){const p=getP();delete p.positions[gid+'_thumb'];await supa.from('patterns').update({positions:p.positions}).eq('id',p.id);renderPattern();toast('Removed');}
 function onOtherOver(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.add('dragover');}
 function onOtherLeave(i){document.getElementById('orow-'+i)?.classList.remove('dragover');}
-function onOtherDrop(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added ✓');}});}}
-async function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added ✓');}}
+function onOtherDrop(e,i){e.preventDefault();document.getElementById('orow-'+i)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(f){toast('Uploading...');uploadToStorage(f,'variations').then(url=>{if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}});}}
+async function handleOtherVarPhotoFile(e,i){const f=e.target.files[0];e.target.value='';if(!f)return;toast('Uploading...');const url=await uploadToStorage(f,'variations');if(url){const p=getP();p.other_positions[i].thumb=url;markDirty();renderPattern();toast('Photo added \u2713');}}
 function removeOtherThumb(i){const p=getP();p.other_positions[i].thumb='';markDirty();renderPattern();}
 function toggleOtherVar(i){const p=getP();p.other_positions[i].active=!p.other_positions[i].active;markDirty();renderPattern();}
 function updateOtherLabel(i,v){const p=getP();p.other_positions[i].label=v;markDirty();}
 function addOtherVar(){if(!can('edit')){toast('View-only access','err');return;}const p=getP();p.other_positions.push({label:'',active:true,thumb:''});markDirty();renderPattern();}
 function removeOtherVar(i){const p=getP();p.other_positions.splice(i,1);markDirty();renderPattern();}
-
-// ── MATERIALS ─────────────────────────────────────────────
 function setOtherMaterial(val){const p=getP();const s=MATERIALS.slice(0,-1);p.materials=p.materials.filter(m=>s.includes(m)||m==='Other');if(val.trim())p.materials.push(val.trim());markDirty();}
-async function toggleMaterial(mat){if(!can('edit')){toast('View-only access','err');return;}const p=getP();const s=MATERIALS.slice(0,-1);if(mat==='Other'){const h=p.materials.some(m=>!s.includes(m));if(h)p.materials=p.materials.filter(m=>s.includes(m));else p.materials.push('Other');}else{const idx=p.materials.indexOf(mat);if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);}await supa.from('patterns').update({materials:p.materials,updated_at:new Date().toISOString()}).eq('id',p.id);renderPattern();toast('Saved ✓');}
-
-// ── SUBMODELS ─────────────────────────────────────────────
+async function toggleMaterial(mat){if(!can('edit')){toast('View-only access','err');return;}const p=getP();const s=MATERIALS.slice(0,-1);if(mat==='Other'){const h=p.materials.some(m=>!s.includes(m));if(h)p.materials=p.materials.filter(m=>s.includes(m));else p.materials.push('Other');}else{const idx=p.materials.indexOf(mat);if(idx>-1)p.materials.splice(idx,1);else p.materials.push(mat);}await supa.from('patterns').update({materials:p.materials,updated_at:new Date().toISOString()}).eq('id',p.id);renderPattern();toast('Saved \u2713');}
 function addSubmodel(){if(!can('edit')){toast('View-only access','err');return;}const p=getP();p.submodels.push({name:'',years:'All years'});markDirty();renderPattern();}
 function updateSubmodel(i,field,val){const p=getP();if(typeof p.submodels[i]==='string')p.submodels[i]={name:p.submodels[i],years:'All years'};p.submodels[i][field]=val;markDirty();}
 function removeSubmodel(i){const p=getP();p.submodels.splice(i,1);markDirty();renderPattern();}
-
-// ── DRAG ──────────────────────────────────────────────────
 function onDragOver(e,id){e.preventDefault();document.getElementById(id)?.classList.add('dragover');}
 function onDragLeave(id){document.getElementById(id)?.classList.remove('dragover');}
 function onColorOver(e,id){e.preventDefault();document.getElementById('crow-'+id)?.classList.add('dragover');}
 function onColorLeave(id){document.getElementById('crow-'+id)?.classList.remove('dragover');}
-async function onColorDrop(e,colorId){e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url)return;const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved ✓');}
+async function onColorDrop(e,colorId){e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url)return;const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved \u2713');}
 async function removeColorThumb(id){snapshot();const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
-
-// ── LIGHTBOX ──────────────────────────────────────────────
 function openLB(url,e){if(e)e.stopPropagation();document.getElementById('lb-img').src=url;document.getElementById('lightbox').style.display='flex';}
 function closeLightbox(){document.getElementById('lightbox').style.display='none';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();closeConfirm();}});
-
-// ── PHOTOS ────────────────────────────────────────────────
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
-// Research image reorder with arrow buttons
-let _resImgDragging=false;
+// FIX: moveResImg — clean function, no stray code outside braces
 async function moveResImg(id,dir){
   const p=getP();if(!p)return;
   const resPhotos=p.photos.filter(ph=>ph.type==='research');
@@ -1179,9 +1132,7 @@ async function moveResImg(id,dir){
   p.photos=[...otherPhotos,...resPhotos];
   resPhotos.forEach((ph,i)=>{supa.from('pattern_photos').update({sort_order:i}).eq('id',ph.id);});
   renderPattern();
-  toast('Reordered ✓');
-});
-  _resImgDragSrcId=null;
+  toast('Reordered \u2713');
 }
 async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
 async function onPdfDrop(e){
@@ -1193,8 +1144,7 @@ async function onPdfDrop(e){
   if(!name)return;
   toast('Uploading PDF...');
   const p=getP();
-  const ext='pdf';
-  const path=`pdfs/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path='pdfs/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.pdf';
   const {data:uploadData,error:uploadErr}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:'application/pdf'});
   if(uploadErr){toast('Upload error: '+uploadErr.message,'err');return;}
   const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
@@ -1205,10 +1155,9 @@ function autoResizeTA(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight
 function linkify(text){
   if(!text)return'';
   const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  // Match http/https URLs and bare www. URLs
-  return escaped.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+)/gi,(match)=>{
+  return escaped.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+)/gi,function(match){
     const href=match.startsWith('http')?match:'https://'+match;
-    return `<a href="${href}" target="_blank" style="color:var(--gold2);text-decoration:underline;word-break:break-all" onclick="event.stopPropagation()">${match}</a>`;
+    return '<a href="'+href+'" target="_blank" style="color:var(--gold2);text-decoration:underline;word-break:break-all" onclick="event.stopPropagation()">'+match+'</a>';
   });
 }
 function renderCaptionLinks(id,val){
@@ -1221,9 +1170,8 @@ function renderCaptionLinks(id,val){
     view.style.display='block';
   }
 }
-// Auto-resize all research textareas on render
 function initResearchTextareas(){
-  document.querySelectorAll('textarea[id^="cap-ta-"]').forEach(ta=>{
+  document.querySelectorAll('textarea[id^="cap-ta-"]').forEach(function(ta){
     autoResizeTA(ta);
     const id=ta.id.replace('cap-ta-','');
     renderCaptionLinks(id,ta.value);
@@ -1232,11 +1180,22 @@ function initResearchTextareas(){
 async function saveResearchPhotoCaption(id,val){await supa.from('pattern_photos').update({caption:val}).eq('id',id);}
 function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
-async function uploadPhotos(files,type){if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');for(const file of files){const url=await uploadToStorage(file,'photos');if(!url)continue;const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}}
-  // Reload photos from DB to ensure accuracy
+async function uploadPhotos(files,type){
+  if(!files.length)return;
+  const p=getP();
+  toast('Uploading '+files.length+' photo(s)...');
+  for(const file of files){
+    const url=await uploadToStorage(file,'photos');
+    if(!url)continue;
+    const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();
+    if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}
+  }
+  // Reload photos from DB after all uploads
   const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
   if(freshPhotos)p.photos=freshPhotos;
-  renderPattern();toast(files.length+' photo(s) added ✓');}
+  renderPattern();
+  toast(files.length+' photo(s) added \u2713');
+}
 function confirmRemovePdf(btn){const id=btn.getAttribute('data-id');confirmAction('Remove PDF?',()=>removePdf(id));}
 function confirmRemovePhoto(btn){const id=btn.getAttribute('data-id');confirmAction('Remove image?',()=>removePhoto(id));}
 async function removePhoto(id){
@@ -1246,8 +1205,6 @@ async function removePhoto(id){
   if(freshPhotos)p.photos=freshPhotos;
   renderPattern();toast('Removed');
 }
-
-// ── RESEARCH EDITOR ───────────────────────────────────────
 function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('rich-editor')?.focus();markDirty();}
 function doHighlight(){const sel=window.getSelection();if(!sel||sel.isCollapsed){toast('Select text first','err');return;}document.execCommand('styleWithCSS',false,true);document.execCommand('hiliteColor',false,'#FFF176');markDirty();}
 function removeHighlight(){const sel=window.getSelection();if(!sel||sel.isCollapsed){toast('Select highlighted text first','err');return;}document.execCommand('styleWithCSS',false,true);document.execCommand('hiliteColor',false,'transparent');markDirty();}
@@ -1260,18 +1217,14 @@ function onEditorClick(e){if(e.target.tagName==='IMG'){selectedImg=e.target;docu
 function onEditorMouseDown(e){if(e.target.tagName==='IMG'){const img=e.target,rect=img.getBoundingClientRect();img.style.cursor=(e.clientX>rect.right-16&&e.clientY>rect.bottom-16)?'nwse-resize':'default';}}
 function resizeImg(factor){if(!selectedImg){toast('Click an image first','err');return;}const ed=document.getElementById('rich-editor');const edW=(ed?ed.offsetWidth:640)-28;if(factor==='px'){const w=prompt('Width in pixels:');if(!w||isNaN(parseInt(w)))return;selectedImg.style.width=parseInt(w)+'px';selectedImg.style.height='auto';}else{selectedImg.style.width=Math.round(edW*factor)+'px';selectedImg.style.height='auto';}markDirty();}
 function initEditorImgResize(){const ed=document.getElementById('rich-editor');if(!ed)return;ed.addEventListener('mousedown',e=>{if(e.target.tagName!=='IMG')return;const img=e.target,rect=img.getBoundingClientRect();if(!(e.clientX>rect.right-16&&e.clientY>rect.bottom-16))return;e.preventDefault();const startX=e.clientX,startW=img.offsetWidth;const move=ev=>{img.style.width=Math.max(60,startW+(ev.clientX-startX))+'px';img.style.height='auto';};const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);markDirty();};document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);});}
-
-// ── STORAGE ───────────────────────────────────────────────
 async function uploadToStorage(file,folder){
   const ext=file.name.split('.').pop()||'jpg';
-  const path=`${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const path=folder+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
   const {data,error}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:file.type});
   if(error){toast('Upload error: '+error.message,'err');return null;}
   const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
   return publicUrl;
 }
-
-// ── CONFIRMATION ──────────────────────────────────────────
 async function confirmPattern(){
   const p=getP();if(!p)return;
   const {data:{user}}=await supa.auth.getUser();
@@ -1282,42 +1235,34 @@ async function confirmPattern(){
   await supa.from('patterns').update(update).eq('id',p.id);
   p.status=newStatus;p.confirmed_at=newStatus==='confirmed'?now:null;p.confirmed_by_id=newStatus==='confirmed'?user.id:null;
   buildSidebar();selectPattern(p.id);
-  toast(newStatus==='confirmed'?'Pattern confirmed ✓':'Marked as unreviewed');
+  toast(newStatus==='confirmed'?'Pattern confirmed \u2713':'Marked as unreviewed');
 }
-
-// ── COLOR PHOTO URL ───────────────────────────────────────
 let _colorUrlTargetId=null;
 function openColorUrlInput(colorId,e){if(!can('edit')){toast('View-only access','err');return;}if(e)e.stopPropagation();_colorUrlTargetId=colorId;document.getElementById('color-url-input').value='';document.getElementById('color-url-preview').style.display='none';document.getElementById('color-url-modal').style.display='flex';setTimeout(()=>document.getElementById('color-url-input').focus(),100);}
 function closeColorUrlModal(){document.getElementById('color-url-modal').style.display='none';_colorUrlTargetId=null;}
 document.addEventListener('DOMContentLoaded',()=>{document.getElementById('color-url-input')?.addEventListener('input',function(){const url=this.value.trim();const preview=document.getElementById('color-url-preview');const img=document.getElementById('color-url-preview-img');if(url){img.src=url;preview.style.display='block';}else{preview.style.display='none';}});});
-async function saveColorFile(input){const f=input.files[0];if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url){input.value='';return;}const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);}closeColorUrlModal();renderPattern();toast('Color photo saved ✓');}
-async function saveColorUrl(){const url=document.getElementById('color-url-input').value.trim();if(!url){toast('Enter a URL','err');return;}if(!_colorUrlTargetId){closeColorUrlModal();return;}snapshot();const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);closeColorUrlModal();renderPattern();toast('Color photo saved ✓');}}
-
-// ── COLOR FIELDS ──────────────────────────────────────────
+async function saveColorFile(input){const f=input.files[0];if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url){input.value='';return;}const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);}closeColorUrlModal();renderPattern();toast('Color photo saved \u2713');}
+async function saveColorUrl(){const url=document.getElementById('color-url-input').value.trim();if(!url){toast('Enter a URL','err');return;}if(!_colorUrlTargetId){closeColorUrlModal();return;}snapshot();const p=getP();const c=p.colors.find(c=>c.id===_colorUrlTargetId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',_colorUrlTargetId);closeColorUrlModal();renderPattern();toast('Color photo saved \u2713');}}
 function updateColorField(id,field,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c[field]=val;}
 async function saveColorField(id,field,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c[field]=val;await supa.from('pattern_colors').update({[field]:val}).eq('id',id);if(field==='name')buildSidebar();}}
 function updateColorNote(id,val){const p=getP();const c=p.colors.find(c=>c.id===id);if(c)c.note=val;}
 async function saveColorNote(id,val){await supa.from('pattern_colors').update({note:val}).eq('id',id);}
-
-// ── ALSO FITS ─────────────────────────────────────────────
 function renderAlsoFits(p){
   const fits=p.fits||[];
-  const rows=fits.map(f=>{const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;const other=patterns.find(x=>x.id===otherId);if(!other)return null;return{f,other,shared:f.shared_colors||[],dir:f.pattern_id_a===p.id?'→':'←'};}).filter(Boolean);
-  let html=`<div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Also fits</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openFitsModal()">+ Link pattern</button></div>`;
-  if(rows.length){rows.forEach(({f,other,shared,dir})=>{html+=`<div class="fits-row"><span class="fits-dir">${dir}</span><span class="fits-brand">${esc(other.brand)}</span><span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span><div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div>${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button>`:''}</div>`;});}
+  const rows=fits.map(f=>{const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;const other=patterns.find(x=>x.id===otherId);if(!other)return null;return{f,other,shared:f.shared_colors||[],dir:f.pattern_id_a===p.id?'\u2192':'\u2190'};}).filter(Boolean);
+  let html='<div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Also fits</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openFitsModal()">+ Link pattern</button></div>';
+  if(rows.length){rows.forEach(({f,other,shared,dir})=>{html+='<div class="fits-row"><span class="fits-dir">'+dir+'</span><span class="fits-brand">'+esc(other.brand)+'</span><span class="fits-model">'+esc(other.model)+' '+esc(other.years)+(other.trim?' \u00b7 '+esc(other.trim):'')+'</span><div class="fits-colors">'+shared.map(c=>'<span class="fits-color-tag">'+esc(c)+'</span>').join('')+'</div>'+(can('edit')?'<button class="btn-ico" onclick="confirmAction(\'Remove link?\',()=>removeFitsLink(\''+f.id+'\'))">&#x2715;</button>':'')+'</div>';});}
   else{html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:14px">No linked patterns yet.</div>';}
   return html+'</div>';
 }
 let fitsSelectedId=null,fitsSelectedColors=new Set();
 function openFitsModal(){if(!can('edit')){toast('View-only access','err');return;}fitsSelectedId=null;fitsSelectedColors=new Set();document.getElementById('fits-search').value='';document.getElementById('fits-search-results').style.display='none';document.getElementById('fits-search-results').innerHTML='';document.getElementById('fits-selected').style.display='none';document.getElementById('fits-save-btn').style.display='none';document.getElementById('fits-modal').style.display='flex';setTimeout(()=>document.getElementById('fits-search').focus(),100);}
 function closeFitsModal(){document.getElementById('fits-modal').style.display='none';}
-function searchFitsPatterns(q){const p=getP();const res=document.getElementById('fits-search-results');if(!q||q.length<2){res.style.display='none';return;}const ql=q.toLowerCase();const matches=patterns.filter(x=>x.id!==p.id&&(x.brand.toLowerCase().includes(ql)||x.model.toLowerCase().includes(ql)||(x.years&&x.years.includes(ql))||(x.trim||'').toLowerCase().includes(ql))).slice(0,8);if(!matches.length){res.innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">No matches</div>';res.style.display='block';return;}res.innerHTML=matches.map(x=>`<div onclick="selectFitsPattern('${x.id}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''"><div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(x.brand)} ${esc(x.model)} ${esc(x.years)}${x.trim?' · '+esc(x.trim):''}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${x.colors.length} colors · ${x.materials.join(', ')||'—'}</div></div>`).join('');res.style.display='block';}
-function selectFitsPattern(id){const p=getP();fitsSelectedId=id;const other=patterns.find(x=>x.id===id);document.getElementById('fits-search-results').style.display='none';document.getElementById('fits-selected').style.display='block';document.getElementById('fits-save-btn').style.display='';document.getElementById('fits-selected-name').textContent=`${other.brand} ${other.model} ${other.years}${other.trim?' · '+other.trim:''}`;const allColors=[...new Set([...p.colors.map(c=>c.name),...other.colors.map(c=>c.name)])].sort();fitsSelectedColors=new Set();document.getElementById('fits-color-picker').innerHTML=allColors.map(name=>`<button onclick="toggleFitsColor('${name}',this)" style="padding:5px 12px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s">${esc(name)}</button>`).join('');}
+function searchFitsPatterns(q){const p=getP();const res=document.getElementById('fits-search-results');if(!q||q.length<2){res.style.display='none';return;}const ql=q.toLowerCase();const matches=patterns.filter(x=>x.id!==p.id&&(x.brand.toLowerCase().includes(ql)||x.model.toLowerCase().includes(ql)||(x.years&&x.years.includes(ql))||(x.trim||'').toLowerCase().includes(ql))).slice(0,8);if(!matches.length){res.innerHTML='<div style="padding:12px;font-size:13px;color:var(--text3)">No matches</div>';res.style.display='block';return;}res.innerHTML=matches.map(x=>'<div onclick="selectFitsPattern(\''+x.id+'\')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)" onmouseover="this.style.background=\'var(--bg2)\'" onmouseout="this.style.background=\'\'"><div style="font-size:13px;font-weight:600;color:var(--navy)">'+esc(x.brand)+' '+esc(x.model)+' '+esc(x.years)+(x.trim?' \u00b7 '+esc(x.trim):'')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+x.colors.length+' colors \u00b7 '+(x.materials.join(', ')||'\u2014')+'</div></div>').join('');res.style.display='block';}
+function selectFitsPattern(id){const p=getP();fitsSelectedId=id;const other=patterns.find(x=>x.id===id);document.getElementById('fits-search-results').style.display='none';document.getElementById('fits-selected').style.display='block';document.getElementById('fits-save-btn').style.display='';document.getElementById('fits-selected-name').textContent=other.brand+' '+other.model+' '+other.years+(other.trim?' \u00b7 '+other.trim:'');const allColors=[...new Set([...p.colors.map(c=>c.name),...other.colors.map(c=>c.name)])].sort();fitsSelectedColors=new Set();document.getElementById('fits-color-picker').innerHTML=allColors.map(name=>'<button onclick="toggleFitsColor(\''+esc(name)+'\',this)" style="padding:5px 12px;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);transition:all 0.15s">'+esc(name)+'</button>').join('');}
 function toggleFitsColor(name,btn){if(fitsSelectedColors.has(name)){fitsSelectedColors.delete(name);btn.style.background='var(--bg2)';btn.style.borderColor='var(--border)';btn.style.color='var(--text2)';}else{fitsSelectedColors.add(name);btn.style.background='var(--navy)';btn.style.borderColor='var(--navy)';btn.style.color='#fff';}}
-async function saveFitsLink(){const p=getP();if(!fitsSelectedId){toast('Select a pattern first','err');return;}const exists=(p.fits||[]).some(f=>f.pattern_id_a===fitsSelectedId||f.pattern_id_b===fitsSelectedId);if(exists){toast('Already linked','err');return;}const shared=[...fitsSelectedColors];const {data,error}=await supa.from('pattern_fits').insert({pattern_id_a:p.id,pattern_id_b:fitsSelectedId,shared_colors:shared}).select().single();if(error){toast('Error: '+error.message,'err');return;}p.fits=[...(p.fits||[]),data];const other=patterns.find(x=>x.id===fitsSelectedId);if(other)other.fits=[...(other.fits||[]),data];closeFitsModal();renderPattern();toast('Link saved ✓');}
+async function saveFitsLink(){const p=getP();if(!fitsSelectedId){toast('Select a pattern first','err');return;}const exists=(p.fits||[]).some(f=>f.pattern_id_a===fitsSelectedId||f.pattern_id_b===fitsSelectedId);if(exists){toast('Already linked','err');return;}const shared=[...fitsSelectedColors];const {data,error}=await supa.from('pattern_fits').insert({pattern_id_a:p.id,pattern_id_b:fitsSelectedId,shared_colors:shared}).select().single();if(error){toast('Error: '+error.message,'err');return;}p.fits=[...(p.fits||[]),data];const other=patterns.find(x=>x.id===fitsSelectedId);if(other)other.fits=[...(other.fits||[]),data];closeFitsModal();renderPattern();toast('Link saved \u2713');}
 async function removeFitsLink(fitId){const p=getP();await supa.from('pattern_fits').delete().eq('id',fitId);p.fits=(p.fits||[]).filter(f=>f.id!==fitId);patterns.forEach(x=>{if(x.fits)x.fits=x.fits.filter(f=>f.id!==fitId);});renderPattern();toast('Link removed');}
-
-// ── COLORS ────────────────────────────────────────────────
 function openColorModal(){if(!can('edit')){toast('View-only access','err');return;}document.getElementById('color-modal').style.display='flex';}
 function closeColorModal(){document.getElementById('color-modal').style.display='none';}
 async function addColor(){
@@ -1325,33 +1270,28 @@ async function addColor(){
   const p=getP();
   const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:'#888888',year_note:document.getElementById('c-years').value.trim()||'All years',note:document.getElementById('c-note').value.trim(),sort_order:p.colors.length}).select().single();
   if(error){console.error('addColor error:',error);toast('Error saving color: '+error.message,'err');return;}
-  if(!data){toast('Color was not saved — please try again','err');return;}
-  // Reload colors fresh from DB to ensure we have the latest state
+  if(!data){toast('Color was not saved \u2014 please try again','err');return;}
   p.colors=await loadColorsForPattern(p.id);
   closeColorModal();['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
   lastSnapshot=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
-  buildSidebar();renderPattern();toast('Color added ✓');
+  buildSidebar();renderPattern();toast('Color added \u2713');
 }
 async function removeColor(id){
   const p=getP();
   await supa.from('pattern_colors').delete().eq('id',id);
-  // Reload from DB to ensure consistency
   p.colors=await loadColorsForPattern(p.id);
   lastSnapshot=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
   undoStack=[];redoStack=[];
   buildSidebar();renderPattern();toast('Removed');
 }
-
-// ── PDFS ──────────────────────────────────────────────────
 function openPdfInput(){const name=prompt('PDF name:');if(!name)return;const url=prompt('URL (optional):');savePdf(name.trim(),url?url.trim():null);}
 async function savePdf(name,url){
   const p=getP();
   const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();
   if(error){toast('Error: '+error.message,'err');return;}
-  // Reload PDFs from DB
   const {data:freshPdfs}=await supa.from('pattern_pdfs').select('*').eq('pattern_id',p.id).order('created_at');
   if(freshPdfs)p.pdfs=freshPdfs;
-  renderPattern();toast('PDF added ✓');
+  renderPattern();toast('PDF added \u2713');
 }
 async function removePdf(id){
   const p=getP();
@@ -1360,17 +1300,13 @@ async function removePdf(id){
   if(freshPdfs)p.pdfs=freshPdfs;
   renderPattern();toast('Removed');
 }
-
-// ── SAVE ──────────────────────────────────────────────────
 async function saveAll(){
   if(!can('edit')){toast('View-only access','err');return;}
   collectText();const p=getP();if(!p)return;setStatus('Saving...','saving');
   const {error}=await supa.from('patterns').update({brand:p.brand,model:p.model,years:p.years,trim:p.trim,research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,updated_at:new Date().toISOString()}).eq('id',p.id);
   if(error){toast('Save failed: '+error.message,'err');setStatus('Save failed');return;}
-  unsaved=false;setStatus('Saved ✓','saved');buildSidebar();toast('Saved ✓');
+  unsaved=false;setStatus('Saved \u2713','saved');buildSidebar();toast('Saved \u2713');
 }
-
-// ── ADD / DELETE ──────────────────────────────────────────
 function openAddModal(){document.getElementById('add-modal').style.display='flex';}
 function closeAddModal(){document.getElementById('add-modal').style.display='none';}
 async function addPattern(){
@@ -1386,7 +1322,7 @@ async function addPattern(){
   patterns.push(full);patterns.sort((a,b)=>a.brand.localeCompare(b.brand)||a.model.localeCompare(b.model));
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
   closeAddModal();['nm-brand','nm-model','nm-years','nm-trim'].forEach(id=>document.getElementById(id).value='');
-  selectPattern(data.id);toast('Pattern added ✓');
+  selectPattern(data.id);toast('Pattern added \u2713');
 }
 async function doDelete(){
   if(!can('delete')){toast('Permission denied','err');return;}
@@ -1397,7 +1333,6 @@ async function doDelete(){
   document.getElementById('breadcrumb').innerHTML='<span>Select a pattern</span>';
   toast('Deleted');
 }
-
 init();
 </script>
 </body>
