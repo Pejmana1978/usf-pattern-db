@@ -648,6 +648,13 @@ async function loadAll(){
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
   undoStack=[];redoStack=[];lastSnapshot='';
 }
+async function loadPhotosForPattern(patternId){
+  const {data,error}=await supa.from('pattern_photos').select('*').eq('pattern_id',patternId).order('created_at');
+  if(error){console.error('Photos fetch error:',error);return[];}
+  // Deduplicate by URL
+  const seen=new Set();
+  return (data||[]).filter(ph=>{if(seen.has(ph.url))return false;seen.add(ph.url);return true;});
+}
 async function loadColorsForPattern(patternId){
   const {data:colors,error}=await supa.from('pattern_colors')
     .select('*')
@@ -655,13 +662,23 @@ async function loadColorsForPattern(patternId){
     .order('name');
   if(error){console.error('Colors fetch error:',error);return[];}
   // Deduplicate: if same name+code exists multiple times, keep only the most recent
+  // and auto-delete the extras from the DB so users never need to go to Supabase
   const seen=new Map();
+  const toDelete=[];
   (colors||[]).forEach(c=>{
     const key=(c.name||'')+'__'+(c.code||'');
     if(!seen.has(key)||c.created_at>seen.get(key).created_at){
+      if(seen.has(key))toDelete.push(seen.get(key).id);
       seen.set(key,c);
+    } else {
+      toDelete.push(c.id);
     }
   });
+  // Silently delete duplicates in background
+  if(toDelete.length>0){
+    console.log('Auto-deleting',toDelete.length,'duplicate color(s)');
+    supa.from('pattern_colors').delete().in('id',toDelete).then(()=>{});
+  }
   return [...seen.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 
@@ -701,10 +718,14 @@ async function selectPattern(id){
   if(currentId&&currentId!==id)releaseLock(currentId);
   currentId=id;activeTab='info';unsaved=false;undoStack=[];redoStack=[];
   buildSidebar();
-  // Always load fresh colors from DB when selecting a pattern
+  // Always load fresh data from DB when selecting a pattern
   const p=getP();
   if(p){
     p.colors=await loadColorsForPattern(id);
+    const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',id).order('created_at');
+    if(freshPhotos)p.photos=freshPhotos;
+    const {data:freshPdfs}=await supa.from('pattern_pdfs').select('*').eq('pattern_id',id).order('created_at');
+    if(freshPdfs)p.pdfs=freshPdfs;
   }
   renderPattern();document.getElementById('hdr-actions').style.display='flex';setStatus('');
   setTimeout(snapshot,100);
@@ -999,8 +1020,18 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
-async function uploadPhotos(files,type){if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');for(const file of files){const url=await uploadToStorage(file,'photos');if(!url)continue;const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();if(!error&&data)p.photos.push(data);}renderPattern();toast(files.length+' photo(s) added ✓');}
-async function removePhoto(id){const p=getP();await supa.from('pattern_photos').delete().eq('id',id);p.photos=p.photos.filter(ph=>ph.id!==id);renderPattern();toast('Removed');}
+async function uploadPhotos(files,type){if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');for(const file of files){const url=await uploadToStorage(file,'photos');if(!url)continue;const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}}
+  // Reload photos from DB to ensure accuracy
+  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
+  if(freshPhotos)p.photos=freshPhotos;
+  renderPattern();toast(files.length+' photo(s) added ✓');}
+async function removePhoto(id){
+  const p=getP();
+  await supa.from('pattern_photos').delete().eq('id',id);
+  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
+  if(freshPhotos)p.photos=freshPhotos;
+  renderPattern();toast('Removed');
+}
 
 // ── RESEARCH EDITOR ───────────────────────────────────────
 function fmt(cmd){document.execCommand(cmd,false,null);document.getElementById('rich-editor')?.focus();markDirty();}
@@ -1099,8 +1130,22 @@ async function removeColor(id){
 
 // ── PDFS ──────────────────────────────────────────────────
 function openPdfInput(){const name=prompt('PDF name:');if(!name)return;const url=prompt('URL (optional):');savePdf(name.trim(),url?url.trim():null);}
-async function savePdf(name,url){const p=getP();const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();if(error){toast('Error','err');return;}p.pdfs.push(data);renderPattern();toast('PDF added ✓');}
-async function removePdf(id){const p=getP();await supa.from('pattern_pdfs').delete().eq('id',id);p.pdfs=p.pdfs.filter(f=>f.id!==id);renderPattern();toast('Removed');}
+async function savePdf(name,url){
+  const p=getP();
+  const {data,error}=await supa.from('pattern_pdfs').insert({pattern_id:p.id,name,url}).select().single();
+  if(error){toast('Error: '+error.message,'err');return;}
+  // Reload PDFs from DB
+  const {data:freshPdfs}=await supa.from('pattern_pdfs').select('*').eq('pattern_id',p.id).order('created_at');
+  if(freshPdfs)p.pdfs=freshPdfs;
+  renderPattern();toast('PDF added ✓');
+}
+async function removePdf(id){
+  const p=getP();
+  await supa.from('pattern_pdfs').delete().eq('id',id);
+  const {data:freshPdfs}=await supa.from('pattern_pdfs').select('*').eq('pattern_id',p.id).order('created_at');
+  if(freshPdfs)p.pdfs=freshPdfs;
+  renderPattern();toast('Removed');
+}
 
 // ── SAVE ──────────────────────────────────────────────────
 async function saveAll(){
