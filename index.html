@@ -1086,7 +1086,11 @@ function autoResizeTA(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight
 function linkify(text){
   if(!text)return'';
   const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return escaped.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" style="color:var(--gold2);text-decoration:underline;word-break:break-all" onclick="event.stopPropagation()">$1</a>');
+  // Match http/https URLs and bare www. URLs
+  return escaped.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+\.[^\s<]+)/gi,(match)=>{
+    const href=match.startsWith('http')?match:'https://'+match;
+    return `<a href="${href}" target="_blank" style="color:var(--gold2);text-decoration:underline;word-break:break-all" onclick="event.stopPropagation()">${match}</a>`;
+  });
 }
 function renderCaptionLinks(id,val){
   const ta=document.getElementById('cap-ta-'+id);
