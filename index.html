@@ -608,7 +608,7 @@ async function loadAll(){
   const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
   if(error){return;}
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
-  const {data:photos}=await supa.from('pattern_photos').select('*').order('created_at');
+  const {data:photos}=await supa.from('pattern_photos').select('*').order('sort_order',{nullsFirst:true}).order('created_at');
   const {data:fits}=await supa.from('pattern_fits').select('*').order('created_at');
   patterns=(pats||[]).map(p=>({...p,
     submodels:p.submodels||[],materials:p.materials||[],
@@ -688,7 +688,7 @@ async function selectPattern(id){
   const p=getP();
   if(p){
     p.colors=await loadColorsForPattern(id);
-    const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',id).order('created_at');
+    const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',id).order('sort_order',{nullsFirst:true}).order('created_at');
     if(freshPhotos)p.photos=freshPhotos;
     const {data:freshPdfs}=await supa.from('pattern_pdfs').select('*').eq('pattern_id',id).order('created_at');
     if(freshPdfs)p.pdfs=freshPdfs;
@@ -1192,7 +1192,7 @@ async function uploadPhotos(files,type){
     if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}
   }
   // Reload photos from DB after all uploads
-  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
+  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('sort_order',{nullsFirst:true}).order('created_at');
   if(freshPhotos)p.photos=freshPhotos;
   renderPattern();
   toast(files.length+' photo(s) added \u2713');
@@ -1202,7 +1202,7 @@ function confirmRemovePhoto(btn){const id=btn.getAttribute('data-id');confirmAct
 async function removePhoto(id){
   const p=getP();
   await supa.from('pattern_photos').delete().eq('id',id);
-  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
+  const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('sort_order',{nullsFirst:true}).order('created_at');
   if(freshPhotos)p.photos=freshPhotos;
   renderPattern();toast('Removed');
 }
