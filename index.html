@@ -1140,7 +1140,7 @@ function onResImgDragEnd(){
   });
   _resImgDragSrcId=null;
 }
-async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
+async function onResearchImgDrop(e){e.preventDefault();if(_resImgDragging)return;const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
 async function onPdfDrop(e){
   e.preventDefault();
   document.getElementById('pdf-drop')?.classList.remove('dragover');
