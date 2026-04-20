@@ -906,46 +906,117 @@ async function savePricing(){
 
 // ── INFO TAB ──────────────────────────────────────────────
 function renderInfoTab(p){
+  const canEdit=can('edit');
   let html='<div class="info-grid">';
+  // VARIATIONS
   html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Variations</span></div>';
-  VAR_GROUPS.forEach(g=>{
+  VAR_GROUPS.forEach(function(g){
     const thumb=p.positions[g.id+'_thumb']||'';
-    const groupActive=g.btns.some(b=>p.positions[b.id]);
-    html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')"><span class="var-row-label">${g.label}</span><div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>${groupActive?(thumb?`<div class="var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt="">${can('edit')?`<button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button>`:''}</div>`:`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`):'<div style="width:var(--thumb)"></div>'}</div>`;
+    const groupActive=g.btns.some(function(b){return p.positions[b.id];});
+    html+='<div class="var-row" id="varrow-'+g.id+'" ondragover="onVarOver(event,\''+g.id+'\')" ondragleave="onVarLeave(\''+g.id+'\')" ondrop="onVarDrop(event,\''+g.id+'\')">';
+    html+='<span class="var-row-label">'+g.label+'</span>';
+    html+='<div class="var-btns">';
+    g.btns.forEach(function(b){
+      html+='<button class="var-btn '+(p.positions[b.id]?'on':'')+'" onclick="toggleVarBtn(\''+b.id+'\',\''+g.id+'\')">'+b.label+'</button>';
+    });
+    html+='</div>';
+    if(groupActive){
+      if(thumb){
+        html+='<div class="var-photo" onclick="openLB(\''+thumb+'\',event)"><img src="'+thumb+'" alt="">';
+        if(canEdit)html+='<button class="var-photo-x" onclick="confirmAction(\'Remove photo?\',()=>removeGroupThumb(\''+g.id+'\'))">&#x2715;</button>';
+        html+='</div>';
+      } else {
+        html+='<div class="var-photo-placeholder" onclick="document.getElementById(\'vp-'+g.id+'\').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div>';
+        html+='<input type="file" id="vp-'+g.id+'" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,\''+g.id+'\')">';
+      }
+    } else {
+      html+='<div style="width:var(--thumb)"></div>';
+    }
+    html+='</div>';
   });
-  (p.other_positions||[]).forEach((op,i)=>{
+  // OTHER POSITIONS
+  (p.other_positions||[]).forEach(function(op,i){
     const thumb=op.thumb||'';
-    html+=`<div class="other-var-row" id="orow-${i}" ondragover="onOtherOver(event,${i})" ondragleave="onOtherLeave(${i})" ondrop="onOtherDrop(event,${i})"><button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle?',()=>toggleOtherVar(${i}))"></button><input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console..." oninput="updateOtherLabel(${i},this.value)">${thumb?`<div class="other-var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt="">${can('edit')?`<button class="other-var-photo-x" onclick="confirmAction('Remove?',()=>removeOtherThumb(${i}))">&#x2715;</button>`:''}</div>`:`<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById('ovp-${i}').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-${i}" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,${i})">`}${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove variation?',()=>removeOtherVar(${i}))">&#x2715;</button>`:''}</div>`;
+    html+='<div class="other-var-row" id="orow-'+i+'" ondragover="onOtherOver(event,'+i+')" ondragleave="onOtherLeave('+i+')" ondrop="onOtherDrop(event,'+i+')">';
+    html+='<button class="other-var-toggle '+(op.active?'on':'')+'" onclick="confirmAction(\'Toggle?\',()=>toggleOtherVar('+i+'))"></button>';
+    html+='<input class="other-var-input" value="'+esc(op.label)+'" placeholder="e.g. Center console..." oninput="updateOtherLabel('+i+',this.value)">';
+    if(thumb){
+      html+='<div class="other-var-photo" onclick="openLB(\''+thumb+'\',event)"><img src="'+thumb+'" alt="">';
+      if(canEdit)html+='<button class="other-var-photo-x" onclick="confirmAction(\'Remove?\',()=>removeOtherThumb('+i+'))">&#x2715;</button>';
+      html+='</div>';
+    } else {
+      html+='<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById(\'ovp-'+i+'\').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div>';
+      html+='<input type="file" id="ovp-'+i+'" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,'+i+')">';
+    }
+    if(canEdit)html+='<button class="btn-ico" onclick="confirmAction(\'Remove variation?\',()=>removeOtherVar('+i+'))">&#x2715;</button>';
+    html+='</div>';
   });
-  html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button></div>';
-
+  if(canEdit)html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button>';
+  html+='</div>';
+  // MATERIALS
   const mats=p.materials||[];
   const stdMats=MATERIALS.slice(0,-1);
-  const otherCustom=mats.find(m=>!stdMats.includes(m)&&m!=='Other')||'';
+  const otherCustom=mats.find(function(m){return !stdMats.includes(m)&&m!=='Other';})||'';
   const hasOther=mats.includes('Other')||!!otherCustom;
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body"><div class="toggle-group">${stdMats.map(m=>`<button class="tog-btn ${mats.includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}<button class="tog-btn ${hasOther?'on':''}" onclick="toggleMaterial('Other')">${otherCustom||'Other'}</button></div>${hasOther?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2)">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene..." value="${esc(otherCustom)}" oninput="setOtherMaterial(this.value)"></div>`:''}</div></div>`;
-
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span>${can('edit')?'<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button>':''}</div>`;
-  if(p.colors.length){
-    const sortedColors=[...p.colors].sort((a,b)=>a.name.localeCompare(b.name));
-    sortedColors.forEach(c=>{
-      const thumb=c.thumb_url||'';
-      html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')"><input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name" onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)"><input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code" onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)"><input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note" onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)"><input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)"><div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${thumb}',event)`:''}"><img src="${thumb}" alt="" onerror="this.style.display='none'" ${thumb?'':'style="display:none"'}><span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="${thumb?'display:none':''}cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">${thumb?'&#128247; Change':'&#128279; Paste URL'}</div>${thumb?`${can('edit')?`<button class="color-photo-x" onclick="snapshot();confirmAction('Remove?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:''}`:''}</div>${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button>`:''}</div>`;
-    });
-  }else{html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet.</div>';}
+  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body"><div class="toggle-group">';
+  stdMats.forEach(function(m){
+    html+='<button class="tog-btn '+(mats.includes(m)?'on':'')+'" onclick="toggleMaterial(\''+m+'\')">'+m+'</button>';
+  });
+  html+='<button class="tog-btn '+(hasOther?'on':'')+'" onclick="toggleMaterial(\'Other\')">'+(otherCustom||'Other')+'</button>';
   html+='</div>';
-
-  html+='<div style="display:flex;flex-direction:column;gap:16px">';
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span>${can('edit')?'<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button>':''}</div>`;
-  if((p.submodels||[]).length){(p.submodels||[]).forEach((s,i)=>{const name=typeof s==='string'?s:(s.name||'');const years=typeof s==='string'?'All years':(s.years||'All years');html+=`<div class="sub-row"><input class="sub-name" value="${esc(name)}" placeholder="Submodel name..." oninput="updateSubmodel(${i},'name',this.value)"><input class="sub-years" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)">${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove?',()=>removeSubmodel(${i}))">&#x2715;</button>`:''}</div>`;});}
-  else{html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';}
-  html+='</div>';
-  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
+  if(hasOther)html+='<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2)">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene..." value="'+esc(otherCustom)+'" oninput="setOtherMaterial(this.value)"></div>';
   html+='</div></div>';
-
+  // COLORS
+  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span>';
+  if(canEdit)html+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button>';
+  html+='</div>';
+  const sortedColors=[...p.colors].sort(function(a,b){return a.name.localeCompare(b.name);});
+  if(sortedColors.length){
+    sortedColors.forEach(function(c){
+      const thumb=c.thumb_url||'';
+      html+='<div class="color-row" id="crow-'+c.id+'" ondragover="onColorOver(event,\''+c.id+'\')" ondragleave="onColorLeave(\''+c.id+'\')" ondrop="onColorDrop(event,\''+c.id+'\')">';
+      html+='<input class="color-name-edit" value="'+esc(c.name)+'" placeholder="Color name" onchange="snapshot()" oninput="updateColorField(\''+c.id+'\',\'name\',this.value)" onblur="saveColorField(\''+c.id+'\',\'name\',this.value)">';
+      html+='<input class="color-code-edit" value="'+esc(c.code||'')+'" placeholder="Trim code" onchange="snapshot()" oninput="updateColorField(\''+c.id+'\',\'code\',this.value)" onblur="saveColorField(\''+c.id+'\',\'code\',this.value)">';
+      html+='<input class="color-years-edit" value="'+esc(c.year_note||'All years')+'" placeholder="Year note" onchange="snapshot()" oninput="updateColorField(\''+c.id+'\',\'year_note\',this.value)" onblur="saveColorField(\''+c.id+'\',\'year_note\',this.value)">';
+      html+='<input class="color-note" value="'+esc(c.note||'')+'" placeholder="Material exception..." oninput="updateColorNote(\''+c.id+'\',this.value)" onblur="saveColorNote(\''+c.id+'\',this.value)">';
+      html+='<div class="color-photo '+(thumb?'filled':'')+'" onclick="'+(thumb?'openLB(\''+thumb+'\',event)':'')+'">';
+      html+='<img src="'+thumb+'" alt="" onerror="this.style.display=\'none\'" '+(thumb?'':'style="display:none"')+'>';
+      html+='<span class="color-photo-ico" onclick="openColorUrlInput(\''+c.id+'\',event)" style="'+(thumb?'display:none':'')+'cursor:pointer;font-size:13px;opacity:0.4">URL</span>';
+      html+='<div class="color-photo-hov" onclick="openColorUrlInput(\''+c.id+'\',event)">'+(thumb?'&#128247; Change':'&#128279; Paste URL')+'</div>';
+      if(thumb&&canEdit)html+='<button class="color-photo-x" onclick="snapshot();confirmAction(\'Remove?\',()=>removeColorThumb(\''+c.id+'\'))">&#x2715;</button>';
+      html+='</div>';
+      if(canEdit)html+='<button class="btn-ico" onclick="confirmAction(\'Remove color?\',()=>removeColor(\''+c.id+'\'))">&#x2715;</button>';
+      html+='</div>';
+    });
+  } else {
+    html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet.</div>';
+  }
+  html+='</div>';
+  // RIGHT COLUMN
+  html+='<div style="display:flex;flex-direction:column;gap:16px">';
+  // SUBMODELS
+  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span>';
+  if(canEdit)html+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button>';
+  html+='</div>';
+  if((p.submodels||[]).length){
+    (p.submodels||[]).forEach(function(s,i){
+      const name=typeof s==='string'?s:(s.name||'');
+      const years=typeof s==='string'?'All years':(s.years||'All years');
+      html+='<div class="sub-row"><input class="sub-name" value="'+esc(name)+'" placeholder="Submodel name..." oninput="updateSubmodel('+i+',\'name\',this.value)"><input class="sub-years" value="'+esc(years)+'" placeholder="All years" oninput="updateSubmodel('+i+',\'years\',this.value)">';
+      if(canEdit)html+='<button class="btn-ico" onclick="confirmAction(\'Remove?\',()=>removeSubmodel('+i+'))">&#x2715;</button>';
+      html+='</div>';
+    });
+  } else {
+    html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';
+  }
+  html+='</div>';
+  // NOTES
+  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, installation notes..." oninput="markDirty()">'+esc(p.notes||'')+'</textarea></div></div>';
+  html+='</div></div>';
+  // CONFIRMED BANNER
   if(p.status==='confirmed'&&p.confirmed_at){
     const when=new Date(p.confirmed_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)"><span style="font-weight:700">&#10003; Confirmed</span><span style="opacity:0.7">${when}</span></div>`;
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px;font-size:13px;color:var(--green)"><span style="font-weight:700">&#10003; Confirmed</span><span style="opacity:0.7">'+when+'</span></div>';
   }
   html+=renderAlsoFits(p);
   return html;
@@ -953,74 +1024,78 @@ function renderInfoTab(p){
 
 function renderResearchTab(p){
   const researchPhotos=(p.photos||[]).filter(ph=>ph.type==='research');
-  // PDFs section
-  let pdfHtml=`<div class="sec" style="margin-bottom:16px">
-    <div class="sec-hdr"><span class="sec-title">&#128196; Documents</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button></div>
-    <div class="sec-body">`;
+  const canEdit=can('edit');
+
+  // DOCUMENTS section
+  let pdfHtml='<div class="sec" style="margin-bottom:16px">';
+  pdfHtml+='<div class="sec-hdr"><span class="sec-title">&#128196; Documents</span>';
+  if(canEdit)pdfHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button>';
+  pdfHtml+='</div><div class="sec-body">';
   if(p.pdfs.length){
-    p.pdfs.forEach(f=>{
-      pdfHtml+=`<div class="pdf-item">
-        <span style="font-size:22px">&#128196;</span>
-        <span class="pdf-name">${esc(f.name)}</span>
-        ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:600;white-space:nowrap">Open &#x2197;</a>`:''}
-        ${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button>`:''}
-      </div>`;
+    p.pdfs.forEach(function(f){
+      pdfHtml+='<div class="pdf-item">';
+      pdfHtml+='<span style="font-size:22px">&#128196;</span>';
+      pdfHtml+='<span class="pdf-name">'+esc(f.name)+'</span>';
+      if(f.url)pdfHtml+='<a href="'+f.url+'" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:600;white-space:nowrap">Open &#x2197;</a>';
+      if(canEdit)pdfHtml+='<button class="btn-ico" onclick="confirmRemovePdf(this)" data-id="'+f.id+'">&#x2715;</button>';
+      pdfHtml+='</div>';
     });
   } else {
     pdfHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No documents yet.</div>';
   }
-  pdfHtml+=`<div class="photo-drop-zone" style="margin-top:10px" 
-    ondragover="onDragOver(event,'pdf-drop')" ondragleave="onDragLeave('pdf-drop')" ondrop="onPdfDrop(event)" id="pdf-drop"
-    onclick="openPdfInput()">
-    <div class="drop-ico">&#128196;</div>
-    <div class="drop-txt">Drag &amp; drop PDF or click to add</div>
-    <div class="drop-sub">Enter a name and the file will be uploaded</div>
-  </div>`;
+  if(canEdit){
+    pdfHtml+='<div class="photo-drop-zone" style="margin-top:10px" ondragover="onDragOver(event,'pdf-drop')" ondragleave="onDragLeave('pdf-drop')" ondrop="onPdfDrop(event)" id="pdf-drop" onclick="openPdfInput()">';
+    pdfHtml+='<div class="drop-ico">&#128196;</div><div class="drop-txt">Drag &amp; drop PDF or click to add</div><div class="drop-sub">Enter a name and the file will be uploaded</div></div>';
+  }
   pdfHtml+='</div></div>';
 
-  // Reference images section
-  let imgHtml=`<div class="sec" style="margin-bottom:16px">
-    <div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>
-    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button></div>
-    <div class="sec-body">`;
+  // REFERENCE IMAGES section
+  let imgHtml='<div class="sec" style="margin-bottom:16px">';
+  imgHtml+='<div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>';
+  if(canEdit)imgHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button>';
+  imgHtml+='</div><div class="sec-body">';
   if(researchPhotos.length){
     imgHtml+='<div id="research-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:8px">';
-    researchPhotos.forEach((ph,idx)=>{
-      imgHtml+=`<div class="res-img-card"  data-id="${ph.id}" data-idx="${idx}"
-        style="display:flex;flex-direction:column;gap:6px;cursor:${can('edit')?'grab':'default'}">
-        ${can('edit')?'<div style="text-align:center;color:var(--text3);font-size:11px;letter-spacing:0.05em;user-select:none;padding:2px 0">⠿ drag to reorder</div>':''}
-        <div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB('${ph.url}',event)">
-          <img src="${ph.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">
-          <div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>
-          ${can('edit')?`<button onclick="event.stopPropagation();confirmAction('Remove image?',()=>removePhoto('${ph.id}'))" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>`:''}
-        </div>
-        <textarea placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption('${ph.id}',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption('${ph.id}',this.value);renderCaptionLinks('${ph.id}',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)';this.style.display='block';document.getElementById('cap-view-${ph.id}').style.display='none'" id="cap-ta-${ph.id}">${esc(ph.caption||'')}</textarea>
-        <div id="cap-view-${ph.id}" onclick="document.getElementById('cap-ta-${ph.id}').style.display='block';document.getElementById('cap-ta-${ph.id}').focus();this.style.display='none'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">${ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>'}</div>
-      </div>`;
+    researchPhotos.forEach(function(ph,idx){
+      imgHtml+='<div class="res-img-card" data-id="'+ph.id+'" data-idx="'+idx+'" style="display:flex;flex-direction:column;gap:6px">';
+      // Arrow buttons for reordering
+      if(canEdit){
+        imgHtml+='<div style="display:flex;justify-content:center;gap:6px;padding:2px 0">';
+        if(idx>0) imgHtml+='<button onclick="moveResImg(''+ph.id+'',-1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&larr;</button>';
+        else imgHtml+='<span style="display:inline-block;width:38px"></span>';
+        if(idx<researchPhotos.length-1) imgHtml+='<button onclick="moveResImg(''+ph.id+'',1)" style="background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--text2)">&rarr;</button>';
+        else imgHtml+='<span style="display:inline-block;width:38px"></span>';
+        imgHtml+='</div>';
+      }
+      // Image
+      imgHtml+='<div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB(''+ph.url+'',event)">';
+      imgHtml+='<img src="'+ph.url+'" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">';
+      imgHtml+='<div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>';
+      if(canEdit) imgHtml+='<button onclick="event.stopPropagation();confirmRemovePhoto(this)" data-id="'+ph.id+'" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>';
+      imgHtml+='</div>';
+      // Caption textarea
+      imgHtml+='<textarea placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption(''+ph.id+'',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption(''+ph.id+'',this.value);renderCaptionLinks(''+ph.id+'',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)';this.style.display='block';document.getElementById('cap-view-'+ph.id+'').style.display='none'" id="cap-ta-'+ph.id+'">'+esc(ph.caption||'')+'</textarea>';
+      // Caption link view
+      imgHtml+='<div id="cap-view-'+ph.id+'" onclick="document.getElementById('cap-ta-'+ph.id+'').style.display='block';document.getElementById('cap-ta-'+ph.id+'').focus();this.style.display='none'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">'+(ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>')+'</div>';
+      imgHtml+='</div>';
     });
     imgHtml+='</div>';
+    if(canEdit){
+      imgHtml+='<div class="photo-drop-zone" style="padding:16px;margin-top:8px" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop2')" ondragleave="onDragLeave('research-drop2')" ondrop="onResearchImgDrop(event)" id="research-drop2"><div style="font-size:14px;color:var(--text3)">+ Drop more images here</div></div>';
+    }
   } else {
-    imgHtml+=`<div class="photo-drop-zone" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop')" ondragleave="onDragLeave('research-drop')" ondrop="onResearchImgDrop(event)" id="research-drop">
-      <div class="drop-ico">&#128247;</div>
-      <div class="drop-txt">Drag &amp; drop or click to add images</div>
-      <div class="drop-sub">JPG, PNG, WEBP</div>
-    </div>`;
-  }
-  // Always show drop zone if there are already some images
-  if(researchPhotos.length){
-    imgHtml+=`<div class="photo-drop-zone" style="padding:16px;margin-top:8px" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop2')" ondragleave="onDragLeave('research-drop2')" ondrop="onResearchImgDrop(event)" id="research-drop2">
-      <div style="font-size:14px;color:var(--text3)">+ Drop more images here</div>
-    </div>`;
+    if(canEdit){
+      imgHtml+='<div class="photo-drop-zone" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop')" ondragleave="onDragLeave('research-drop')" ondrop="onResearchImgDrop(event)" id="research-drop"><div class="drop-ico">&#128247;</div><div class="drop-txt">Drag &amp; drop or click to add images</div><div class="drop-sub">JPG, PNG, WEBP</div></div>';
+    } else {
+      imgHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No reference images yet.</div>';
+    }
   }
   imgHtml+='</div></div>';
 
-  // Notes section — plain textarea, simple and clean
-  let notesHtml=`<div class="sec">
-    <div class="sec-hdr"><span class="sec-title">&#128221; Notes</span></div>
-    <div class="sec-body">
-      <textarea id="ta-research-notes" placeholder="Add research notes, findings, observations..." oninput="markDirty()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:200px;outline:none;line-height:1.7;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)'">${esc(p.research||'')}</textarea>
-    </div>
-  </div>`;
+  // NOTES section
+  let notesHtml='<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">&#128221; Notes</span></div><div class="sec-body">';
+  notesHtml+='<textarea id="ta-research-notes" placeholder="Add research notes, findings, observations..." oninput="markDirty()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:200px;outline:none;line-height:1.7;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)'">'+esc(p.research||'')+'</textarea>';
+  notesHtml+='</div></div>';
 
   return imgHtml+notesHtml+pdfHtml;
 }
@@ -1162,6 +1237,8 @@ async function uploadPhotos(files,type){if(!files.length)return;const p=getP();t
   const {data:freshPhotos}=await supa.from('pattern_photos').select('*').eq('pattern_id',p.id).order('created_at');
   if(freshPhotos)p.photos=freshPhotos;
   renderPattern();toast(files.length+' photo(s) added ✓');}
+function confirmRemovePdf(btn){const id=btn.getAttribute('data-id');confirmAction('Remove PDF?',()=>removePdf(id));}
+function confirmRemovePhoto(btn){const id=btn.getAttribute('data-id');confirmAction('Remove image?',()=>removePhoto(id));}
 async function removePhoto(id){
   const p=getP();
   await supa.from('pattern_photos').delete().eq('id',id);
