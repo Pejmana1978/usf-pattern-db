@@ -1337,32 +1337,51 @@ async function doDelete(){
 // ── EXPORT RESEARCH PDF ───────────────────────────────────
 function exportResearchPdf(){
   const p=getP();if(!p){toast('No pattern selected','err');return;}
-  const researchPhotos=(p.photos||[]).filter(function(ph){return ph.type==='research';});
+
+  function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  // Convert newlines to <br> and linkify URLs
+  function fmtCaption(s){
+    if(!s||!s.trim())return'';
+    return escHtml(s)
+      .replace(/\n/g,'<br>')
+      .replace(/(https?:\/\/[^\s<&]+)/g,'<span style="color:#555;word-break:break-all">$1</span>');
+  }
+
+  // FIX 1: Sort research photos by sort_order (same order as displayed in app)
+  const researchPhotos=(p.photos||[])
+    .filter(function(ph){return ph.type==='research';})
+    .slice()
+    .sort(function(a,b){
+      const sa=(a.sort_order!=null?a.sort_order:9999);
+      const sb=(b.sort_order!=null?b.sort_order:9999);
+      return sa!==sb?sa-sb:new Date(a.created_at)-new Date(b.created_at);
+    });
+
   const notes=p.research||'';
   const colors=(p.colors||[]).map(function(c){return c.name;}).join(', ')||'—';
 
-  // Build image rows: 2 per row
+  // FIX 2: Build image cells — page-break-inside:avoid keeps caption with image
+  // FIX 3: fmtCaption handles \n → <br>
   var imgRows='';
   for(var i=0;i<researchPhotos.length;i+=2){
     var a=researchPhotos[i],b=researchPhotos[i+1];
     imgRows+='<tr>';
     [a,b].forEach(function(ph){
-      if(!ph){imgRows+='<td></td>';return;}
-      imgRows+='<td style="padding:0 8px 20px 0;vertical-align:top;width:50%">';
+      if(!ph){imgRows+='<td style="width:50%"></td>';return;}
+      imgRows+='<td style="padding:0 10px 20px 0;vertical-align:top;width:50%">';
+      imgRows+='<div style="page-break-inside:avoid">';
       imgRows+='<img src="'+ph.url+'" style="width:100%;border-radius:4px;border:1px solid #ddd;display:block">';
       if(ph.caption&&ph.caption.trim()){
-        // Render URLs as plain text in PDF (links don't print well)
-        imgRows+='<div style="font-size:11px;color:#555;margin-top:5px;line-height:1.5;word-break:break-word">'+escHtml(ph.caption)+'</div>';
+        imgRows+='<div style="font-size:11px;color:#555;margin-top:6px;line-height:1.6;word-break:break-word">'+fmtCaption(ph.caption)+'</div>';
       }
+      imgRows+='</div>';
       imgRows+='</td>';
     });
     imgRows+='</tr>';
   }
 
-  function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
   var html='<!DOCTYPE html><html><head><meta charset="UTF-8">';
-  html+='<title>Research — '+escHtml(p.brand)+' '+escHtml(p.model)+' '+escHtml(p.years)+'</title>';
+  html+='<title>Research \u2014 '+escHtml(p.brand)+' '+escHtml(p.model)+' '+escHtml(p.years)+'</title>';
   html+='<style>';
   html+='*{box-sizing:border-box;margin:0;padding:0}';
   html+='body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1a1a1a;font-size:13px;padding:32px;max-width:900px;margin:0 auto}';
