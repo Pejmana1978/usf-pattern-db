@@ -631,7 +631,8 @@ async function init(){
 async function loadAll(){
   const {data:pats,error}=await supa.from('patterns').select('*').order('brand').order('model').order('years');
   if(error){return;}
-  const {data:colors}=await supa.from('pattern_colors').select('*').order('sort_order');
+  const {data:colors,error:colorsErr}=await supa.from('pattern_colors').select('*').order('sort_order',{nullsFirst:false}).limit(10000);
+  if(colorsErr)console.error('Colors fetch error:',colorsErr);
   const {data:pdfs}=await supa.from('pattern_pdfs').select('*').order('created_at');
   const {data:photos}=await supa.from('pattern_photos').select('*').order('created_at');
   const {data:fits}=await supa.from('pattern_fits').select('*').order('created_at');
@@ -1059,7 +1060,8 @@ async function addColor(){
   const name=document.getElementById('c-name').value.trim();if(!name){alert('Color name required.');return;}
   const p=getP();
   const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:'#888888',year_note:document.getElementById('c-years').value.trim()||'All years',note:document.getElementById('c-note').value.trim(),sort_order:p.colors.length}).select().single();
-  if(error){toast('Error: '+error.message,'err');return;}
+  if(error){console.error('addColor error:',error);toast('Error saving color: '+error.message,'err');return;}
+  if(!data){toast('Color was not saved — please try again','err');return;}
   // Push to in-memory array BEFORE any snapshot or render
   p.colors.push(data);
   closeColorModal();['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
