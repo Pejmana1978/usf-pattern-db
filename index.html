@@ -972,7 +972,8 @@ function renderResearchTab(p){
   // REFERENCE IMAGES
   var imgHtml='<div class="sec" style="margin-bottom:16px">';
   imgHtml+='<div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>';
-  if(canEdit)imgHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button>';
+  imgHtml+='<button class="btn btn-ghost btn-sm" style="margin-left:auto;margin-right:6px" onclick="exportResearchPdf()">&#128196; Export PDF</button>';
+  if(canEdit)imgHtml+='<button class="btn btn-ghost btn-sm" onclick="triggerResearchPhotoUpload()">+ Add image</button>';
   imgHtml+='</div><div class="sec-body">';
 
   if(researchPhotos.length){
@@ -1332,6 +1333,87 @@ async function doDelete(){
   document.getElementById('hdr-actions').style.display='none';
   document.getElementById('breadcrumb').innerHTML='<span>Select a pattern</span>';
   toast('Deleted');
+}
+// ── EXPORT RESEARCH PDF ───────────────────────────────────
+function exportResearchPdf(){
+  const p=getP();if(!p){toast('No pattern selected','err');return;}
+  const researchPhotos=(p.photos||[]).filter(function(ph){return ph.type==='research';});
+  const notes=p.research||'';
+  const colors=(p.colors||[]).map(function(c){return c.name;}).join(', ')||'—';
+
+  // Build image rows: 2 per row
+  var imgRows='';
+  for(var i=0;i<researchPhotos.length;i+=2){
+    var a=researchPhotos[i],b=researchPhotos[i+1];
+    imgRows+='<tr>';
+    [a,b].forEach(function(ph){
+      if(!ph){imgRows+='<td></td>';return;}
+      imgRows+='<td style="padding:0 8px 20px 0;vertical-align:top;width:50%">';
+      imgRows+='<img src="'+ph.url+'" style="width:100%;border-radius:4px;border:1px solid #ddd;display:block">';
+      if(ph.caption&&ph.caption.trim()){
+        // Render URLs as plain text in PDF (links don't print well)
+        imgRows+='<div style="font-size:11px;color:#555;margin-top:5px;line-height:1.5;word-break:break-word">'+escHtml(ph.caption)+'</div>';
+      }
+      imgRows+='</td>';
+    });
+    imgRows+='</tr>';
+  }
+
+  function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8">';
+  html+='<title>Research — '+escHtml(p.brand)+' '+escHtml(p.model)+' '+escHtml(p.years)+'</title>';
+  html+='<style>';
+  html+='*{box-sizing:border-box;margin:0;padding:0}';
+  html+='body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1a1a1a;font-size:13px;padding:32px;max-width:900px;margin:0 auto}';
+  html+='h1{font-size:20px;font-weight:700;margin-bottom:4px}';
+  html+='.meta{font-size:12px;color:#666;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #eee}';
+  html+='.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#888;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #eee}';
+  html+='.section{margin-bottom:28px}';
+  html+='.info-row{display:flex;gap:24px;margin-bottom:6px}';
+  html+='.info-label{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;min-width:60px}';
+  html+='.info-val{font-size:13px;color:#1a1a1a}';
+  html+='.notes{font-size:13px;line-height:1.75;color:#333;white-space:pre-wrap;background:#f9f9f7;border:1px solid #eee;border-radius:6px;padding:14px}';
+  html+='table{width:100%;border-collapse:collapse}';
+  html+='@media print{body{padding:16px}@page{margin:16mm}}';
+  html+='</style></head><body>';
+
+  // Header
+  html+='<h1>'+escHtml(p.brand)+' '+escHtml(p.model)+' '+escHtml(p.years)+(p.trim?' &middot; '+escHtml(p.trim):'')+' &mdash; Research</h1>';
+  html+='<div class="meta">Generated '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'</div>';
+
+  // Pattern info
+  html+='<div class="section"><div class="section-title">Pattern info</div>';
+  html+='<div class="info-row"><span class="info-label">Brand</span><span class="info-val">'+escHtml(p.brand)+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">Model</span><span class="info-val">'+escHtml(p.model)+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">Years</span><span class="info-val">'+escHtml(p.years)+'</span></div>';
+  if(p.trim)html+='<div class="info-row"><span class="info-label">Trim</span><span class="info-val">'+escHtml(p.trim)+'</span></div>';
+  html+='<div class="info-row"><span class="info-label">Colors</span><span class="info-val">'+escHtml(colors)+'</span></div>';
+  html+='</div>';
+
+  // Reference images
+  if(researchPhotos.length){
+    html+='<div class="section"><div class="section-title">Reference images ('+researchPhotos.length+')</div>';
+    html+='<table>'+imgRows+'</table></div>';
+  }
+
+  // Notes
+  if(notes.trim()){
+    html+='<div class="section"><div class="section-title">Research notes</div>';
+    html+='<div class="notes">'+escHtml(notes)+'</div></div>';
+  }
+
+  html+='</body></html>';
+
+  // Open print window
+  var win=window.open('','_blank','width=900,height=700');
+  if(!win){toast('Pop-up blocked — please allow pop-ups for this site','err');return;}
+  win.document.write(html);
+  win.document.close();
+  win.onload=function(){
+    setTimeout(function(){win.focus();win.print();},400);
+  };
+  toast('PDF window opened \u2013 use Print \u2192 Save as PDF');
 }
 init();
 </script>
