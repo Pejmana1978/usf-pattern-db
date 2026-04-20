@@ -911,11 +911,11 @@ function renderInfoTab(p){
   VAR_GROUPS.forEach(g=>{
     const thumb=p.positions[g.id+'_thumb']||'';
     const groupActive=g.btns.some(b=>p.positions[b.id]);
-    html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')"><span class="var-row-label">${g.label}</span><div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>${groupActive?(thumb?`<div class="var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt=""><button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button></div>`:`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`):'<div style="width:var(--thumb)"></div>'}</div>`;
+    html+=`<div class="var-row" id="varrow-${g.id}" ondragover="onVarOver(event,'${g.id}')" ondragleave="onVarLeave('${g.id}')" ondrop="onVarDrop(event,'${g.id}')"><span class="var-row-label">${g.label}</span><div class="var-btns">${g.btns.map(b=>`<button class="var-btn ${p.positions[b.id]?'on':''}" onclick="toggleVarBtn('${b.id}','${g.id}')">${b.label}</button>`).join('')}</div>${groupActive?(thumb?`<div class="var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt="">${can('edit')?`<button class="var-photo-x" onclick="confirmAction('Remove photo?',()=>removeGroupThumb('${g.id}'))">&#x2715;</button>`:''}</div>`:`<div class="var-photo-placeholder" onclick="document.getElementById('vp-${g.id}').click()"><span class="var-photo-placeholder-ico">&#128247;</span><div class="var-photo-placeholder-hov">&#128247;</div></div><input type="file" id="vp-${g.id}" style="display:none" accept="image/*" onchange="handleVarPhotoFile(event,'${g.id}')">`):'<div style="width:var(--thumb)"></div>'}</div>`;
   });
   (p.other_positions||[]).forEach((op,i)=>{
     const thumb=op.thumb||'';
-    html+=`<div class="other-var-row" id="orow-${i}" ondragover="onOtherOver(event,${i})" ondragleave="onOtherLeave(${i})" ondrop="onOtherDrop(event,${i})"><button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle?',()=>toggleOtherVar(${i}))"></button><input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console..." oninput="updateOtherLabel(${i},this.value)">${thumb?`<div class="other-var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt=""><button class="other-var-photo-x" onclick="confirmAction('Remove?',()=>removeOtherThumb(${i}))">&#x2715;</button></div>`:`<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById('ovp-${i}').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-${i}" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,${i})">`}<button class="btn-ico" onclick="confirmAction('Remove variation?',()=>removeOtherVar(${i}))">&#x2715;</button></div>`;
+    html+=`<div class="other-var-row" id="orow-${i}" ondragover="onOtherOver(event,${i})" ondragleave="onOtherLeave(${i})" ondrop="onOtherDrop(event,${i})"><button class="other-var-toggle ${op.active?'on':''}" onclick="confirmAction('Toggle?',()=>toggleOtherVar(${i}))"></button><input class="other-var-input" value="${esc(op.label)}" placeholder="e.g. Center console..." oninput="updateOtherLabel(${i},this.value)">${thumb?`<div class="other-var-photo" onclick="openLB('${thumb}',event)"><img src="${thumb}" alt="">${can('edit')?`<button class="other-var-photo-x" onclick="confirmAction('Remove?',()=>removeOtherThumb(${i}))">&#x2715;</button>`:''}</div>`:`<div class="var-photo-placeholder" style="width:44px;height:44px" onclick="document.getElementById('ovp-${i}').click()"><span class="var-photo-placeholder-ico" style="font-size:14px">&#128247;</span><div class="var-photo-placeholder-hov" style="font-size:11px">&#128247;</div></div><input type="file" id="ovp-${i}" style="display:none" accept="image/*" onchange="handleOtherVarPhotoFile(event,${i})">`}${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove variation?',()=>removeOtherVar(${i}))">&#x2715;</button>`:''}</div>`;
   });
   html+='<button class="btn-add-other" onclick="addOtherVar()">+ Add other variation</button></div>';
 
@@ -925,19 +925,19 @@ function renderInfoTab(p){
   const hasOther=mats.includes('Other')||!!otherCustom;
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Materials</span></div><div class="sec-body"><div class="toggle-group">${stdMats.map(m=>`<button class="tog-btn ${mats.includes(m)?'on':''}" onclick="toggleMaterial('${m}')">${m}</button>`).join('')}<button class="tog-btn ${hasOther?'on':''}" onclick="toggleMaterial('Other')">${otherCustom||'Other'}</button></div>${hasOther?`<div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="font-size:13px;color:var(--text2)">Specify:</span><input style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy);outline:none" placeholder="e.g. Neoprene..." value="${esc(otherCustom)}" oninput="setOtherMaterial(this.value)"></div>`:''}</div></div>`;
 
-  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button></div>';
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Colors</span>${can('edit')?'<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openColorModal()">+ Add</button>':''}</div>`;
   if(p.colors.length){
     const sortedColors=[...p.colors].sort((a,b)=>a.name.localeCompare(b.name));
     sortedColors.forEach(c=>{
       const thumb=c.thumb_url||'';
-      html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')"><input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name" onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)"><input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code" onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)"><input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note" onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)"><input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)"><div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${thumb}',event)`:''}"><img src="${thumb}" alt="" onerror="this.style.display='none'" ${thumb?'':'style="display:none"'}><span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="${thumb?'display:none':''}cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">${thumb?'&#128247; Change':'&#128279; Paste URL'}</div>${thumb?`<button class="color-photo-x" onclick="snapshot();confirmAction('Remove?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:''}</div><button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button></div>`;
+      html+=`<div class="color-row" id="crow-${c.id}" ondragover="onColorOver(event,'${c.id}')" ondragleave="onColorLeave('${c.id}')" ondrop="onColorDrop(event,'${c.id}')"><input class="color-name-edit" value="${esc(c.name)}" placeholder="Color name" onchange="snapshot()" oninput="updateColorField('${c.id}','name',this.value)" onblur="saveColorField('${c.id}','name',this.value)"><input class="color-code-edit" value="${esc(c.code||'')}" placeholder="Trim code" onchange="snapshot()" oninput="updateColorField('${c.id}','code',this.value)" onblur="saveColorField('${c.id}','code',this.value)"><input class="color-years-edit" value="${esc(c.year_note||'All years')}" placeholder="Year note" onchange="snapshot()" oninput="updateColorField('${c.id}','year_note',this.value)" onblur="saveColorField('${c.id}','year_note',this.value)"><input class="color-note" value="${esc(c.note||'')}" placeholder="Material exception..." oninput="updateColorNote('${c.id}',this.value)" onblur="saveColorNote('${c.id}',this.value)"><div class="color-photo ${thumb?'filled':''}" onclick="${thumb?`openLB('${thumb}',event)`:''}"><img src="${thumb}" alt="" onerror="this.style.display='none'" ${thumb?'':'style="display:none"'}><span class="color-photo-ico" onclick="openColorUrlInput('${c.id}',event)" style="${thumb?'display:none':''}cursor:pointer;font-size:13px;opacity:0.4">URL</span><div class="color-photo-hov" onclick="openColorUrlInput('${c.id}',event)">${thumb?'&#128247; Change':'&#128279; Paste URL'}</div>${thumb?`${can('edit')?`<button class="color-photo-x" onclick="snapshot();confirmAction('Remove?',()=>removeColorThumb('${c.id}'))">&#x2715;</button>`:''}`:''}</div>${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove color?',()=>removeColor('${c.id}'))">&#x2715;</button>`:''}</div>`;
     });
   }else{html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:14px">No colors yet.</div>';}
   html+='</div>';
 
   html+='<div style="display:flex;flex-direction:column;gap:16px">';
-  html+='<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button></div>';
-  if((p.submodels||[]).length){(p.submodels||[]).forEach((s,i)=>{const name=typeof s==='string'?s:(s.name||'');const years=typeof s==='string'?'All years':(s.years||'All years');html+=`<div class="sub-row"><input class="sub-name" value="${esc(name)}" placeholder="Submodel name..." oninput="updateSubmodel(${i},'name',this.value)"><input class="sub-years" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)"><button class="btn-ico" onclick="confirmAction('Remove?',()=>removeSubmodel(${i}))">&#x2715;</button></div>`;});}
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Submodels / Trims</span>${can('edit')?'<button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="addSubmodel()">+ Add</button>':''}</div>`;
+  if((p.submodels||[]).length){(p.submodels||[]).forEach((s,i)=>{const name=typeof s==='string'?s:(s.name||'');const years=typeof s==='string'?'All years':(s.years||'All years');html+=`<div class="sub-row"><input class="sub-name" value="${esc(name)}" placeholder="Submodel name..." oninput="updateSubmodel(${i},'name',this.value)"><input class="sub-years" value="${esc(years)}" placeholder="All years" oninput="updateSubmodel(${i},'years',this.value)">${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove?',()=>removeSubmodel(${i}))">&#x2715;</button>`:''}</div>`;});}
   else{html+='<div style="padding:14px;text-align:center;color:var(--text3);font-size:14px">No submodels added.</div>';}
   html+='</div>';
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">Additional notes</span></div><div class="sec-body"><textarea class="notes-textarea" id="ta-notes" placeholder="Fitment warnings, installation notes..." oninput="markDirty()">${esc(p.notes||'')}</textarea></div></div>`;
@@ -963,12 +963,19 @@ function renderResearchTab(p){
         <span style="font-size:22px">&#128196;</span>
         <span class="pdf-name">${esc(f.name)}</span>
         ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:600;white-space:nowrap">Open &#x2197;</a>`:''}
-        <button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button>
+        ${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button>`:''}
       </div>`;
     });
   } else {
     pdfHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No documents yet.</div>';
   }
+  pdfHtml+=`<div class="photo-drop-zone" style="margin-top:10px" 
+    ondragover="onDragOver(event,'pdf-drop')" ondragleave="onDragLeave('pdf-drop')" ondrop="onPdfDrop(event)" id="pdf-drop"
+    onclick="openPdfInput()">
+    <div class="drop-ico">&#128196;</div>
+    <div class="drop-txt">Drag &amp; drop PDF or click to add</div>
+    <div class="drop-sub">Enter a name and the file will be uploaded</div>
+  </div>`;
   pdfHtml+='</div></div>';
 
   // Reference images section
@@ -983,7 +990,7 @@ function renderResearchTab(p){
         <div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB('${ph.url}',event)">
           <img src="${ph.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">
           <div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>
-          <button onclick="event.stopPropagation();confirmAction('Remove image?',()=>removePhoto('${ph.id}'))" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>
+          ${can('edit')?`<button onclick="event.stopPropagation();confirmAction('Remove image?',()=>removePhoto('${ph.id}'))" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>`:''}
         </div>
         <textarea placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption('${ph.id}',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption('${ph.id}',this.value);renderCaptionLinks('${ph.id}',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)';this.style.display='block';document.getElementById('cap-view-${ph.id}').style.display='none'" id="cap-ta-${ph.id}">${esc(ph.caption||'')}</textarea>
         <div id="cap-view-${ph.id}" onclick="document.getElementById('cap-ta-${ph.id}').style.display='block';document.getElementById('cap-ta-${ph.id}').focus();this.style.display='none'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">${ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>'}</div>
@@ -1017,7 +1024,7 @@ function renderResearchTab(p){
 }
 
 function buildPhotoTab(title,dropId,type,photos){
-  return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body"><div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')"><div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="${ph.url}" onerror="this.style.display='none'" alt=""><button class="sq-photo-x" onclick="confirmAction('Remove?',()=>removePhoto('${ph.id}'))">&#x2715;</button><div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${ph.url}',event)">&#128269; View</button></div></div><div class="sq-photo-label">${esc(ph.caption||'Photo')}</div></div>`).join('')}</div>`:''}</div></div>`;
+  return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body"><div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')"><div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="${ph.url}" onerror="this.style.display='none'" alt="">${can('edit')?`<button class="sq-photo-x" onclick="confirmAction('Remove?',()=>removePhoto('${ph.id}'))">&#x2715;</button>`:''}<div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${ph.url}',event)">&#128269; View</button></div></div><div class="sq-photo-label">${esc(ph.caption||'Photo')}</div></div>`).join('')}</div>`:''}</div></div>`;
 }
 
 function switchTab(t){collectText();if(unsaved&&currentId&&can('edit'))saveAll();activeTab=t;renderPattern();}
@@ -1081,6 +1088,22 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
 async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
+async function onPdfDrop(e){
+  e.preventDefault();
+  document.getElementById('pdf-drop')?.classList.remove('dragover');
+  const file=Array.from(e.dataTransfer.files).find(f=>f.type==='application/pdf'||f.name.endsWith('.pdf'));
+  if(!file){toast('Please drop a PDF file','err');return;}
+  const name=prompt('Label for this PDF:',file.name.replace(/\.pdf$/i,''));
+  if(!name)return;
+  toast('Uploading PDF...');
+  const p=getP();
+  const ext='pdf';
+  const path=`pdfs/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const {data:uploadData,error:uploadErr}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:'application/pdf'});
+  if(uploadErr){toast('Upload error: '+uploadErr.message,'err');return;}
+  const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
+  await savePdf(name.trim(),publicUrl);
+}
 async function updateResearchPhotoCaption(id,val){const p=getP();if(!p)return;const ph=p.photos.find(x=>x.id===id);if(ph)ph.caption=val;}
 function autoResizeTA(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
 function linkify(text){
@@ -1183,7 +1206,7 @@ function renderAlsoFits(p){
   const fits=p.fits||[];
   const rows=fits.map(f=>{const otherId=f.pattern_id_a===p.id?f.pattern_id_b:f.pattern_id_a;const other=patterns.find(x=>x.id===otherId);if(!other)return null;return{f,other,shared:f.shared_colors||[],dir:f.pattern_id_a===p.id?'→':'←'};}).filter(Boolean);
   let html=`<div class="sec" style="margin-top:14px"><div class="sec-hdr"><span class="sec-title">Also fits</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openFitsModal()">+ Link pattern</button></div>`;
-  if(rows.length){rows.forEach(({f,other,shared,dir})=>{html+=`<div class="fits-row"><span class="fits-dir">${dir}</span><span class="fits-brand">${esc(other.brand)}</span><span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span><div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div><button class="btn-ico" onclick="confirmAction('Remove link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button></div>`;});}
+  if(rows.length){rows.forEach(({f,other,shared,dir})=>{html+=`<div class="fits-row"><span class="fits-dir">${dir}</span><span class="fits-brand">${esc(other.brand)}</span><span class="fits-model">${esc(other.model)} ${esc(other.years)}${other.trim?' · '+esc(other.trim):''}</span><div class="fits-colors">${shared.map(c=>`<span class="fits-color-tag">${esc(c)}</span>`).join('')}</div>${can('edit')?`<button class="btn-ico" onclick="confirmAction('Remove link?',()=>removeFitsLink('${f.id}'))">&#x2715;</button>`:''}</div>`;});}
   else{html+='<div style="padding:16px;text-align:center;color:var(--text3);font-size:14px">No linked patterns yet.</div>';}
   return html+'</div>';
 }
