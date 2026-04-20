@@ -986,12 +986,7 @@ function renderResearchTab(p){
   if(researchPhotos.length){
     imgHtml+='<div id="research-img-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:8px">';
     researchPhotos.forEach((ph,idx)=>{
-      imgHtml+=`<div class="res-img-card" draggable="${can('edit')}" data-id="${ph.id}" data-idx="${idx}"
-        ondragstart="onResImgDragStart(event,this)"
-        ondragover="onResImgDragOver(event,this)"
-        ondragleave="onResImgDragLeave(this)"
-        ondrop="onResImgDrop(event,this)"
-        ondragend="onResImgDragEnd()"
+      imgHtml+=`<div class="res-img-card"  data-id="${ph.id}" data-idx="${idx}"
         style="display:flex;flex-direction:column;gap:6px;cursor:${can('edit')?'grab':'default'}">
         ${can('edit')?'<div style="text-align:center;color:var(--text3);font-size:11px;letter-spacing:0.05em;user-select:none;padding:2px 0">⠿ drag to reorder</div>':''}
         <div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB('${ph.url}',event)">
@@ -1094,53 +1089,26 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 // ── PHOTOS ────────────────────────────────────────────────
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
-// Research image drag-to-sort
-let _resImgDragSrcId=null;
-function onResImgDragStart(e,el){
-  _resImgDragSrcId=el.dataset.id;
-  el.style.opacity='0.4';
-  e.dataTransfer.effectAllowed='move';
-}
-function onResImgDragOver(e,el){
-  e.preventDefault();
-  e.dataTransfer.dropEffect='move';
-  el.style.outline='2px dashed var(--gold)';
-  el.style.outlineOffset='2px';
-}
-function onResImgDragLeave(el){
-  el.style.outline='';
-  el.style.outlineOffset='';
-}
-async function onResImgDrop(e,el){
-  e.preventDefault();
-  el.style.outline='';
-  if(!_resImgDragSrcId||_resImgDragSrcId===el.dataset.id)return;
+// Research image reorder with arrow buttons
+let _resImgDragging=false;
+async function moveResImg(id,dir){
   const p=getP();if(!p)return;
   const resPhotos=p.photos.filter(ph=>ph.type==='research');
-  const srcIdx=resPhotos.findIndex(ph=>ph.id===_resImgDragSrcId);
-  const tgtIdx=resPhotos.findIndex(ph=>ph.id===el.dataset.id);
-  if(srcIdx<0||tgtIdx<0)return;
-  // Reorder in memory
-  const [moved]=resPhotos.splice(srcIdx,1);
-  resPhotos.splice(tgtIdx,0,moved);
-  // Update sort_order in DB for all research photos
-  const updates=resPhotos.map((ph,i)=>
-    supa.from('pattern_photos').update({sort_order:i}).eq('id',ph.id)
-  );
-  await Promise.all(updates);
-  // Reload and re-render
-  p.photos=await loadPhotosForPattern(p.id);
+  const idx=resPhotos.findIndex(ph=>ph.id===id);
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=resPhotos.length)return;
+  const tmp=resPhotos[idx];
+  resPhotos[idx]=resPhotos[newIdx];
+  resPhotos[newIdx]=tmp;
+  const otherPhotos=p.photos.filter(ph=>ph.type!=='research');
+  p.photos=[...otherPhotos,...resPhotos];
+  resPhotos.forEach((ph,i)=>{supa.from('pattern_photos').update({sort_order:i}).eq('id',ph.id);});
   renderPattern();
-  toast('Order saved ✓');
-}
-function onResImgDragEnd(){
-  document.querySelectorAll('.res-img-card').forEach(el=>{
-    el.style.opacity='';
-    el.style.outline='';
-  });
+  toast('Reordered ✓');
+});
   _resImgDragSrcId=null;
 }
-async function onResearchImgDrop(e){e.preventDefault();if(_resImgDragging)return;const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
+async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
 async function onPdfDrop(e){
   e.preventDefault();
   document.getElementById('pdf-drop')?.classList.remove('dragover');
