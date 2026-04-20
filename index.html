@@ -517,7 +517,11 @@ function applySnapshot(s){
 function undo(){if(!undoStack.length){toast('Nothing to undo','err');return;}const prev=undoStack.pop();redoStack.push(lastSnapshot);lastSnapshot=prev;applySnapshot(prev);toast('Undone');}
 function redo(){if(!redoStack.length){toast('Nothing to redo','err');return;}const next=redoStack.pop();undoStack.push(lastSnapshot);lastSnapshot=next;applySnapshot(next);toast('Redone');}
 document.addEventListener('keydown',e=>{const m=e.metaKey||e.ctrlKey;if(!m)return;if(e.key==='Escape'){closeLightbox();closeConfirm();}if(e.key==='z'&&!e.shiftKey){e.preventDefault();undo();}else if(e.key==='y'||(e.key==='z'&&e.shiftKey)){e.preventDefault();redo();}});
-setInterval(()=>{if(unsaved&&currentId)saveAll();},30000);
+setInterval(()=>{if(unsaved&&currentId)saveAll();},10000);
+window.addEventListener('beforeunload',e=>{
+  if(currentId)releaseLock(currentId);
+  if(unsaved){e.preventDefault();e.returnValue='You have unsaved changes. Are you sure you want to leave?';return e.returnValue;}
+});
 
 // ── AUTH ──────────────────────────────────────────────────
 function validatePassword(p){const e=[];if(p.length<8)e.push('8+ chars');if(!/[A-Z]/.test(p))e.push('uppercase');if(!/[0-9]/.test(p))e.push('number');if(!/[^A-Za-z0-9]/.test(p))e.push('special char');return e;}
@@ -531,7 +535,7 @@ async function doLogin(){
   if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
   await onAuthSuccess(data.user);
 }
-async function doLogout(){await supa.auth.signOut();currentUser=null;currentRole=null;patterns=[];currentId=null;document.getElementById('user-bar').style.display='none';document.getElementById('hdr-actions').style.display='none';showLoginScreen();}
+async function doLogout(){await releaseLock(currentId);await supa.auth.signOut();currentUser=null;currentRole=null;patterns=[];currentId=null;document.getElementById('user-bar').style.display='none';document.getElementById('hdr-actions').style.display='none';showLoginScreen();}
 function showLoginScreen(){document.getElementById('login-screen').style.display='flex';setTimeout(()=>document.getElementById('login-email').focus(),100);}
 function hideLoginScreen(){document.getElementById('login-screen').style.display='none';}
 async function doForgotPassword(){const email=document.getElementById('login-email').value.trim(),errEl=document.getElementById('login-error');if(!email){errEl.textContent='Enter email first.';errEl.style.display='block';return;}const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){errEl.textContent=error.message;errEl.style.display='block';return;}errEl.style.color='var(--green)';errEl.textContent='Reset email sent!';errEl.style.display='block';}
@@ -670,17 +674,49 @@ function buildSidebar(){
 }
 function toggleBrand(el,id){const l=document.getElementById(id),c=el.querySelector('.bc');l.classList.toggle('open');c.classList.toggle('open');el.classList.toggle('open');}
 function selectPattern(id){
+  if(currentId&&currentId!==id&&unsaved&&can('edit')){
+    if(!confirm('You have unsaved changes. Switch patterns anyway? Changes will be lost.'))return;
+  }
+  if(currentId&&currentId!==id)releaseLock(currentId);
   currentId=id;activeTab='info';unsaved=false;undoStack=[];redoStack=[];
   buildSidebar();renderPattern();document.getElementById('hdr-actions').style.display='flex';setStatus('');
   setTimeout(snapshot,100);
   const cb=document.getElementById('confirm-pattern-btn');
   if(cb&&(currentRole==='admin'||currentRole==='manager'))cb.style.display='';
+  acquireLock(id);
+}
+async function acquireLock(patternId){
+  if(!can('edit')||!currentUser)return;
+  await supa.from('patterns').update({locked_by:currentUser.id,locked_at:new Date().toISOString()}).eq('id',patternId);
+  const p=patterns.find(x=>x.id===patternId);
+  if(p){p.locked_by=currentUser.id;p.locked_at=new Date().toISOString();}
+}
+async function releaseLock(patternId){
+  if(!patternId||!can('edit')||!currentUser)return;
+  const p=patterns.find(x=>x.id===patternId);
+  if(p&&p.locked_by===currentUser.id){
+    await supa.from('patterns').update({locked_by:null,locked_at:null}).eq('id',patternId);
+    p.locked_by=null;p.locked_at=null;
+  }
 }
 function getP(){return patterns.find(p=>p.id===currentId);}
 
 // ── RENDER ────────────────────────────────────────────────
 function renderPattern(){
   const p=getP();if(!p)return;
+  // Lock warning banner
+  const existingBanner=document.getElementById('lock-banner');
+  if(existingBanner)existingBanner.remove();
+  if(p.locked_by&&p.locked_by!==currentUser?.id&&p.locked_at){
+    const lockedMinsAgo=(Date.now()-new Date(p.locked_at).getTime())/60000;
+    if(lockedMinsAgo<5){
+      const banner=document.createElement('div');
+      banner.id='lock-banner';
+      banner.style.cssText='position:fixed;top:0;left:264px;right:0;background:#C9B27E;color:#17183B;text-align:center;padding:9px;font-size:13px;font-weight:600;z-index:300;';
+      banner.textContent='⚠️ Another user is currently editing this pattern. Your saves may conflict with theirs.';
+      document.body.appendChild(banner);
+    }
+  }
   document.getElementById('breadcrumb').innerHTML=`<span style="color:var(--text3)">${p.brand}</span><span class="bcs"> &rsaquo; </span><span style="font-weight:500">${p.model} ${p.years}${p.trim?' &middot; '+p.trim:''}</span>`;
   const prod=(p.photos||[]).filter(ph=>ph.type==='product');
   const ba=(p.photos||[]).filter(ph=>ph.type==='before_after');
@@ -874,7 +910,7 @@ function buildPhotoTab(title,dropId,type,photos){
   return `<div class="sec"><div class="sec-hdr"><span class="sec-title">${title}</span></div><div class="sec-body"><div class="photo-drop-zone" id="${dropId}" ondragover="onDragOver(event,'${dropId}')" ondragleave="onDragLeave('${dropId}')" ondrop="onPhotoDrop(event,'${type}')" onclick="triggerPhotoUpload('${type}')"><div class="drop-ico">${type==='product'?'&#128247;':'&#128260;'}</div><div class="drop-txt">Drag &amp; drop or click to browse</div><div class="drop-sub">JPG, PNG, WEBP</div></div>${photos.length?`<div class="sq-photo-grid">${photos.map(ph=>`<div class="sq-photo-card"><div class="sq-photo-wrap"><img src="${ph.url}" onerror="this.style.display='none'" alt=""><button class="sq-photo-x" onclick="confirmAction('Remove?',()=>removePhoto('${ph.id}'))">&#x2715;</button><div class="sq-photo-overlay"><button class="sq-photo-view-btn" onclick="openLB('${ph.url}',event)">&#128269; View</button></div></div><div class="sq-photo-label">${esc(ph.caption||'Photo')}</div></div>`).join('')}</div>`:''}</div></div>`;
 }
 
-function switchTab(t){collectText();activeTab=t;renderPattern();}
+function switchTab(t){collectText();if(unsaved&&currentId&&can('edit'))saveAll();activeTab=t;renderPattern();}
 function collectText(){
   const p=getP();if(!p)return;
   const r=document.getElementById('rich-editor'),n=document.getElementById('ta-notes');
