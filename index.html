@@ -511,8 +511,13 @@ function snapshot(){
 }
 function applySnapshot(s){
   const p=getP();if(!p||!s)return;const d=JSON.parse(s);
+  // Restore color field edits (name, code etc) but NEVER overwrite the colors array
+  // Colors are added/removed via their own DB calls and must not be affected by undo
   if(d.colors){d.colors.forEach(dc=>{const ex=p.colors.find(c=>c.id===dc.id);if(ex){const ch=ex.name!==dc.name||ex.code!==dc.code||ex.year_note!==dc.year_note||ex.note!==dc.note||ex.thumb_url!==dc.thumb_url;if(ch){Object.assign(ex,dc);supa.from('pattern_colors').update({name:dc.name,code:dc.code,year_note:dc.year_note,note:dc.note,thumb_url:dc.thumb_url}).eq('id',dc.id);}}});}
-  Object.assign(p,d);renderPattern();markDirty();
+  // Apply all fields EXCEPT colors — colors are managed independently via DB
+  const {colors:_c,...rest}=d;
+  Object.assign(p,rest);
+  renderPattern();markDirty();
 }
 function undo(){if(!undoStack.length){toast('Nothing to undo','err');return;}const prev=undoStack.pop();redoStack.push(lastSnapshot);lastSnapshot=prev;applySnapshot(prev);toast('Undone');}
 function redo(){if(!redoStack.length){toast('Nothing to redo','err');return;}const next=redoStack.pop();undoStack.push(lastSnapshot);lastSnapshot=next;applySnapshot(next);toast('Redone');}
@@ -642,6 +647,8 @@ async function loadAll(){
   }));
   buildSidebar();
   document.getElementById('brand-dl').innerHTML=[...new Set(patterns.map(p=>p.brand))].sort().map(b=>`<option value="${b}">`).join('');
+  // Clear any stale snapshots from previous session
+  undoStack=[];redoStack=[];lastSnapshot='';
 }
 
 // ── SIDEBAR ───────────────────────────────────────────────
@@ -1053,10 +1060,22 @@ async function addColor(){
   const p=getP();
   const {data,error}=await supa.from('pattern_colors').insert({pattern_id:p.id,name,code:document.getElementById('c-code').value.trim(),hex:'#888888',year_note:document.getElementById('c-years').value.trim()||'All years',note:document.getElementById('c-note').value.trim(),sort_order:p.colors.length}).select().single();
   if(error){toast('Error: '+error.message,'err');return;}
-  p.colors.push(data);closeColorModal();['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
+  // Push to in-memory array BEFORE any snapshot or render
+  p.colors.push(data);
+  closeColorModal();['c-name','c-code','c-years','c-note'].forEach(id=>document.getElementById(id).value='');
+  // Take a fresh snapshot now that colors array is up to date
+  lastSnapshot=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
   buildSidebar();renderPattern();toast('Color added ✓');
 }
-async function removeColor(id){const p=getP();await supa.from('pattern_colors').delete().eq('id',id);p.colors=p.colors.filter(c=>c.id!==id);buildSidebar();renderPattern();toast('Removed');}
+async function removeColor(id){
+  const p=getP();
+  await supa.from('pattern_colors').delete().eq('id',id);
+  p.colors=p.colors.filter(c=>c.id!==id);
+  // Update snapshot immediately so undo can't restore the deleted color
+  lastSnapshot=JSON.stringify({research:p.research,notes:p.notes,submodels:p.submodels,other_positions:p.other_positions,materials:p.materials,positions:p.positions,colors:p.colors.map(c=>({...c}))});
+  undoStack=[];redoStack=[];
+  buildSidebar();renderPattern();toast('Removed');
+}
 
 // ── PDFS ──────────────────────────────────────────────────
 function openPdfInput(){const name=prompt('PDF name:');if(!name)return;const url=prompt('URL (optional):');savePdf(name.trim(),url?url.trim():null);}
