@@ -951,8 +951,67 @@ function renderInfoTab(p){
 }
 
 function renderResearchTab(p){
-  return `<div class="sec" style="margin-bottom:16px"><div class="sec-hdr"><span class="sec-title">Research summary</span><span style="margin-left:auto;font-size:12px;color:var(--text3)">Drag images in &middot; Click image then drag corner to resize</span></div><div><div class="rich-toolbar"><button class="rich-btn" onclick="fmt('bold')"><b>B</b></button><button class="rich-btn" onclick="fmt('italic')"><i>I</i></button><button class="rich-btn" onclick="fmt('underline')"><u>U</u></button><div class="rich-sep"></div><button class="rich-btn" onclick="fmt('insertUnorderedList')">&bull; List</button><button class="rich-btn" onclick="fmt('insertOrderedList')">1. List</button><div class="rich-sep"></div><button class="rich-btn" onclick="document.getElementById('research-img-file').click()">&#128247; Image</button><div class="rich-sep"></div><button class="rich-btn hl" onclick="doHighlight()">&#9998; Highlight</button><button class="rich-btn" onclick="removeHighlight()">&#x2715; HL</button><div class="rich-sep"></div><span style="font-size:12px;color:var(--text3);padding:0 2px">Resize:</span><button class="rich-btn" onclick="resizeImg(0.3)">S</button><button class="rich-btn" onclick="resizeImg(0.6)">M</button><button class="rich-btn" onclick="resizeImg(1.0)">L</button><button class="rich-btn" onclick="resizeImg('px')">Custom</button></div><div class="rich-editor" id="rich-editor" contenteditable="true" oninput="markDirty()" ondragover="event.preventDefault()" ondrop="onResearchDrop(event)" onpaste="onResearchPaste(event)" onclick="onEditorClick(event)" onmousedown="onEditorMouseDown(event)">${p.research||'<p>Add research notes here...</p>'}</div></div></div>
-  <div class="sec"><div class="sec-hdr"><span class="sec-title">PDF brochures &amp; research docs</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button></div><div class="sec-body">${p.pdfs.length?`<div style="margin-bottom:12px">${p.pdfs.map(f=>`<div class="pdf-item"><span style="font-size:20px">&#128196;</span><span class="pdf-name">${esc(f.name)}</span>${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:500">Open &#x2197;</a>`:''}<button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button></div>`).join('')}</div>`:'<div style="color:var(--text3);font-size:14px;margin-bottom:12px">No PDFs yet.</div>'}<div class="photo-drop-zone" onclick="openPdfInput()"><div class="drop-ico">&#128196;</div><div class="drop-txt">Add PDF reference</div><div class="drop-sub">Enter name + URL</div></div></div></div>`;
+  const researchPhotos=(p.photos||[]).filter(ph=>ph.type==='research');
+  // PDFs section
+  let pdfHtml=`<div class="sec" style="margin-bottom:16px">
+    <div class="sec-hdr"><span class="sec-title">&#128196; Documents</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="openPdfInput()">+ Add PDF</button></div>
+    <div class="sec-body">`;
+  if(p.pdfs.length){
+    p.pdfs.forEach(f=>{
+      pdfHtml+=`<div class="pdf-item">
+        <span style="font-size:22px">&#128196;</span>
+        <span class="pdf-name">${esc(f.name)}</span>
+        ${f.url?`<a href="${f.url}" target="_blank" style="color:var(--gold2);font-size:13px;text-decoration:none;font-weight:600;white-space:nowrap">Open &#x2197;</a>`:''}
+        <button class="btn-ico" onclick="confirmAction('Remove PDF?',()=>removePdf('${f.id}'))">&#x2715;</button>
+      </div>`;
+    });
+  } else {
+    pdfHtml+='<div style="color:var(--text3);font-size:14px;padding:8px 0">No documents yet.</div>';
+  }
+  pdfHtml+='</div></div>';
+
+  // Reference images section
+  let imgHtml=`<div class="sec" style="margin-bottom:16px">
+    <div class="sec-hdr"><span class="sec-title">&#128247; Reference images</span>
+    <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="triggerResearchPhotoUpload()">+ Add image</button></div>
+    <div class="sec-body">`;
+  if(researchPhotos.length){
+    imgHtml+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:8px">';
+    researchPhotos.forEach(ph=>{
+      imgHtml+=`<div style="display:flex;flex-direction:column;gap:6px">
+        <div style="position:relative;width:100%;aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg3);border:1px solid var(--border);cursor:pointer" onclick="openLB('${ph.url}',event)">
+          <img src="${ph.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.style.display='none'">
+          <div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>
+          <button onclick="event.stopPropagation();confirmAction('Remove image?',()=>removePhoto('${ph.id}'))" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>
+        </div>
+        <textarea placeholder="Add a note about this image..." oninput="updateResearchPhotoCaption('${ph.id}',this.value)" onblur="saveResearchPhotoCaption('${ph.id}',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:vertical;min-height:60px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)';saveResearchPhotoCaption('${ph.id}',this.value)">${esc(ph.caption||'')}</textarea>
+      </div>`;
+    });
+    imgHtml+='</div>';
+  } else {
+    imgHtml+=`<div class="photo-drop-zone" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop')" ondragleave="onDragLeave('research-drop')" ondrop="onResearchImgDrop(event)" id="research-drop">
+      <div class="drop-ico">&#128247;</div>
+      <div class="drop-txt">Drag &amp; drop or click to add images</div>
+      <div class="drop-sub">JPG, PNG, WEBP</div>
+    </div>`;
+  }
+  // Always show drop zone if there are already some images
+  if(researchPhotos.length){
+    imgHtml+=`<div class="photo-drop-zone" style="padding:16px;margin-top:8px" onclick="triggerResearchPhotoUpload()" ondragover="onDragOver(event,'research-drop2')" ondragleave="onDragLeave('research-drop2')" ondrop="onResearchImgDrop(event)" id="research-drop2">
+      <div style="font-size:14px;color:var(--text3)">+ Drop more images here</div>
+    </div>`;
+  }
+  imgHtml+='</div></div>';
+
+  // Notes section — plain textarea, simple and clean
+  let notesHtml=`<div class="sec">
+    <div class="sec-hdr"><span class="sec-title">&#128221; Notes</span></div>
+    <div class="sec-body">
+      <textarea id="ta-research-notes" placeholder="Add research notes, findings, observations..." oninput="markDirty()" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;color:var(--navy);font-family:var(--font);font-size:14px;resize:vertical;min-height:200px;outline:none;line-height:1.7;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)'">${esc(p.research||'')}</textarea>
+    </div>
+  </div>`;
+
+  return pdfHtml+imgHtml+notesHtml;
 }
 
 function buildPhotoTab(title,dropId,type,photos){
@@ -962,9 +1021,9 @@ function buildPhotoTab(title,dropId,type,photos){
 function switchTab(t){collectText();if(unsaved&&currentId&&can('edit'))saveAll();activeTab=t;renderPattern();}
 function collectText(){
   const p=getP();if(!p)return;
-  const r=document.getElementById('rich-editor'),n=document.getElementById('ta-notes');
+  const rn=document.getElementById('ta-research-notes'),n=document.getElementById('ta-notes');
   const ey=document.getElementById('edit-years'),eb=document.getElementById('edit-brand'),em=document.getElementById('edit-model'),et=document.getElementById('edit-trim');
-  if(r)p.research=r.innerHTML;if(n)p.notes=n.value;
+  if(rn)p.research=rn.value;if(n)p.notes=n.value;
   if(ey){p.years=ey.value.trim();p.brand=eb.value.trim();p.model=em.value.trim();p.trim=et.value.trim();}
 }
 let editMode=false;
@@ -1018,6 +1077,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();clo
 
 // ── PHOTOS ────────────────────────────────────────────────
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
+function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
+async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
+async function updateResearchPhotoCaption(id,val){const p=getP();if(!p)return;const ph=p.photos.find(x=>x.id===id);if(ph)ph.caption=val;}
+async function saveResearchPhotoCaption(id,val){await supa.from('pattern_photos').update({caption:val}).eq('id',id);}
 function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
 async function uploadPhotos(files,type){if(!files.length)return;const p=getP();toast('Uploading '+files.length+' photo(s)...');for(const file of files){const url=await uploadToStorage(file,'photos');if(!url)continue;const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}}
