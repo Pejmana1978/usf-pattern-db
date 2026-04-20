@@ -794,6 +794,7 @@ function renderPattern(){
 
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
+  if(activeTab==='research')setTimeout(initResearchTextareas,50);
   if(!can('edit')){
     document.querySelectorAll('.btn-add-other,.var-btn,.tog-btn,.ch-toggle,.btn-add-pat').forEach(el=>{el.disabled=true;el.style.opacity='0.4';el.style.cursor='not-allowed';});
     document.querySelectorAll('.rich-editor').forEach(el=>el.setAttribute('contenteditable','false'));
@@ -984,7 +985,8 @@ function renderResearchTab(p){
           <div style="position:absolute;inset:0;background:rgba(23,24,59,0.45);display:none;align-items:center;justify-content:center;font-size:13px;color:#fff" onmouseover="this.style.display='flex'" onmouseout="this.style.display='none'">&#128269; View</div>
           <button onclick="event.stopPropagation();confirmAction('Remove image?',()=>removePhoto('${ph.id}'))" style="position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700">&#x2715;</button>
         </div>
-        <textarea placeholder="Add a note about this image..." oninput="updateResearchPhotoCaption('${ph.id}',this.value)" onblur="saveResearchPhotoCaption('${ph.id}',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:vertical;min-height:60px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)'" onblur="this.style.borderColor='var(--border)';saveResearchPhotoCaption('${ph.id}',this.value)">${esc(ph.caption||'')}</textarea>
+        <textarea placeholder="Add a note or paste a URL..." oninput="updateResearchPhotoCaption('${ph.id}',this.value);autoResizeTA(this)" onblur="saveResearchPhotoCaption('${ph.id}',this.value);renderCaptionLinks('${ph.id}',this.value)" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--navy);resize:none;overflow:hidden;min-height:38px;outline:none;line-height:1.5;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--gold-border)';this.style.display='block';document.getElementById('cap-view-${ph.id}').style.display='none'" id="cap-ta-${ph.id}">${esc(ph.caption||'')}</textarea>
+        <div id="cap-view-${ph.id}" onclick="document.getElementById('cap-ta-${ph.id}').style.display='block';document.getElementById('cap-ta-${ph.id}').focus();this.style.display='none'" style="display:none;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--navy);min-height:38px;cursor:text;line-height:1.5;word-break:break-word;white-space:pre-wrap">${ph.caption?linkify(ph.caption):'<span style="color:var(--text3)">Add a note or paste a URL...</span>'}</div>
       </div>`;
     });
     imgHtml+='</div>';
@@ -1011,7 +1013,7 @@ function renderResearchTab(p){
     </div>
   </div>`;
 
-  return pdfHtml+imgHtml+notesHtml;
+  return imgHtml+notesHtml+pdfHtml;
 }
 
 function buildPhotoTab(title,dropId,type,photos){
@@ -1080,6 +1082,30 @@ function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
 async function onResearchImgDrop(e){e.preventDefault();const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/'));if(files.length)await uploadPhotos(files,'research');}
 async function updateResearchPhotoCaption(id,val){const p=getP();if(!p)return;const ph=p.photos.find(x=>x.id===id);if(ph)ph.caption=val;}
+function autoResizeTA(ta){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';}
+function linkify(text){
+  if(!text)return'';
+  const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" style="color:var(--gold2);text-decoration:underline;word-break:break-all" onclick="event.stopPropagation()">$1</a>');
+}
+function renderCaptionLinks(id,val){
+  const ta=document.getElementById('cap-ta-'+id);
+  const view=document.getElementById('cap-view-'+id);
+  if(!ta||!view)return;
+  if(val&&val.trim()){
+    view.innerHTML=linkify(val);
+    ta.style.display='none';
+    view.style.display='block';
+  }
+}
+// Auto-resize all research textareas on render
+function initResearchTextareas(){
+  document.querySelectorAll('textarea[id^="cap-ta-"]').forEach(ta=>{
+    autoResizeTA(ta);
+    const id=ta.id.replace('cap-ta-','');
+    renderCaptionLinks(id,ta.value);
+  });
+}
 async function saveResearchPhotoCaption(id,val){await supa.from('pattern_photos').update({caption:val}).eq('id',id);}
 function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
