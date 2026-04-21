@@ -805,11 +805,13 @@ async function toggleChannel(key,btn){if(!can('edit')){toast('View-only access',
 function renderPricingSection(p){
   const pricing=p.pricing||{};
   let html='<div class="sec"><div class="sec-hdr"><span class="sec-title">Pricing</span><span style="font-size:12px;color:var(--text3);margin-left:auto">Enter target \u2192 click any calculated price to copy it</span></div><div class="sec-body">';
-  html+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.7"><strong style="color:var(--navy)">Target price</strong> = what you want to receive after the sale discount. The calculated pre-discount price is what you enter in the eBay listing. <strong style="color:var(--navy)">USASC: 15% off. All others: 5% off.</strong> Prices land on natural-looking cents. <strong style="color:var(--navy)">Click any price to copy it.</strong></div>';
+  html+='<div style="font-size:12px;color:var(--text3);margin-bottom:16px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);line-height:1.7"><strong style="color:var(--navy)">Target price</strong> = what you want to receive after the sale discount. The calculated pre-discount price is what you enter in the eBay listing. <strong style="color:var(--navy)">USASC: 15% off. All others: 5% off.</strong> Auto-Accept = target &minus;5%. Auto-Decline = target &minus;15%. <strong style="color:var(--navy)">Click any price to copy it.</strong></div>';
   MATERIALS_PRICE.forEach(mat=>{
     const matKey=mat.replace(/[^a-z0-9]/gi,'_').toLowerCase();
     html+='<div class="price-section"><div class="price-section-title">'+mat+'</div><table class="price-matrix"><thead><tr><th style="width:150px">Position set</th><th style="width:100px">Target $</th>';
     [{label:'USASC',disc:0.15},{label:'Others',disc:0.05}].forEach(col=>{html+='<th>'+col.label+'<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">'+Math.round(col.disc*100)+'% off</span></th>';});
+    html+='<th>Auto-Accept<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">target &minus;5%</span></th>';
+    html+='<th>Auto-Decline<br><span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text2)">target &minus;15%</span></th>';
     html+='</tr></thead><tbody>';
     POSITIONS_PRICE.forEach(pos=>{
       const posKey=pos.replace(/[^a-z0-9]/gi,'_').toLowerCase();
@@ -820,6 +822,12 @@ function renderPricingSection(p){
         const calc=(target&&parseFloat(target)>0)?calcPreDiscount(parseFloat(target),col.disc):null;
         html+='<td><span class="price-calc" id="pc_'+col.id+'_'+priceKey+'" onclick="copyPrice(this,\''+col.id+'\',\''+priceKey+'\',\''+col.disc+'\')">'+(calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>')+'</span></td>';
       });
+      // Auto-Accept: target * 0.95
+      const aa=(target&&parseFloat(target)>0)?naturalCents(parseFloat(target)*0.95):null;
+      html+='<td><span class="price-calc" id="pc_aa_'+priceKey+'" onclick="copyDirect(this,\'aa\',\''+priceKey+'\',0.95)">'+(aa?fmtPrice(aa):'<span class="price-na">&mdash;</span>')+'</span></td>';
+      // Auto-Decline: target * 0.85
+      const ad=(target&&parseFloat(target)>0)?naturalCents(parseFloat(target)*0.85):null;
+      html+='<td><span class="price-calc" id="pc_ad_'+priceKey+'" onclick="copyDirect(this,\'ad\',\''+priceKey+'\',0.85)">'+(ad?fmtPrice(ad):'<span class="price-na">&mdash;</span>')+'</span></td>';
       html+='</tr>';
     });
     html+='</tbody></table></div>';
@@ -836,6 +844,12 @@ function updatePricing(key,val){
     const cell=document.getElementById('pc_'+col.id+'_'+key);
     if(cell){cell.innerHTML=calc?fmtPrice(calc):'<span class="price-na">&mdash;</span>';cell.classList.remove('copied');}
   });
+  // Update Auto-Accept and Auto-Decline cells
+  const t=(val&&parseFloat(val)>0)?parseFloat(val):null;
+  const aaCell=document.getElementById('pc_aa_'+key);
+  if(aaCell){const v=t?naturalCents(t*0.95):null;aaCell.innerHTML=v?fmtPrice(v):'<span class="price-na">&mdash;</span>';aaCell.classList.remove('copied');}
+  const adCell=document.getElementById('pc_ad_'+key);
+  if(adCell){const v=t?naturalCents(t*0.85):null;adCell.innerHTML=v?fmtPrice(v):'<span class="price-na">&mdash;</span>';adCell.classList.remove('copied');}
 }
 function copyPrice(el,brandId,priceKey,discStr){
   const p=getP();if(!p)return;
@@ -844,6 +858,16 @@ function copyPrice(el,brandId,priceKey,discStr){
   if(!target){toast('Enter a target price first','err');return;}
   const calc=calcPreDiscount(parseFloat(target),disc);
   if(!calc)return;
+  const text=calc.toFixed(2);
+  const doCopy=()=>{el.classList.add('copied');el.textContent='\u2713 Copied!';setTimeout(()=>{el.innerHTML=fmtPrice(calc);el.classList.remove('copied');},1500);};
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(doCopy).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();});}
+  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();}
+}
+function copyDirect(el,colId,priceKey,factor){
+  const p=getP();if(!p)return;
+  const target=p.pricing?.[priceKey];
+  if(!target){toast('Enter a target price first','err');return;}
+  const calc=naturalCents(parseFloat(target)*factor);
   const text=calc.toFixed(2);
   const doCopy=()=>{el.classList.add('copied');el.textContent='\u2713 Copied!';setTimeout(()=>{el.innerHTML=fmtPrice(calc);el.classList.remove('copied');},1500);};
   if(navigator.clipboard){navigator.clipboard.writeText(text).then(doCopy).catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doCopy();});}
