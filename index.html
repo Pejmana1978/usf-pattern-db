@@ -520,6 +520,21 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 <div class="confirm-overlay" id="confirm-overlay" style="display:none">
   <div class="confirm-box"><div class="confirm-title" id="confirm-title">Are you sure?</div><div class="confirm-msg" id="confirm-msg"></div><div class="confirm-actions"><button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-ok-btn">Confirm</button></div></div>
 </div>
+<div class="modal-overlay" id="editors-modal" style="display:none" onclick="if(event.target===this)closeEditorsModal()">
+  <div class="modal">
+    <div class="modal-title">Pattern editors</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:10px">Checked editors can edit this pattern even though they didn't create it.</div>
+    <div id="editors-list" style="max-height:320px;overflow-y:auto"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeEditorsModal()">Cancel</button><button class="btn btn-navy" onclick="saveEditors()">Save</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="history-modal" style="display:none" onclick="if(event.target===this)closeHistoryModal()">
+  <div class="modal" style="max-width:680px;width:90%">
+    <div class="modal-title">Change history (last 12 months)</div>
+    <div id="history-list" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeHistoryModal()">Close</button></div>
+  </div>
+</div>
 <input type="file" id="photo-file" style="display:none" accept="image/*" multiple onchange="handlePhotoFiles(event)">
 <input type="file" id="pdf-file" style="display:none" accept="application/pdf,.pdf" multiple onchange="handlePdfFiles(event)">
 <input type="file" id="research-img-file" style="display:none" accept="image/*" onchange="handleResearchImg(event)">
@@ -578,11 +593,11 @@ function can(action){
   if(action==='edit'){
     if(ROLE_LEVEL[currentRole]<2)return false;            // viewers: no
     if(ROLE_LEVEL[currentRole]>=3)return true;            // admin/manager: edit all
-    // editor: only own patterns (no pattern selected = creating, allowed)
+    // editor: own patterns, or patterns a manager granted them (no pattern selected = creating, allowed)
     if(!currentId)return true;
     const p=patterns.find(x=>x.id===currentId);
     if(!p)return true;
-    return p.created_by===currentUser?.id;
+    return p.created_by===currentUser?.id||(p.allowed_editors||[]).includes(currentUser?.id);
   }
   if(action==='pricing')return ROLE_LEVEL[currentRole]>=1;
   return true;
@@ -829,8 +844,8 @@ async function acquireLock(patternId){
   if(!currentRole||ROLE_LEVEL[currentRole]<2||!currentUser){viewOnlyMode=true;return;}
   const p=patterns.find(x=>x.id===patternId);
   if(!p){viewOnlyMode=true;return;}
-  // Editors can only lock/edit patterns they created; others view-only (no lock attempt)
-  if(ROLE_LEVEL[currentRole]===2&&p.created_by!==currentUser.id){viewOnlyMode=true;return;}
+  // Editors can only lock/edit patterns they created or were granted; others view-only (no lock attempt)
+  if(ROLE_LEVEL[currentRole]===2&&p.created_by!==currentUser.id&&!(p.allowed_editors||[]).includes(currentUser.id)){viewOnlyMode=true;return;}
   // If locked by another user (fresh, not stale), enter view-only mode
   if(isLockedByOther(p)){
     viewOnlyMode=true;
@@ -915,14 +930,14 @@ function renderPattern(){
   ];
   let html=`<div class="pat-hdr"><div class="pat-title-block">
     <div class="pat-title" id="pat-title-display">${esc(p.brand)} ${esc(p.model)} ${esc(p.years)}${p.trim?' '+esc(p.trim):''}</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:2px">Created by ${esc(creatorName(p.created_by))}</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px">Created by ${esc(creatorName(p.created_by))}${(p.allowed_editors&&p.allowed_editors.length)?' &middot; Editors: '+esc(p.allowed_editors.map(id=>creatorName(id)).join(', ')):''}${ROLE_LEVEL[currentRole]>=3?' &middot; <a style="color:var(--gold2);cursor:pointer;font-weight:600" onclick="openEditorsModal()">manage editors</a>':''}</div>
     <div class="pat-edit-row" id="pat-edit-row" style="display:none">
       <div class="pef"><div class="pef-label">Years</div><input class="pef-input" id="edit-years" value="${esc(p.years)}" oninput="markDirty()"></div>
       <div class="pef"><div class="pef-label">Brand</div><input class="pef-input" id="edit-brand" value="${esc(p.brand)}" list="brand-dl" oninput="markDirty()"></div>
       <div class="pef"><div class="pef-label">Model</div><input class="pef-input" id="edit-model" value="${esc(p.model)}" oninput="markDirty()"></div>
       <div class="pef"><div class="pef-label">Trim</div><input class="pef-input" id="edit-trim" value="${esc(p.trim||'')}" placeholder="e.g. GT..." oninput="markDirty()"></div>
     </div>
-  </div><button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">\u270e Edit</button></div>
+  </div>${ROLE_LEVEL[currentRole]>=3?'<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="openHistoryModal()">&#128336; History</button>':''}<button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">\u270e Edit</button></div>
   <div class="tabs">${tabs.map(t=>`<div class="tab ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</div>`).join('')}</div>`;
   if(activeTab==='overview')html+=renderOverviewTab(p);
   else if(activeTab==='photos')html+=buildPhotoTab('Product photos','prod-drop','product',prod);
@@ -1928,6 +1943,71 @@ function exportResearchPdfPrint(){
   };
   toast('PDF window opened \u2013 use Print \u2192 Save as PDF');
 }
+// ── PATTERN EDITORS (manager grants) ──────────────────────
+async function openEditorsModal(){
+  if(ROLE_LEVEL[currentRole]<3){toast('Permission denied','err');return;}
+  const p=getP();if(!p)return;
+  const box=document.getElementById('editors-list');
+  box.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
+  document.getElementById('editors-modal').style.display='flex';
+  const {data:eds,error}=await supa.from('user_profiles').select('id,full_name,email').eq('role','editor').order('full_name');
+  if(error){box.innerHTML='<div style="color:var(--red);font-size:13px">Error loading editors</div>';return;}
+  if(!eds||!eds.length){box.innerHTML='<div style="color:var(--text3);font-size:13px">No users with the editor role.</div>';return;}
+  const cur=p.allowed_editors||[];
+  box.innerHTML=eds.map(u=>{
+    const nm=u.full_name||u.email;
+    const isOwner=p.created_by===u.id;
+    return '<label style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer;font-size:14px">'
+      +'<input type="checkbox" class="ed-cb" value="'+u.id+'"'+(cur.includes(u.id)?' checked':'')+(isOwner?' checked disabled':'')+'>'
+      +esc(nm)+(isOwner?' <span style="color:var(--text3);font-size:11px">(creator — always allowed)</span>':'')
+      +'</label>';
+  }).join('');
+}
+function closeEditorsModal(){document.getElementById('editors-modal').style.display='none';}
+async function saveEditors(){
+  const p=getP();if(!p)return;
+  const ids=Array.from(document.querySelectorAll('.ed-cb:checked')).filter(cb=>!cb.disabled).map(cb=>cb.value);
+  const {error}=await supa.from('patterns').update({allowed_editors:ids}).eq('id',p.id);
+  if(error){toast('Error: '+error.message,'err');return;}
+  p.allowed_editors=ids;
+  closeEditorsModal();renderPattern();toast('Editors updated ✓');
+}
+// ── CHANGE HISTORY (audit log) ────────────────────────────
+const AUDIT_LABELS={patterns:'pattern',pattern_colors:'color',pattern_pdfs:'document',pattern_photos:'photo'};
+function auditVal(v){if(v===null||v===undefined||v==='')return'—';const s=typeof v==='string'?v:JSON.stringify(v);return esc(s.length>80?s.slice(0,80)+'…':s);}
+function auditSummary(e){
+  const label=AUDIT_LABELS[e.table_name]||e.table_name;
+  const ch=e.changes||{};
+  if(e.action==='INSERT'||e.action==='DELETE'){
+    const hint=ch.name||ch.caption||[ch.brand,ch.model].filter(Boolean).join(' ')||'';
+    return (e.action==='INSERT'?'Added ':'Deleted ')+label+(hint?' “'+auditVal(hint)+'”':'');
+  }
+  const parts=Object.keys(ch).map(k=>{
+    const d=ch[k]||{};
+    return '<div style="margin:2px 0 0 12px"><b>'+esc(k)+'</b>: '+auditVal(d.old)+' → '+auditVal(d.new)+'</div>';
+  });
+  return 'Edited '+label+parts.join('');
+}
+async function openHistoryModal(){
+  if(ROLE_LEVEL[currentRole]<3){toast('Permission denied','err');return;}
+  const p=getP();if(!p)return;
+  document.getElementById('history-modal').style.display='flex';
+  const box=document.getElementById('history-list');
+  box.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
+  const since=new Date(Date.now()-365*24*3600*1000).toISOString();
+  const {data,error}=await supa.from('audit_log').select('*').eq('pattern_id',p.id).gte('at',since).order('at',{ascending:false}).limit(500);
+  if(error){box.innerHTML='<div style="color:var(--red);font-size:13px">Error: '+esc(error.message)+'</div>';return;}
+  if(!data||!data.length){box.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">No recorded changes yet. History tracking started July 4, 2026.</div>';return;}
+  box.innerHTML=data.map(e=>{
+    const when=new Date(e.at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    const who=e.user_id?creatorName(e.user_id):'System';
+    return '<div style="padding:10px 4px;border-bottom:1px solid var(--border);font-size:13px">'
+      +'<div style="display:flex;gap:10px;margin-bottom:3px"><span style="font-weight:600">'+esc(who)+'</span><span style="color:var(--text3)">'+when+'</span></div>'
+      +'<div style="color:var(--text2);line-height:1.5">'+auditSummary(e)+'</div>'
+      +'</div>';
+  }).join('');
+}
+function closeHistoryModal(){document.getElementById('history-modal').style.display='none';}
 init();
 </script>
 </body>
