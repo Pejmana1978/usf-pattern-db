@@ -325,9 +325,16 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
               <td style="text-align:center;color:var(--green);font-weight:700">&#10003;</td>
             </tr>
             <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:7px 10px">Add, edit &amp; delete patterns</td>
+              <td style="padding:7px 10px">Add &amp; edit patterns</td>
               <td style="text-align:center;color:var(--border2);font-weight:700">&mdash;</td>
+              <td style="text-align:center;color:var(--green);font-weight:700">&#10003;<span style="display:block;font-size:9px;font-weight:600;color:var(--text3)">own only</span></td>
               <td style="text-align:center;color:var(--green);font-weight:700">&#10003;</td>
+              <td style="text-align:center;color:var(--green);font-weight:700">&#10003;</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:7px 10px">Delete patterns</td>
+              <td style="text-align:center;color:var(--border2);font-weight:700">&mdash;</td>
+              <td style="text-align:center;color:var(--border2);font-weight:700">&mdash;</td>
               <td style="text-align:center;color:var(--green);font-weight:700">&#10003;</td>
               <td style="text-align:center;color:var(--green);font-weight:700">&#10003;</td>
             </tr>
@@ -567,7 +574,7 @@ function can(action){
   // blocks edit/delete actions only — manage_users remains a global role check.
   if(viewOnlyMode&&currentId&&(action==='edit'||action==='delete'))return false;
   if(action==='manage_users')return ROLE_LEVEL[currentRole]>=3;
-  if(action==='delete')return currentRole==='admin'; // delete patterns: admins only
+  if(action==='delete')return ROLE_LEVEL[currentRole]>=3; // delete patterns: managers & admins
   if(action==='edit'){
     if(ROLE_LEVEL[currentRole]<2)return false;            // viewers: no
     if(ROLE_LEVEL[currentRole]>=3)return true;            // admin/manager: edit all
