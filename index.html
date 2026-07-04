@@ -604,6 +604,12 @@ function can(action){
 }
 // Role can create new patterns (independent of which pattern is selected)
 function canCreate(){return !!currentRole&&ROLE_LEVEL[currentRole]>=2;}
+// History visibility: managers/admins always; editors on patterns they can edit (own or granted)
+function canSeeHistory(p){
+  if(!currentRole)return false;
+  if(ROLE_LEVEL[currentRole]>=3)return true;
+  return ROLE_LEVEL[currentRole]===2&&!!p&&(p.created_by===currentUser?.id||(p.allowed_editors||[]).includes(currentUser?.id));
+}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function su(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function toast(msg,type){type=type||'ok';const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
@@ -937,7 +943,7 @@ function renderPattern(){
       <div class="pef"><div class="pef-label">Model</div><input class="pef-input" id="edit-model" value="${esc(p.model)}" oninput="markDirty()"></div>
       <div class="pef"><div class="pef-label">Trim</div><input class="pef-input" id="edit-trim" value="${esc(p.trim||'')}" placeholder="e.g. GT..." oninput="markDirty()"></div>
     </div>
-  </div>${ROLE_LEVEL[currentRole]>=3?'<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="openHistoryModal()">&#128336; History</button>':''}<button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">\u270e Edit</button></div>
+  </div>${canSeeHistory(p)?'<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="openHistoryModal()">&#128336; History</button>':''}<button class="btn btn-ghost btn-sm" id="edit-toggle-btn" onclick="toggleEditMode()">\u270e Edit</button></div>
   <div class="tabs">${tabs.map(t=>`<div class="tab ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</div>`).join('')}</div>`;
   if(activeTab==='overview')html+=renderOverviewTab(p);
   else if(activeTab==='photos')html+=buildPhotoTab('Product photos','prod-drop','product',prod);
@@ -1989,8 +1995,8 @@ function auditSummary(e){
   return 'Edited '+label+parts.join('');
 }
 async function openHistoryModal(){
-  if(ROLE_LEVEL[currentRole]<3){toast('Permission denied','err');return;}
   const p=getP();if(!p)return;
+  if(!canSeeHistory(p)){toast('Permission denied','err');return;}
   document.getElementById('history-modal').style.display='flex';
   const box=document.getElementById('history-list');
   box.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
