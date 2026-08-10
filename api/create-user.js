@@ -13,7 +13,11 @@
 //   · `created_by` is taken from the token, never from the body.
 
 const SUPA_URL = 'https://doommgfawoqiptgqadwd.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqC';
+// The anon key is public by design — it is already in index.html and is only
+// the project gate. The BEARER token is what identifies the caller. This is
+// copied verbatim from index.html; a hand-truncated copy is what made every
+// verification fail the first time.
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvb21tZ2Zhd29xaXB0Z3FhZHdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODgzNTEsImV4cCI6MjA5MDg2NDM1MX0.EAUUhtPoGlqDQSLlABMwc5DptBI7T5HCkqCS-zW8kaQ';
 
 const ROLE_LEVEL = { admin: 4, manager: 3, editor: 2, viewer: 1 };
 
