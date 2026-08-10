@@ -683,7 +683,9 @@ async function openUsersModal(){if(!can('manage_users')){toast('Permission denie
 function closeUsersModal(){document.getElementById('users-modal').style.display='none';hideAddUser();}
 async function loadUsersList(){
   const el=document.getElementById('users-list');el.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
-  const {data:users,error}=await supa.from('user_profiles').select('*').order('created_at');
+  // Archived people keep their row so their name still shows on the patterns
+  // they created — they are just not part of the team list any more.
+  const {data:users,error}=await supa.from('user_profiles').select('*').is('archived_at',null).order('created_at');
   if(error){el.innerHTML='<div style="color:var(--red);font-size:13px">Error</div>';return;}
   const rc={admin:'var(--navy)',manager:'var(--gold2)',editor:'var(--green)',viewer:'var(--text3)'};
   let html='<table style="width:100%;border-collapse:collapse"><thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Name</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Email</th><th style="text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase">Role</th><th></th></tr></thead><tbody>';
@@ -697,7 +699,21 @@ async function loadUsersList(){
 }
 async function sendReset(email){const {error}=await supa.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});if(error){toast('Error: '+error.message,'err');return;}toast('Reset email sent \u2713');}
 async function changeUserRole(uid,role){const {error}=await supa.from('user_profiles').update({role}).eq('id',uid);if(error){toast('Error','err');return;}toast('Role updated \u2713');await loadUsersList();}
-async function removeUser(uid,name){confirmAction('Remove '+name+'?',async()=>{await supa.from('user_profiles').delete().eq('id',uid);toast('Removed');await loadUsersList();});}
+// Removing someone takes the service key (their login lives in auth.users, which
+// the browser cannot touch), so it goes through the server. It archives rather
+// than deletes: their name has to stay on the patterns they created.
+async function removeUser(uid,name){confirmAction('Remove '+name+'? They will lose access. Their name stays on the patterns they created.',async()=>{
+  const {data:{session}}=await supa.auth.getSession();
+  if(!session){toast('Session expired — sign in again','err');return;}
+  let out;
+  try{
+    const res=await fetch('/api/remove-user',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({user_id:uid})});
+    out=await res.json();
+    if(!res.ok){toast(out.error||'Could not remove '+name,'err');if(!out.partial)return;}
+  }catch(e){toast('Could not reach the server','err');return;}
+  if(out&&out.success)toast('Removed '+(out.locksReleased?'✓ · '+out.locksReleased+' lock(s) released':'✓'));
+  await loadUsersList();
+});}
 function showAddUser(){document.getElementById('add-user-form').style.display='block';document.getElementById('add-user-btn').style.display='none';}
 function hideAddUser(){document.getElementById('add-user-form').style.display='none';document.getElementById('add-user-btn').style.display='';['nu-name','nu-email','nu-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 async function registerUser(){
@@ -710,7 +726,12 @@ async function registerUser(){
   if(pass.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='block';return;}
   const btn=document.getElementById('create-user-btn');btn.disabled=true;btn.textContent='Creating...';
   try{
-    const res=await fetch('/api/create-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass,full_name:name,role,created_by:currentUser.id})});
+    // The server identifies the creator from this token and refuses anyone who
+    // is not a manager or admin, so created_by is no longer sent — it would
+    // only be a claim the server has to ignore.
+    const {data:{session}}=await supa.auth.getSession();
+    if(!session){btn.disabled=false;btn.textContent='Create User';errEl.textContent='Session expired — sign in again.';errEl.style.display='block';return;}
+    const res=await fetch('/api/create-user',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({email,password:pass,full_name:name,role})});
     const data=await res.json();btn.disabled=false;btn.textContent='Create User';
     if(!res.ok){errEl.textContent=data.error||'Failed to create user.';errEl.style.display='block';return;}
     toast('User created \u2713');hideAddUser();await loadUsersList();
@@ -1956,7 +1977,7 @@ async function openEditorsModal(){
   const box=document.getElementById('editors-list');
   box.innerHTML='<div style="color:var(--text3);font-size:13px">Loading...</div>';
   document.getElementById('editors-modal').style.display='flex';
-  const {data:eds,error}=await supa.from('user_profiles').select('id,full_name,email').eq('role','editor').order('full_name');
+  const {data:eds,error}=await supa.from('user_profiles').select('id,full_name,email').eq('role','editor').is('archived_at',null).order('full_name');
   if(error){box.innerHTML='<div style="color:var(--red);font-size:13px">Error loading editors</div>';return;}
   if(!eds||!eds.length){box.innerHTML='<div style="color:var(--text3);font-size:13px">No users with the editor role.</div>';return;}
   const cur=p.allowed_editors||[];
