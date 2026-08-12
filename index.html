@@ -190,7 +190,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--navy);min-height:1
 .sq-photo-card{display:flex;flex-direction:column;gap:5px}
 .sq-photo-wrap{width:100%;aspect-ratio:1/1;position:relative;border-radius:var(--radius);overflow:hidden;cursor:pointer;background:var(--bg3);border:1px solid var(--border);box-shadow:var(--shadow)}
 .sq-photo-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.sq-photo-overlay{position:absolute;inset:0;background:rgba(23,24,59,0.48);display:none;align-items:center;justify-content:center}
+/* pointer-events:none is what makes the photo draggable. The overlay only
+   appears on hover — which is exactly when you reach for the image — so it used
+   to swallow the drag and you ended up grabbing an empty div. The buttons
+   inside take their pointer events back. */
+.sq-photo-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(23,24,59,0) 45%,rgba(23,24,59,0.62) 100%);display:none;align-items:flex-end;justify-content:center;gap:6px;padding-bottom:9px;pointer-events:none}
+/* The controls sit along the BOTTOM, not the middle. Centred, they covered the
+   part of the photo you naturally grab, so the drag hit a button instead of the
+   image — the same failure as the overlay, one layer down. */
+.sq-photo-overlay button{pointer-events:auto}
+.ba-set{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;background:var(--bg2)}
+.ba-set-hdr{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.ba-set-no{font-weight:700;font-size:14px;color:var(--navy);background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:20px;padding:2px 12px;white-space:nowrap}
+.ba-set-note{flex:1;min-width:180px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:13px;color:var(--navy)}
+.ba-set-note::placeholder{color:var(--text3)}
+.ba-add{background:transparent;border:1.5px dashed var(--border2);border-radius:var(--radius);padding:10px 16px;font-family:var(--font);font-size:14px;color:var(--text2);cursor:pointer}
+.ba-add:hover{border-color:var(--gold2);color:var(--navy)}
 .sq-photo-wrap:hover .sq-photo-overlay{display:flex}
 .sq-photo-view-btn{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:5px;color:#fff;cursor:pointer;padding:6px 12px;font-size:13px;font-family:var(--font)}
 .sq-photo-x{position:absolute;top:6px;right:6px;width:24px;height:24px;background:rgba(175,1,41,0.85);border:none;border-radius:50%;color:#fff;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;z-index:2}
@@ -968,7 +983,7 @@ function renderPattern(){
   <div class="tabs">${tabs.map(t=>`<div class="tab ${activeTab===t.id?'active':''}" onclick="switchTab('${t.id}')">${t.label}</div>`).join('')}</div>`;
   if(activeTab==='overview')html+=renderOverviewTab(p);
   else if(activeTab==='photos')html+=buildPhotoTab('Product photos','prod-drop','product',prod);
-  else if(activeTab==='before_after')html+=buildPhotoTab('Before &amp; After','ba-drop','before_after',ba);
+  else if(activeTab==='before_after')html+=buildBeforeAfterTab(ba);
   else if(activeTab==='research')html+=renderResearchTab(p);
   document.getElementById('content').innerHTML=html;
   initEditorImgResize();
@@ -1346,6 +1361,89 @@ function renderResearchTab(p){
 
   return imgHtml+notesHtml+pdfHtml;
 }
+// Before & After is grouped into SETS. One set is one job — a customer sends
+// four photos of a red fitting, another sends six of a black one. Without this
+// they all landed in a single grid and nobody could tell which before belonged
+// to which after. Each set carries a note.
+function buildBeforeAfterTab(photos){
+  const canEdit=can('edit');
+  const p=getP();
+  const sets={};
+  photos.forEach(ph=>{const k=ph.set_no||1;(sets[k]=sets[k]||[]).push(ph);});
+  const keys=Object.keys(sets).map(Number).sort((a,b)=>a-b);
+  let html='<div class="sec"><div class="sec-hdr"><span class="sec-title">Before &amp; After</span></div><div class="sec-body">';
+  if(!keys.length){
+    html+='<div style="color:var(--text3);font-size:14px;padding:4px 0 12px">No before &amp; after photos yet.</div>';
+  }
+  keys.forEach(k=>{
+    const note=(sets[k].find(ph=>ph.set_note)||{}).set_note||'';
+    html+='<div class="ba-set"><div class="ba-set-hdr"><span class="ba-set-no">Set '+k+'</span>';
+    if(canEdit){
+      html+='<input class="ba-set-note" value="'+esc(note)+'" placeholder="What is this set? e.g. Red leather, customer photos after fitting" '+
+            'onchange="saveSetNote(\''+p.id+'\','+k+',this.value)">'+
+            '<button class="ba-add" style="padding:6px 12px;font-size:13px" onclick="uploadIntoSet('+k+')">+ Add to Set '+k+'</button>';
+    }else if(note){
+      html+='<span style="font-size:13px;color:var(--text2)">'+esc(note)+'</span>';
+    }
+    html+='</div><div class="sq-photo-grid">';
+    sets[k].forEach(ph=>{html+=photoCard(ph,canEdit);});
+    html+='</div></div>';
+  });
+  if(canEdit)html+='<button class="ba-add" onclick="addBaSet()">+ New set</button>';
+  html+='</div></div>';
+  return html;
+}
+
+// One photo tile. Draggable out of the browser, with copy and download for the
+// cases drag cannot serve — dragging a browser image into WhatsApp hands over a
+// URL, which WhatsApp will not take, so Copy is the one that actually works.
+function photoCard(ph,canEdit){
+  const u=esc(ph.url);
+  let h='<div class="sq-photo-card"><div class="sq-photo-wrap">'+
+    '<img src="'+u+'" onerror="this.style.display=\'none\'" alt="" draggable="true" ondragstart="onPhotoDragStart(event,\''+u+'\')">';
+  if(canEdit)h+='<button class="sq-photo-x" onclick="confirmAction(\'Remove?\',()=>removePhoto(\''+ph.id+'\'))">&#x2715;</button>';
+  h+='<div class="sq-photo-overlay">'+
+       '<button class="sq-photo-view-btn" onclick="openLB(\''+su(ph.url)+'\',event)">&#128269;</button>'+
+       '<button class="sq-photo-view-btn" onclick="copyPhoto(event,\''+u+'\')" title="Copy image">&#128203;</button>'+
+       '<button class="sq-photo-view-btn" onclick="downloadPhoto(event,\''+u+'\')" title="Download">&#11015;</button>'+
+     '</div></div>'+
+    '<div class="sq-photo-label">'+esc(ph.caption||'Photo')+'</div></div>';
+  return h;
+}
+// DownloadURL lets a drag out of the browser carry a real FILE rather than a
+// link, which is what Finder and most desktop apps expect.
+function onPhotoDragStart(e,url){
+  const name=(url.split('/').pop()||'photo').split('?')[0];
+  try{e.dataTransfer.setData('DownloadURL','image/webp:'+name+':'+url);}catch(x){}
+  e.dataTransfer.setData('text/uri-list',url);
+  e.dataTransfer.setData('text/plain',url);
+}
+async function copyPhoto(e,url){
+  e.stopPropagation();
+  try{
+    const blob=await (await fetch(url)).blob();
+    // The clipboard only reliably takes PNG, so re-encode rather than hand it
+    // the webp and have the paste silently fail.
+    const bmp=await createImageBitmap(blob);
+    const cv=document.createElement('canvas');cv.width=bmp.width;cv.height=bmp.height;
+    cv.getContext('2d').drawImage(bmp,0,0);
+    const png=await new Promise(r=>cv.toBlob(r,'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+    toast('Copied — paste it into WhatsApp');
+  }catch(err){ toast('Could not copy — use Download instead','err'); }
+}
+async function downloadPhoto(e,url){
+  e.stopPropagation();
+  try{
+    const blob=await (await fetch(url)).blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(url.split('/').pop()||'photo').split('?')[0];
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }catch(err){ window.open(url,'_blank'); }
+}
+
 function buildPhotoTab(title,dropId,type,photos){
   var canEdit=can('edit');
   var html='<div class="sec"><div class="sec-hdr"><span class="sec-title">'+title+'</span></div><div class="sec-body">';
@@ -1535,14 +1633,50 @@ function initResearchTextareas(){
 async function saveResearchPhotoCaption(id,val){await supa.from('pattern_photos').update({caption:val}).eq('id',id);}
 function onPhotoDrop(e,type){e.preventDefault();const id=type==='product'?'prod-drop':'ba-drop';document.getElementById(id)?.classList.remove('dragover');uploadPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')),type);}
 function handlePhotoFiles(e){const files=Array.from(e.target.files);e.target.value='';uploadPhotos(files.filter(f=>f.type.startsWith('image/')),photoUploadType);}
+// Which set the next before/after upload joins. Null means "start a new one".
+let baTargetSet=null;
+function baSets(p){
+  const n=(p.photos||[]).filter(ph=>ph.type==='before_after'&&ph.set_no).map(ph=>ph.set_no);
+  return [...new Set(n)].sort((a,b)=>a-b);
+}
+function addBaSet(){
+  const p=getP();if(!p)return;
+  const s=baSets(p);
+  baTargetSet=(s.length?s[s.length-1]:0)+1;
+  triggerPhotoUpload('before_after');
+}
+function uploadIntoSet(n){baTargetSet=n;triggerPhotoUpload('before_after');}
+async function saveSetNote(patternId,setNo,val){
+  // The note lives on every photo in the set, so they all move together.
+  await supa.from('pattern_photos').update({set_note:val})
+    .eq('pattern_id',patternId).eq('type','before_after').eq('set_no',setNo);
+  const p=getP();
+  if(p)(p.photos||[]).forEach(ph=>{if(ph.type==='before_after'&&ph.set_no===setNo)ph.set_note=val;});
+}
+
 async function uploadPhotos(files,type){
   if(!files.length)return;
   const p=getP();
+  // A before/after upload always belongs to a set. If none was chosen, add to
+  // the last one — the common case is carrying on with the job you just started.
+  let setNo=null;
+  if(type==='before_after'){
+    const s=baSets(p);
+    setNo=baTargetSet||(s.length?s[s.length-1]:1);
+    baTargetSet=null;
+  }
   toast('Uploading '+files.length+' photo(s)...');
   for(const file of files){
     const url=await uploadToStorage(file,'photos');
     if(!url)continue;
-    const {data,error}=await supa.from('pattern_photos').insert({pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')}).select().single();
+    const row={pattern_id:p.id,url,type,caption:file.name.replace(/\.[^.]+$/,'')};
+    if(setNo){
+      row.set_no=setNo;
+      // carry the existing note so a photo added later joins a labelled set
+      const sib=(p.photos||[]).find(ph=>ph.type==='before_after'&&ph.set_no===setNo&&ph.set_note);
+      if(sib)row.set_note=sib.set_note;
+    }
+    const {data,error}=await supa.from('pattern_photos').insert(row).select().single();
     if(error){console.error('Photo insert error:',error);toast('Photo upload failed','err');}
   }
   // Reload photos from DB after all uploads
@@ -1572,14 +1706,87 @@ function onEditorClick(e){if(e.target.tagName==='IMG'){selectedImg=e.target;docu
 function onEditorMouseDown(e){if(e.target.tagName==='IMG'){const img=e.target,rect=img.getBoundingClientRect();img.style.cursor=(e.clientX>rect.right-16&&e.clientY>rect.bottom-16)?'nwse-resize':'default';}}
 function resizeImg(factor){if(!selectedImg){toast('Click an image first','err');return;}const ed=document.getElementById('rich-editor');const edW=(ed?ed.offsetWidth:640)-28;if(factor==='px'){const w=prompt('Width in pixels:');if(!w||isNaN(parseInt(w)))return;selectedImg.style.width=parseInt(w)+'px';selectedImg.style.height='auto';}else{selectedImg.style.width=Math.round(edW*factor)+'px';selectedImg.style.height='auto';}markDirty();}
 function initEditorImgResize(){const ed=document.getElementById('rich-editor');if(!ed)return;ed.addEventListener('mousedown',e=>{if(e.target.tagName!=='IMG')return;const img=e.target,rect=img.getBoundingClientRect();if(!(e.clientX>rect.right-16&&e.clientY>rect.bottom-16))return;e.preventDefault();const startX=e.clientX,startW=img.offsetWidth;const move=ev=>{img.style.width=Math.max(60,startW+(ev.clientX-startX))+'px';img.style.height='auto';};const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);markDirty();};document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);});}
+// Shrink a photo in the browser BEFORE it is uploaded.
+//
+// Nothing used to touch these files: a phone photo went into the bucket exactly
+// as taken. 1,572 objects, 5.07 GB, averaging 3.3 MB each and one at 49 MB. The
+// cost is not storage, it is egress — opening a pattern with ten photos pulled
+// 33 MB, and the bucket is public so crawlers pull it too.
+//
+// Most of the saving is RESIZE, not quality. Nobody views a seat cover at
+// 8000px; at 1600px and WebP q0.86 the picture is the same on screen and about
+// 200 KB. Research photos get a bigger allowance because people study seam
+// construction in them.
+const IMG_LIMITS={
+  research  :{px:2400,bytes:500*1024},   // detail matters — seams, grain
+  photos    :{px:1600,bytes:200*1024},   // product and before/after
+  variations:{px:1600,bytes:200*1024},
+  colors    :{px: 800,bytes:100*1024},   // small swatch thumbnails
+};
+
+async function shrinkImage(file,folder){
+  const lim=IMG_LIMITS[folder]||IMG_LIMITS.photos;
+  // Leave alone anything that is not a still image, and anything already small.
+  if(!file.type.startsWith('image/')||file.type==='image/gif'||file.type==='image/svg+xml')return file;
+  if(file.size<=lim.bytes)return file;
+  try{
+    // from-image applies the EXIF rotation, or every phone portrait lands sideways.
+    const bmp=await createImageBitmap(file,{imageOrientation:'from-image'});
+    const cv=document.createElement('canvas'),cx=cv.getContext('2d');
+    const draw=(px)=>{
+      const s=Math.min(1,px/Math.max(bmp.width,bmp.height));
+      cv.width=Math.max(1,Math.round(bmp.width*s));
+      cv.height=Math.max(1,Math.round(bmp.height*s));
+      cx.clearRect(0,0,cv.width,cv.height);cx.drawImage(bmp,0,0,cv.width,cv.height);
+    };
+    const enc=(q)=>new Promise(r=>cv.toBlob(r,'image/webp',q));
+
+    // KEEP THE RESOLUTION, spend quality first. Dropping pixels is what people
+    // notice; WebP at q0.5 on a photo still looks fine, whereas half the
+    // resolution does not. An earlier version stepped size down three times and
+    // landed every photo at 1200px, which defeated the point of giving research
+    // photos a bigger allowance.
+    // WebP size tracks quality closely enough to AIM rather than step: one
+    // measurement predicts the quality that fits, then a guard pass. That is
+    // ~3 encodes instead of 12, which matters — each is ~0.5s on a phone.
+    const fit=async(px)=>{
+      draw(px);
+      let b=await enc(0.82);
+      if(!b||b.size<=lim.bytes)return b;
+      const q=Math.max(0.35,Math.min(0.8,0.82*Math.pow(lim.bytes/b.size,0.6)));
+      const b2=await enc(q);
+      if(b2&&b2.size<=lim.bytes)return b2;
+      const b3=await enc(Math.max(0.28,q*0.7));
+      return b3&&b3.size<(b2||b).size?b3:(b2||b);
+    };
+    let blob=await fit(lim.px);
+    if(!blob)return file;                            // no webp encoder — send as-is
+    // Only after the whole quality budget is spent do we give up resolution —
+    // and the smaller size gets its own full quality search, not one fixed
+    // guess, or a stubborn photo ends up over the limit anyway.
+    if(blob.size>lim.bytes)blob=await fit(Math.round(lim.px*0.7))||blob;
+    if(!blob||blob.size>=file.size)return file;      // we cannot beat the original
+    bmp.close&&bmp.close();
+    const name=file.name.replace(/\.[^.]+$/,'')+'.webp';
+    return new File([blob],name,{type:'image/webp'});
+  }catch(e){
+    // Never lose an upload to a compression failure.
+    return file;
+  }
+}
+
 async function uploadToStorage(file,folder){
+  const original=file.size;
+  file=await shrinkImage(file,folder);
   const ext=file.name.split('.').pop()||'jpg';
   const path=folder+'/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
   const {data,error}=await supa.storage.from('pattern-photos').upload(path,file,{upsert:false,contentType:file.type});
   if(error){toast('Upload error: '+error.message,'err');return null;}
+  if(file.size<original*0.9)toast('Uploaded '+kb(original)+' → '+kb(file.size));
   const {data:{publicUrl}}=supa.storage.from('pattern-photos').getPublicUrl(path);
   return publicUrl;
 }
+function kb(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.round(n/1024)+' KB';}
 async function confirmPattern(){
   const p=getP();if(!p)return;
   const {data:{user}}=await supa.auth.getUser();
