@@ -229,6 +229,15 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
 .lightbox img{max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain}
 .lb-close{position:absolute;top:18px;right:20px;color:#fff;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;font-family:var(--font)}
 .lb-close:hover{background:rgba(255,255,255,0.2)}
+/* Arrows walk EVERY before/after photo on the pattern, across all sets, so you
+   can compare one job with another without closing and reopening. */
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);color:#fff;background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:48px;height:48px;display:none;align-items:center;justify-content:center;font-size:20px;cursor:pointer;z-index:2}
+.lb-nav:hover{background:rgba(255,255,255,0.25)}
+.lb-nav:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.lb-prev{left:22px}.lb-next{right:22px}
+.lb-cap{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,0.55);padding:7px 16px;border-radius:20px;display:none;max-width:80vw;text-align:center}
+.lb-cap b{color:var(--gold);font-weight:600}
+@media(max-width:640px){.lb-nav{width:40px;height:40px}.lb-prev{left:8px}.lb-next{right:8px}}
 .confirm-overlay{position:fixed;inset:0;background:rgba(23,24,59,0.38);display:flex;align-items:center;justify-content:center;z-index:250;backdrop-filter:blur(4px)}
 .confirm-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;width:360px;box-shadow:var(--shadow-md)}
 .confirm-title{font-size:16px;font-weight:600;margin-bottom:6px;color:var(--navy)}
@@ -531,7 +540,7 @@ input[type=color]{width:100%;height:40px;border-radius:var(--radius);border:1px 
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeColorUrlModal()">Cancel</button><button class="btn btn-navy" onclick="saveColorUrl()">Save photo</button></div>
   </div>
 </div>
-<div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()"><button class="lb-close" onclick="closeLightbox()">&#x2715;</button><img id="lb-img" src="" alt=""></div>
+<div class="lightbox" id="lightbox" style="display:none" onclick="closeLightbox()"><button class="lb-close" onclick="closeLightbox()">&#x2715;</button><button class="lb-nav lb-prev" id="lb-prev" onclick="lbStep(-1,event)" aria-label="Previous photo">&#10094;</button><img id="lb-img" src="" alt="" onclick="event.stopPropagation()"><button class="lb-nav lb-next" id="lb-next" onclick="lbStep(1,event)" aria-label="Next photo">&#10095;</button><div class="lb-cap" id="lb-cap"></div></div>
 <div class="confirm-overlay" id="confirm-overlay" style="display:none">
   <div class="confirm-box"><div class="confirm-title" id="confirm-title">Are you sure?</div><div class="confirm-msg" id="confirm-msg"></div><div class="confirm-actions"><button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Cancel</button><button class="btn btn-danger btn-sm" id="confirm-ok-btn">Confirm</button></div></div>
 </div>
@@ -1399,12 +1408,13 @@ function buildBeforeAfterTab(photos){
 // URL, which WhatsApp will not take, so Copy is the one that actually works.
 function photoCard(ph,canEdit){
   const u=esc(ph.url);
-  let h='<div class="sq-photo-card"><div class="sq-photo-wrap">'+
+  // The PHOTO opens the viewer — a magnifier button was a control competing
+  // with the obvious gesture. A drag suppresses the click, so both still work.
+  let h='<div class="sq-photo-card"><div class="sq-photo-wrap" onclick="openBaLB(\''+ph.id+'\',event)">'+
     '<img src="'+u+'" onerror="this.style.display=\'none\'" alt="" draggable="true" ondragstart="onPhotoDragStart(event,\''+u+'\')">';
   if(canEdit)h+='<button class="sq-photo-x" onclick="confirmAction(\'Remove?\',()=>removePhoto(\''+ph.id+'\'))">&#x2715;</button>';
   h+='<div class="sq-photo-overlay">'+
-       '<button class="sq-photo-view-btn" onclick="openLB(\''+su(ph.url)+'\',event)">&#128269;</button>'+
-       '<button class="sq-photo-view-btn" onclick="copyPhoto(event,\''+u+'\')" title="Copy image">&#128203;</button>'+
+       '<button class="sq-photo-view-btn" onclick="copyPhoto(event,\''+u+'\')" title="Copy image">&#128203; Copy</button>'+
        '<button class="sq-photo-view-btn" onclick="downloadPhoto(event,\''+u+'\')" title="Download">&#11015;</button>'+
      '</div></div>'+
     '<div class="sq-photo-label">'+esc(ph.caption||'Photo')+'</div></div>';
@@ -1538,8 +1548,53 @@ function onColorOver(e,id){e.preventDefault();document.getElementById('crow-'+id
 function onColorLeave(id){document.getElementById('crow-'+id)?.classList.remove('dragover');}
 async function onColorDrop(e,colorId){e.preventDefault();document.getElementById('crow-'+colorId)?.classList.remove('dragover');const f=Array.from(e.dataTransfer.files).find(f=>f.type.startsWith('image/'));if(!f)return;toast('Uploading...');snapshot();const url=await uploadToStorage(f,'colors');if(!url)return;const p=getP();const c=p.colors.find(c=>c.id===colorId);if(c){c.thumb_url=url;await supa.from('pattern_colors').update({thumb_url:url}).eq('id',colorId);}renderPattern();toast('Color photo saved \u2713');}
 async function removeColorThumb(id){snapshot();const p=getP();const c=p.colors.find(c=>c.id===id);if(c){c.thumb_url=null;await supa.from('pattern_colors').update({thumb_url:null}).eq('id',id);}renderPattern();toast('Removed');}
-function openLB(url,e){if(e)e.stopPropagation();document.getElementById('lb-img').src=url;document.getElementById('lightbox').style.display='flex';}
-function closeLightbox(){document.getElementById('lightbox').style.display='none';}
+// A single image, no arrows — research, colours, variations still use this.
+function openLB(url,e){
+  if(e)e.stopPropagation();
+  lbList=[];lbIdx=0;
+  document.getElementById('lb-img').src=url;
+  document.getElementById('lightbox').style.display='flex';
+  lbPaint();
+}
+// Before & After: the arrows walk every photo on the pattern in set order, so
+// you can run from the last shot of Set 1 straight into Set 2 rather than
+// closing the viewer to change set.
+let lbList=[],lbIdx=0;
+function openBaLB(id,e){
+  if(e)e.stopPropagation();
+  const p=getP();if(!p)return;
+  lbList=(p.photos||[]).filter(ph=>ph.type==='before_after')
+    .sort((a,b)=>(a.set_no||0)-(b.set_no||0)||(a.sort_order??0)-(b.sort_order??0)
+                 ||String(a.created_at||'').localeCompare(String(b.created_at||'')));
+  lbIdx=Math.max(0,lbList.findIndex(ph=>ph.id===id));
+  document.getElementById('lightbox').style.display='flex';
+  lbPaint();
+}
+function lbStep(d,e){
+  if(e)e.stopPropagation();
+  if(!lbList.length)return;
+  lbIdx=(lbIdx+d+lbList.length)%lbList.length;   // wraps, so it never dead-ends
+  lbPaint();
+}
+function lbPaint(){
+  const nav=lbList.length>1;
+  document.getElementById('lb-prev').style.display=nav?'flex':'none';
+  document.getElementById('lb-next').style.display=nav?'flex':'none';
+  const cap=document.getElementById('lb-cap');
+  if(!lbList.length){cap.style.display='none';return;}
+  const ph=lbList[lbIdx];
+  document.getElementById('lb-img').src=su(ph.url);
+  cap.style.display='block';
+  cap.innerHTML='<b>Set '+(ph.set_no||1)+'</b> &middot; '+esc(ph.caption||'Photo')+
+                ' &middot; '+(lbIdx+1)+' of '+lbList.length;
+}
+function closeLightbox(){document.getElementById('lightbox').style.display='none';lbList=[];}
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('lightbox').style.display!=='flex')return;
+  if(e.key==='Escape')closeLightbox();
+  else if(e.key==='ArrowLeft')lbStep(-1);
+  else if(e.key==='ArrowRight')lbStep(1);
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLightbox();closeConfirm();}});
 function triggerPhotoUpload(type){photoUploadType=type;document.getElementById('photo-file').click();}
 function triggerResearchPhotoUpload(){photoUploadType='research';document.getElementById('photo-file').click();}
